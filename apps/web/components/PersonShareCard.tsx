@@ -5,6 +5,8 @@ import { StampChip } from "./StampChip";
 
 export type PersonShareCardProps = {
   name: string;
+  /** Defaults to the first letter of the name; pass it when the name is "You". */
+  initial?: string;
   colorIndex: number;
   itemCount: number;
   amountCents: number;
@@ -17,6 +19,7 @@ export type PersonShareCardProps = {
 /** One person's share on "Here's the damage": avatar 36, name, count, amount, dashed rule, items. */
 export function PersonShareCard({
   name,
+  initial,
   colorIndex,
   itemCount,
   amountCents,
@@ -29,6 +32,7 @@ export function PersonShareCard({
       <div className="kt-person-share__top">
         <MemberAvatar
           name={name}
+          initial={initial}
           colorIndex={colorIndex}
           size={36}
           placeholder={variant === "guest"}

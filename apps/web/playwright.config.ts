@@ -1,11 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
+import { API_ENV, API_ORIGIN, API_PORT } from "./tests/e2e/fixtures/env";
 
 const PORT = 3000;
 const BASE_URL = `http://localhost:${PORT}`;
+const UV = process.env.UV ?? "uv";
 
 /**
  * E2E projects per TEST_PLAN §1: WebKit (iPhone 14), Chromium (Pixel 7), Firefox desktop.
- * The web server is a production build with the component gallery enabled.
+ * Two servers: the real API (APP_ENV=test, test inbox, fake SMS) on its own port and test
+ * database, and a production build of the web app (component gallery enabled) that proxies
+ * /api to it via KT_API_ORIGIN. Postgres and Redis come from docker compose.
  */
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -37,13 +41,25 @@ export default defineConfig({
       testIgnore: /screenshots\.spec\.ts/,
     },
   ],
-  webServer: {
-    command: "pnpm run build && pnpm run start",
-    url: `${BASE_URL}/dev/components`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 300_000,
-    env: { KT_DEV_COMPONENTS: "1" },
-    stdout: "ignore",
-    stderr: "pipe",
-  },
+  webServer: [
+    {
+      command: `${UV} run alembic upgrade head && ${UV} run uvicorn --factory app.main:create_app --port ${API_PORT}`,
+      cwd: "../api",
+      url: `${API_ORIGIN}/api/v1/health`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+      env: API_ENV,
+      stdout: "ignore",
+      stderr: "pipe",
+    },
+    {
+      command: "pnpm run build && pnpm run start",
+      url: `${BASE_URL}/dev/components`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300_000,
+      env: { KT_DEV_COMPONENTS: "1", KT_API_ORIGIN: API_ORIGIN },
+      stdout: "ignore",
+      stderr: "pipe",
+    },
+  ],
 });

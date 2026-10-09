@@ -9,8 +9,10 @@ export type ToastProps = {
   /** The message to show; null hides the toast but keeps the live region mounted. */
   message: string | null;
   variant?: "info" | "error";
-  /** Shows an Undo action. */
+  /** Shows an action button (Undo by default). */
   onUndo?: () => void;
+  /** Label of the action button, e.g. "Retry" (default "Undo"). */
+  actionLabel?: string;
   /** Called after `duration` ms, or after Undo. */
   onDismiss?: () => void;
   duration?: number;
@@ -23,6 +25,7 @@ export function Toast({
   message,
   variant = "info",
   onUndo,
+  actionLabel = strings.toast.undo,
   onDismiss,
   duration = TOAST_DURATION_MS,
   placement = "fixed",
@@ -58,7 +61,7 @@ export function Toast({
                 dismissRef.current?.();
               }}
             >
-              {strings.toast.undo}
+              {actionLabel}
             </button>
           ) : null}
         </div>

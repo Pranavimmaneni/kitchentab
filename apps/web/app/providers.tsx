@@ -16,5 +16,9 @@ export function Providers({ children }: { children: ReactNode }) {
       }),
   );
   useEffect(() => initTheme(), []);
+  // Marks the app interactive (e2e waits for it before typing into server-rendered forms).
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

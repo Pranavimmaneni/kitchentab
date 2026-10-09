@@ -43,6 +43,8 @@ export type SplitGridProps = {
   /** Member mode: the signed-in member, whose column is the only editable one. */
   currentMemberId?: string;
   onToggle?: (itemId: string, memberId: string, next: boolean) => void;
+  /** Payer mode: tapping a member's column header ticks or unticks them on every item. */
+  onColumnToggle?: (memberId: string) => void;
   loading?: boolean;
   /** Shows the "someone else changed this" notice with a refresh action. */
   conflict?: ReactNode;
@@ -72,6 +74,7 @@ export function SplitGrid({
   mode = "payer",
   currentMemberId,
   onToggle,
+  onColumnToggle,
   loading = false,
   conflict,
   note,
@@ -167,20 +170,43 @@ export function SplitGrid({
             <span role="columnheader" className="kt-split__item kt-split__item--head">
               {strings.split.item}
             </span>
-            {members.map((m) => (
-              <span role="columnheader" key={m.id} className="kt-split__member" aria-label={m.name}>
-                <MemberAvatar
-                  name={m.name}
-                  initial={m.initial ?? initialOf(m.name)}
-                  colorIndex={m.colorIndex}
-                  size={26}
-                />
-                <span className="kt-split__tag" aria-hidden="true">
-                  <span className="kt-split__tag-short">{m.tag}</span>
-                  <span className="kt-split__tag-long">{m.name}</span>
+            {members.map((m) => {
+              const face = (
+                <>
+                  <MemberAvatar
+                    name={m.name}
+                    initial={m.initial ?? initialOf(m.name)}
+                    colorIndex={m.colorIndex}
+                    size={26}
+                  />
+                  <span className="kt-split__tag" aria-hidden="true">
+                    <span className="kt-split__tag-short">{m.tag}</span>
+                    <span className="kt-split__tag-long">{m.name}</span>
+                  </span>
+                </>
+              );
+              return (
+                <span
+                  role="columnheader"
+                  key={m.id}
+                  className="kt-split__member"
+                  aria-label={onColumnToggle && mode === "payer" ? undefined : m.name}
+                >
+                  {onColumnToggle && mode === "payer" ? (
+                    <button
+                      type="button"
+                      className="kt-split__member-button"
+                      aria-label={strings.split.columnLabel(m.name)}
+                      onClick={() => onColumnToggle(m.id)}
+                    >
+                      {face}
+                    </button>
+                  ) : (
+                    face
+                  )}
                 </span>
-              </span>
-            ))}
+              );
+            })}
           </div>
         </div>
         {loading ? null : (
