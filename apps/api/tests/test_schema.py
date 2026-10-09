@@ -57,6 +57,9 @@ EXPECTED_TABLES = {
     "house_events",
     "outbox",
     "idempotency_keys",
+    # ADR-0014
+    "rate_limit_hits",
+    "test_inbox",
 }
 
 EXPECTED_INDEXES = {

@@ -121,6 +121,7 @@ def sessions(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
 
 @pytest.fixture(scope="session")
 async def redis(settings: Settings) -> AsyncIterator[Redis]:
+    assert settings.redis_url, "tests run with PROFILE=local unless a test builds its own settings"
     client = Redis.from_url(settings.redis_url, decode_responses=True)
     yield client
     await client.aclose()

@@ -16,7 +16,7 @@ from app.errors import install_error_handlers
 from app.ids import uuid7
 from app.logs import configure_logging, request_id_var
 from app.routes import health
-from app.services.bus import RedisBus
+from app.services.bus import NullBus, RedisBus
 from app.services.house_write import WriteContext
 from app.settings import Settings, get_settings
 
@@ -30,18 +30,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         engine = make_engine(settings.database_url)
-        redis = Redis.from_url(settings.redis_url, decode_responses=True)
+        redis = (
+            Redis.from_url(settings.redis_url, decode_responses=True)
+            if settings.use_redis and settings.redis_url
+            else None
+        )
         clock = ControllableClock()
         app.state.settings = settings
         app.state.engine = engine
         app.state.redis = redis
         app.state.clock = clock
         app.state.sessions = make_sessionmaker(engine)
-        app.state.writes = WriteContext(app.state.sessions, clock, RedisBus(redis))
+        # PROFILE=vercel: no Redis; SSE polls house_events (ADR-0012).
+        app.state.writes = WriteContext(app.state.sessions, clock, RedisBus(redis) if redis else NullBus())
         try:
             yield
         finally:
-            await redis.aclose()
+            if redis is not None:
+                await redis.aclose()
             await engine.dispose()
 
     app = FastAPI(

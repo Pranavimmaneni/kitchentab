@@ -24,6 +24,14 @@ from app.settings import get_settings
 log = logging.getLogger("app.worker")
 
 
+def _redis_url() -> str:
+    """The arq worker exists only with PROFILE=local, where settings guarantee REDIS_URL."""
+    url = get_settings().redis_url
+    if not url:
+        raise RuntimeError("the arq worker needs REDIS_URL (PROFILE=local)")
+    return url
+
+
 async def startup(ctx: dict[str, Any]) -> None:
     settings = get_settings()
     configure_logging(settings.log_level)
@@ -31,7 +39,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["engine"] = engine
     ctx["sessions"] = make_sessionmaker(engine)
     ctx["clock"] = ControllableClock()
-    ctx["redis_client"] = Redis.from_url(settings.redis_url, decode_responses=True)
+    ctx["redis_client"] = Redis.from_url(_redis_url(), decode_responses=True)
 
 
 async def shutdown(ctx: dict[str, Any]) -> None:
@@ -60,4 +68,4 @@ class WorkerSettings:
     cron_jobs: ClassVar[list[Any]] = [cron(poll_outbox, second={0, 10, 20, 30, 40, 50}, run_at_startup=True)]
     on_startup = startup
     on_shutdown = shutdown
-    redis_settings = RedisSettings.from_dsn(get_settings().redis_url)
+    redis_settings = RedisSettings.from_dsn(_redis_url())

@@ -20,24 +20,21 @@ BASE: dict[str, Any] = {
     "token_hash_pepper": "y" * 40,
 }
 
+# Day-one production per ADR-0016: test inbox, no phone, no Google, local extraction.
 REAL_PROD: dict[str, Any] = {
     **BASE,
     "app_env": "prod",
-    "email_provider": "resend",
-    "resend_api_key": "re_key",
-    "sms_provider": "twilio_verify",
-    "twilio_account_sid": "AC1",
-    "twilio_auth_token": "tok",
-    "twilio_verify_service_sid": "VA1",
-    "extractor_provider": "vision",
-    "extractor_api_key": "k",
-    "extractor_model": "m",
+    "profile": "vercel",
+    "redis_url": None,
+    "cron_secret": "c" * 40,
+    "email_provider": "testinbox",
+    "test_inbox_secret": "t" * 64,
+    "extractor_provider": "local",
     "push_provider": "webpush",
     "vapid_public_key": "pub",
     "vapid_private_key": "priv",
-    "google_client_id": "cid",
-    "google_client_secret": "secret",
-    "turnstile_secret_key": "ts",
+    "storage_provider": "vercel_blob",
+    "blob_read_write_token": "vercel_blob_rw_x",
 }
 
 
@@ -67,16 +64,22 @@ def test_local_defaults_are_valid() -> None:
 @pytest.mark.usefixtures("clean_env")
 def test_prod_rejects_fakes_and_placeholder_secrets() -> None:
     with pytest.raises(ValidationError) as err:
-        build(app_env="prod", session_secret="change-me-64-random-bytes")
+        build(
+            app_env="prod",
+            session_secret="change-me-64-random-bytes",
+            sms_provider="fake",
+            extractor_provider="fake",
+        )
     message = str(err.value)
     for expected in (
         "SESSION_SECRET",
+        "CRON_SECRET",
+        "PROFILE must be vercel",
         "EMAIL_PROVIDER=fake",
         "SMS_PROVIDER=fake",
         "PUSH_PROVIDER=fake",
         "EXTRACTOR_PROVIDER=fake",
-        "Google OIDC",
-        "TURNSTILE_SECRET_KEY",
+        "STORAGE_PROVIDER must be vercel_blob",
     ):
         assert expected in message
 
@@ -149,3 +152,33 @@ async def test_sms_inbox_route(client: httpx.AsyncClient, app: Any) -> None:
     assert [e["code"] for e in (await client.get("/__test/sms", params={"to": "+12015550142"})).json()] == [
         "246810"
     ]
+
+
+@pytest.mark.usefixtures("clean_env")
+def test_test_inbox_needs_a_long_secret_and_smtp_needs_credentials() -> None:
+    with pytest.raises(ValidationError, match="TEST_INBOX_SECRET"):
+        build(email_provider="testinbox", test_inbox_secret="short")
+    assert build(email_provider="testinbox", test_inbox_secret="s" * 64).email_provider == "testinbox"
+    with pytest.raises(ValidationError, match="SMTP_PASSWORD"):
+        build(email_provider="smtp", smtp_host="smtp.gmail.com", smtp_user="a@gmail.com")
+
+
+@pytest.mark.usefixtures("clean_env")
+def test_vercel_profile_runs_without_redis_and_local_profile_needs_it() -> None:
+    s = build(profile="vercel", redis_url=None)
+    assert (s.use_redis, s.queue) == (False, "vercel")
+    with pytest.raises(ValidationError, match="REDIS_URL"):
+        build(profile="local", redis_url=None)
+
+
+@pytest.mark.usefixtures("clean_env")
+def test_phone_and_google_are_off_until_configured() -> None:
+    day_one = Settings(_env_file=None, **REAL_PROD)
+    assert not day_one.phone_enabled and not day_one.google_enabled
+    with pytest.raises(ValidationError, match="TURNSTILE_SECRET_KEY"):
+        build(
+            sms_provider="twilio_verify",
+            twilio_account_sid="AC",
+            twilio_auth_token="t",
+            twilio_verify_service_sid="VA",
+        )

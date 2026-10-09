@@ -19,6 +19,7 @@ from app.models.house import House, Member
 from app.models.identity import AuthIdentity, OtpCode, PaymentHandle, Session, User
 from app.models.kitchen import InventoryGrant, InventoryItem, InventoryOwner, ShareRequest
 from app.models.notify import Notification, NotificationPref, PushSubscription
+from app.models.platform import RateLimitHit, TestInboxMessage
 from app.models.sync import ActivityEvent, HouseEvent, IdempotencyKey, OutboxRow
 
 __all__ = [
@@ -46,11 +47,13 @@ __all__ = [
     "Payment",
     "PaymentHandle",
     "PushSubscription",
+    "RateLimitHit",
     "Receipt",
     "ReceiptExtraction",
     "SeenMarker",
     "Session",
     "ShareRequest",
     "ShareSnapshot",
+    "TestInboxMessage",
     "User",
 ]
