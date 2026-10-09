@@ -26,7 +26,10 @@ is filled in.
 | `make test-load` | k6 load scenarios | Before release |
 | `make test-security` | Authorization matrix + ZAP baseline + dependency audit | Nightly + before release |
 | `make test-a11y` / `make test-visual` | axe on every screen, both themes / screenshot diffs vs design | Every PR |
-| `make golden` | Receipt extraction accuracy on the golden set | Nightly |
+| `make test-extract` | Extraction accuracy on the 30 generated receipts (C1 targets) + browser OCR on WebKit and Chromium | Every PR touching extraction |
+| `make golden` | Alias of `make test-extract` (kept for the original plan) | Nightly |
+| `make test-sync PROFILE=vercel`, `make e2e-multi PROFILE=vercel` | The same suites with production adapters (Postgres realtime, queue SDK, fake Blob, test inbox) | Every PR touching writes |
+| `make launch-check TARGET=local-vercel` | Production build rehearsal end to end (BUILD_ALL §6) | Before release |
 | `make test-all` | Everything above, then writes `docs/TEST_REPORT.md` | Release candidate |
 
 ---
@@ -81,6 +84,8 @@ is filled in.
 | AUTH-12 | M | Cannot remove your last sign-in method | 422 |
 | AUTH-13 | S | Installed-app first launch with no session shows "Sign in once more on this app" | Copy and flow correct |
 | AUTH-14 | M | Delete account anonymizes to "Former roommate", keeps others' amounts | Shares unchanged for others |
+| AUTH-15 | M | Email codes via SMTP (Mailpit locally, Gmail settings in prod) and via the test inbox; `/api/test/inbox` requires `X-Test-Secret` (constant-time), is absent unless `EMAIL_PROVIDER=testinbox` | 404 / 401 / codes readable |
+| AUTH-16 | M | Phone and Google buttons hidden unless their keys are configured (`/auth/methods`) | Only email shown on day one |
 
 ### 3.3 Houses, members, links (HOUSE, LINK)
 
@@ -119,16 +124,22 @@ is filled in.
 | BILL-10 | M | Reopen within 30 days; blocked after (clock) | As stated |
 | BILL-11 | M | Activity log has an entry for every state change | 1:1 with events |
 | BILL-12 | S | CSV export: one row per item × member | Columns and totals correct |
-| EXTRACT-01 | M | Upload JPEG/PNG/HEIC/WEBP/PDF ≤ 15 MB; reject others by magic bytes | Accepted / 415 |
-| EXTRACT-02 | M | EXIF stripped (GPS gone) from stored image | No EXIF |
-| EXTRACT-03 | M | Golden set ≥ 90% items correct without edits | Report ≥ 90% |
-| EXTRACT-04 | M | Server recomputes totals; never trusts model arithmetic | Mismatch flagged |
+| EXTRACT-01 | M | Upload JPEG/PNG/HEIC/WEBP/PDF up to 20 MB and 10 PDF pages via client upload; reject others by magic bytes; larger files refused before upload | Accepted / 415 / 413 |
+| EXTRACT-02 | M | EXIF stripped (GPS gone) on device before upload; stored image has no EXIF | No EXIF |
+| EXTRACT-03 | M | Accuracy on the 30 generated receipts: text PDFs >= 98% lines exact and 100% totals; images >= 85% lines and >= 95% totals | Report meets targets |
+| EXTRACT-04 | M | Server recomputes totals; never trusts parser or model arithmetic | Mismatch flagged |
 | EXTRACT-05 | M | Low confidence (< 0.8) rows flagged "CHECK?" | Flagged |
-| EXTRACT-06 | M | Extractor timeout/failure → "Try again" / "Enter by hand"; photo kept | As stated |
-| EXTRACT-07 | M | Storage/category/icon/shelf life returned; household → none | Mapped |
+| EXTRACT-06 | M | Parse failure or OCR failure -> "Try again" / "Enter by hand"; file kept | As stated |
+| EXTRACT-07 | M | Storage/category/icon/shelf life assigned per line; household -> none | Mapped |
 | EXTRACT-08 | M | Multi-photo long receipt dedupes overlapping lines | No duplicates |
-| EXTRACT-09 | M | Per-house cap of 30 extractions/day | 429 on 31st |
-| EXTRACT-10 | M | Receipt images only via signed URLs to house members | 403 for others |
+| EXTRACT-09 | M | Per-house cap of 30 extractions/day applies to the optional LLM plugin only | 429 on 31st (plugin) |
+| EXTRACT-10 | M | Receipt files only via short-lived URLs to house members | 403 for others |
+| EXTRACT-11 | M | Text PDF parsed server-side (pdfplumber, pypdf fallback) with line positions, multi-page | Lines and totals exact |
+| EXTRACT-12 | M | Browser OCR (tesseract.js self-hosted under /ocr/, pdfjs-dist) runs on WebKit and Chromium for at least 5 image receipts, no third-party requests | Lines within targets |
+| EXTRACT-13 | M | Store profiles (Instacart, Walmart, Target, Costco, Amazon/Whole Foods, ShopRite, Trader Joe's, H Mart) and edge cases (coupons, weighted items, deposits, refunds, wrapped names, $0 items) | Parsed per ground truth |
+| EXTRACT-14 | M | "Upload PDF" entry point on the scan screen and drag-and-drop on desktop | Works in both themes |
+| EXTRACT-15 | M | No API key needed: full suite passes with EXTRACTOR_API_KEY unset; LLM plugin enabled only when set (fake-backed test) | As stated |
+| EXTRACT-16 | M | Every review screen flags each reconciliation mismatch in the generated set | 100% flagged |
 | SPLIT-01 | M | Tick/untick persists within 500 ms; live totals match `compute_shares` | Exact |
 | SPLIT-02 | M | Split the rest with everyone only touches unassigned items | Others unchanged |
 | SPLIT-03 | M | Column header toggles a member on all items, with Undo | Works and undoes |
@@ -215,6 +226,21 @@ Additional sync tests:
 | SYNC-32 | M | Client never flickers own optimistic changes when its echo event arrives | Visual check in test |
 | SYNC-33 | M | Removed member's open stream gets `revoked` within 5 min (clock) | Closed |
 | SYNC-34 | M | Polling fallback kicks in after 3 failed SSE connects and stops when SSE recovers | As stated |
+
+### 3.7b Vercel platform (VERCEL)
+
+| ID | P | Test | Pass when |
+| --- | --- | --- | --- |
+| VERCEL-01 | M | SSE stream from Postgres closes at 270 s; reconnect with Last-Event-ID loses and duplicates nothing | Recorder sees 1..N |
+| VERCEL-02 | M | `PROFILE=vercel` (no Redis) delivers events to every device within 2 s | Converged |
+| VERCEL-03 | M | Request bodies over 4.5 MB rejected with 413 before any work; receipts use client upload | 413 |
+| VERCEL-04 | M | Outbox drained via the Queues SDK (embedded/devserver); delayed messages for quiet hours; sweeper drains leftovers | All delivered once |
+| VERCEL-05 | M | Rate limits and idempotency work with Postgres only | 429 / replay |
+| VERCEL-06 | M | Alembic never runs from a request; `make deploy` runs it against the direct URL | Static check + script test |
+| VERCEL-07 | M | `vercel.json` routes `/api/*` to FastAPI and everything else to Next.js; same-origin cookies | launch-check |
+| VERCEL-08 | M | Python bundle size under 500 MB; no OCR/image libraries in the API | Size check |
+| VERCEL-09 | M | Daily cron endpoint is idempotent and runs use-soon, retention and export | As stated |
+| VERCEL-10 | M | Morning scripts (deploy-setup, deploy, launch-check, set-email, redeploy, rollback, prod-clean-test-data) pass dry-run and stubbed-CLI tests incl. failures | All pass |
 
 ### 3.8 Install and offline (PWA, OFFLINE)
 

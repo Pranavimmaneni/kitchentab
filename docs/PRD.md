@@ -2,6 +2,8 @@
 
 Oct 9, 2026 · Pranav · mockups: `docs/design/` · money reference: `docs/reference/compute_shares_reference.py` + `packages/fixtures/money_cases.json` · tests: `docs/TEST_PLAN.md`
 
+> **Changes since the handoff (BUILD_ALL.md §1, 2026-10-09).** Receipt extraction runs locally with no API key (text PDFs on the server, OCR in the browser; ADR-0010). The app deploys as one Vercel project on the Hobby plan with Neon Postgres, Vercel Blob and Vercel Queues, and no Redis in production (ADR-0011 to ADR-0015). Day-one sign-in is email codes through Gmail SMTP, with a secret-guarded test inbox until then; phone and Google buttons stay hidden until their keys exist (ADR-0016). Sections 3, 5.2, 9, 11, 12, 13 and 18 are updated to match.
+
 ## 1. Overview
 
 KitchenTab is a browser-first web app that turns one grocery receipt into fair per-person shares for a household, with no app download required. Build it as a mobile-first Progressive Web App (PWA) and treat this document as the build contract for Claude Code.
@@ -77,10 +79,10 @@ MVP ships the full loop for one house: sign in, add roommates, scan, split, send
 
 | Capability | MVP (v1) | v1.1 | Later |
 | --- | --- | --- | --- |
-| Sign-in | Google OAuth, email OTP, phone OTP | Apple sign-in | Passkeys |
+| Sign-in | Email code on day one (Gmail SMTP); Google OAuth and phone OTP built and shown once their keys are set (ADR-0016) | Apple sign-in | Passkeys |
 | Houses | One or more houses per user, switcher in header | House avatar and color | — |
-| Receipt input | Photo (camera or gallery), PDF, manual entry | Forward order-confirmation email to a house address | Instacart, Amazon Fresh, Walmart order import |
-| Extraction | Vision-LLM extraction with confidence flags | Learn item names per house ("usual suspects") | Auto-suggest who uses what from history |
+| Receipt input | Photo (camera or gallery), PDF upload (first-class, multi-page, drag-and-drop on desktop), manual entry | Forward order-confirmation email to a house address | Instacart, Amazon Fresh, Walmart order import |
+| Extraction | Local extraction with no API key: server text-PDF parsing and in-browser OCR feeding one receipt parser with confidence flags; LLM plugin optional (ADR-0010) | Learn item names per house ("usual suspects") | Auto-suggest who uses what from history |
 | Splitting | Equal split among ticked members per item | Weighted shares (2×, custom %) and quantity splits (3 of 6 cans) | Split by unit price per person |
 | Tax and fees | Proportional to subtotal share | Per-item taxable flag; tip, delivery and service fee handling options | — |
 | Discounts | Line-level discounts and coupons attached to item | Order-level discount allocation options | — |
@@ -167,8 +169,8 @@ Each requirement is testable; "Must" ships in MVP, "Should" ships in MVP if time
 
 | ID | Priority | Requirement | Acceptance criteria |
 | --- | --- | --- | --- |
-| FR-10 | Must | Upload JPEG, PNG, HEIC, WEBP or PDF up to 15 MB, via camera or file picker | HEIC converted server-side; PDF first 3 pages processed |
-| FR-11 | Must | Extract store name, purchase date, line items (name, quantity, unit price, line total), discounts, subtotal, tax, fees, total | Result returned in under 15 s at p90 |
+| FR-10 | Must | Upload JPEG, PNG, HEIC, WEBP or PDF up to 20 MB (PDF up to 10 pages), via camera, photo library, "Upload PDF" or drag-and-drop; files go straight from the browser to storage | HEIC converted on device; text PDFs parsed on the server; photos and scanned PDFs OCR'd in the browser (ADR-0010, ADR-0015) |
+| FR-11 | Must | Extract store name, purchase date, line items (name, quantity, unit price, line total), discounts, subtotal, tax, fees, total | Text PDF result in under 5 s at p90; in-browser OCR under 15 s at p90 on a mid-range phone |
 | FR-12 | Must | Flag low-confidence fields (confidence < 0.8) for review | Flagged rows show a "Check?" chip |
 | FR-13 | Must | Show reconciliation: sum of items + tax + fees − discounts vs receipt total | Mismatch shows the difference and blocks Next until resolved or overridden with a reason. An override stores the printed total in `bills.printed_total_cents` (which becomes `total_cents`) and adds one signed `bill_fees` row of kind `adjustment` for the difference, allocated like tax (section 6); the reason is logged |
 | FR-14 | Must | Edit any field, add, delete, merge or split items | Changes saved as draft every 2 s |
@@ -361,13 +363,13 @@ Payers add handles in Settings; the Pay button lists only methods the payer has 
 
 ## 9. Receipt ingestion and extraction
 
-Use a vision-capable LLM with a strict JSON schema as the extractor, behind a provider interface so it can be swapped for a dedicated receipt OCR API without touching callers. Run it as a background job; the client polls or listens on SSE.
+Extraction runs with **no API key** (ADR-0010). Text PDFs are parsed on the server; photos and scanned PDFs are OCR'd in the browser with `tesseract.js`; both feed one receipt parser (`apps/api/app/extraction/parser.py`) that returns the `ExtractedBill` schema below with per-line confidence. A vision-LLM extractor remains an optional plugin behind the same `ReceiptExtractor` interface, enabled only when `EXTRACTOR_API_KEY` is set.
 
 **Pipeline**
 
-1. **Upload:** client requests a presigned PUT URL (`POST /receipts/upload-url`), uploads directly to object storage, then calls `POST /bills/{id}/receipt` with the key.
-2. **Preprocess (worker):** verify MIME by magic bytes, strip EXIF (location), convert HEIC to JPEG, auto-rotate, downscale longest side to 2000 px, render PDF pages to images (max 3). Long receipts photographed in 2–3 parts are accepted as multiple images on one bill.
-3. **Extract:** send image(s) with a system prompt and the JSON schema below; temperature 0; timeout 30 s; one retry with backoff.
+1. **Upload:** the client asks `POST /api/v1/uploads/authorize` for an upload ticket (policy check), uploads the file directly to storage (Vercel Blob client upload in production, MinIO or the fake blob service locally; ADR-0015), then calls `POST /bills/{id}/receipts` with the stored key. 20 MB and 10 PDF pages max; nothing passes through a function body.
+2. **Text or OCR:** for a PDF with a text layer the server extracts lines with positions (`pdfplumber`, fallback `pypdf`). For photos and scanned PDFs the browser renders pages (`pdfjs-dist`), preprocesses (EXIF rotate, grayscale, contrast, adaptive threshold, deskew, max 2000 px) and runs `tesseract.js` (self-hosted under `/ocr/`), then posts the OCR lines with boxes and confidences to `POST /bills/{id}/ocr`. EXIF never leaves the device; the stored original has EXIF stripped on device before upload.
+3. **Parse:** one receipt parser handles both inputs: generic line items (name, qty x unit price, line total), discounts and coupons as negative lines, deposits and bag fees, tax, tip, delivery and service fees, subtotal, total, store name and date, plus store profiles (Instacart, Walmart, Target, Costco, Amazon/Whole Foods, ShopRite, Trader Joe's, H Mart). Optional LLM plugin: same output schema, temperature 0, timeout 30 s.
 4. **Validate:** parse with Pydantic; reject schema violations; convert dollars to cents; compute reconciliation (section 5.2, FR-13).
 5. **Post-process:** normalize item names (expand common abbreviations such as "ORG BNNA" → "Organic bananas" while keeping `raw_text`), mark confidence < 0.8 as flagged, attach line-level discounts to the item above them.
 6. **Persist:** write `receipt_extractions` (raw JSON, model, latency, cost) and draft `items`; set bill `extraction_status = done`.
@@ -398,9 +400,9 @@ Use a vision-capable LLM with a strict JSON schema as the extractor, behind a pr
 - Tip is treated as a fee and allocated like tax (section 6) unless the payer changes it to "split evenly" (v1.1).
 - Never trust the model's arithmetic: the server recomputes every total from the line items.
 - Store prompt version and model id with each extraction to compare accuracy over time.
-- Keep a golden set of 50+ real, anonymized receipts (ShopRite, Trader Joe's, Costco, H Mart, Instacart and Amazon Fresh PDFs, crumpled and low-light photos) and run the extractor on them in CI nightly; target ≥ 90% items correct without edit.
-- Cost guardrail: cap at 30 extractions per house per day; log cost per extraction.
-- Receipt images are personal data (store visits, sometimes card digits): never send them to any service other than the extractor, and never use them for training.
+- Accuracy is measured on 30 generated receipts with known ground truth (`packages/fixtures/receipts/`, 15 text PDFs and 15 noisy images or scanned PDFs, reproducible by script) with `make test-extract`: text PDFs at least 98% of lines exactly right and 100% of totals right; images at least 85% of lines and 95% of totals right; every mismatch flagged on review.
+- Cost guardrail: local extraction is free; the optional LLM plugin is capped at 30 extractions per house per day with cost logged.
+- Receipt images are personal data (store visits, sometimes card digits): OCR runs on the device; images are stored privately and never sent to any other service (the optional LLM plugin is the only exception, and only when configured).
 
 ## 10. Data model
 
@@ -490,12 +492,16 @@ REST over JSON at `/api/v1`, documented by FastAPI's generated OpenAPI; the fron
 | GET | `/b/{token}` | Public: read-only bill view model + join picker data |
 | GET | `/b/{token}/og.png` | Link-preview image |
 | GET | `/notifications`, POST `/notifications/read` | In-app badges |
+| POST | `/uploads/authorize` | Upload ticket for a receipt (policy check; Blob client token or presigned PUT) |
+| POST | `/bills/{id}/ocr` | OCR lines from the browser for photos and scanned PDFs |
+| GET | `/auth/methods` | Which sign-in methods are configured (hides phone and Google without keys) |
+| GET | `/api/test/inbox` | Test inbox (only with `EMAIL_PROVIDER=testinbox` and `X-Test-Secret`; ADR-0016) |
 
 **Realtime:** one stream per house, `GET /houses/{id}/events` (SSE, section 21.5), carries every event for that house, including `allocation_changed`, `payment_recorded` and `state_changed` for bills, so two roommates editing at once see each other's ticks within 2 s. There is no per-bill stream. Clients fall back to polling `?after=` every 15 s after 3 failed connects.
 
 ## 12. Architecture and tech stack
 
-A Next.js web app in front of a FastAPI service, with Postgres as the single source of truth and a Redis-backed worker for extraction and email. The stack plays to Python strengths on the backend and keeps link pages server-rendered so previews work in every chat app.
+One Vercel project serves the Next.js web app at `/` and the FastAPI app at `/api` through Vercel Services (ADR-0011), with Postgres (Neon) as the single source of truth. Realtime polls the house event log in Postgres (ADR-0012); the outbox is drained through Vercel Queues (ADR-0013); receipts go straight from the browser to Vercel Blob (ADR-0015). No Redis in production. Link pages stay server-rendered so previews work in every chat app.
 
 ```mermaid
 flowchart LR
@@ -512,24 +518,24 @@ flowchart LR
     K -- "Web Push (VAPID)" --> PS["Browser push services"] --> B
 ```
 
-The browser uploads receipt images straight to storage with a presigned URL; the API queues extraction, and the worker writes items back to Postgres.
+The browser uploads receipts straight to storage with a short-lived client token; text PDFs are parsed by the API, photos are OCR'd in the browser, and the API parses and stores the result.
 
 | Layer | Choice | Why |
 | --- | --- | --- |
 | Web | Next.js 15 (App Router), React, TypeScript, Tailwind, TanStack Query | SSR for `/b/` and `/h/` link pages and OG images; PWA support |
 | PWA | Web app manifest, Serwist service worker, Web Push (VAPID) sent with pywebpush | Install prompt after 2nd visit; offline read-only cache |
 | API | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 (async), Alembic | Typed, generated OpenAPI drives the TS client |
-| Database | Postgres 16 (Neon, Supabase or RDS) with `pg_trgm`, `citext` | Transactions for money; trigram search |
-| Jobs | Redis + arq workers | Extraction, email, reminders, OG image renders |
-| Realtime | Server-Sent Events from FastAPI, Redis pub/sub fan-out | Simpler than WebSockets; works through proxies |
-| Storage | S3 (or Cloudflare R2), private bucket, presigned PUT/GET, 15 min expiry | Images never public |
-| Extraction | Vision-capable LLM behind `ReceiptExtractor` interface | Swap providers without code changes elsewhere |
-| Auth | Own session table; Google OIDC via Authlib; email OTP via Resend or Postmark; SMS OTP via Twilio Verify; Cloudflare Turnstile | No third-party auth lock-in; cheap |
-| Hosting | Vercel (web); Fly.io or AWS ECS (API, worker); managed Redis | Low ops for MVP |
+| Database | Postgres 16: Neon from the Vercel Marketplace (pooled URL for requests, direct URL for migrations), docker Postgres locally; `pg_trgm`, `citext` | Transactions for money; trigram search |
+| Jobs | Vercel Queues (`vercel-queue`, delayed messages) draining the outbox; one daily Hobby cron for use-soon scans, retention and export; arq locally (`PROFILE=local`) | Notifications, reminders, OG images, kitchen nudges |
+| Realtime | Server-Sent Events from FastAPI polling `house_events` every 750 ms, closing at 270 s with `Last-Event-ID` resume; Redis early-wake only in `PROFILE=local` | Works within Hobby's 300 s limit and through proxies |
+| Storage | Vercel Blob (private) with client uploads in production; MinIO or the fake blob service locally | Images never public, never through a function body |
+| Extraction | `pdfplumber`/`pypdf` on the server for text PDFs, `tesseract.js` + `pdfjs-dist` in the browser for images, one parser; optional LLM plugin | Free, private, no API key |
+| Auth | Own session table; email codes via Gmail SMTP (test inbox until configured); Google OIDC via Authlib and SMS via Twilio Verify, shown only when configured; Cloudflare Turnstile with phone codes | No third-party auth lock-in; free on day one |
+| Hosting | Vercel Hobby: one project, two services (web, api), Neon, Blob, Queues | One command to deploy, free tier |
 | Tooling | pnpm, uv, Ruff, mypy, ESLint, Prettier, pre-commit, GitHub Actions | One command each for lint, test, run |
 | Observability | Sentry, OpenTelemetry, structured logs, PostHog (self-hosted) or Plausible | Errors, traces, product analytics without PII |
 
-**Environments:** `local` (docker-compose with MinIO, Mailpit, fake SMS and fake extractor), `staging` (real providers in test mode, seeded demo house), `prod`. Config via environment variables validated at startup; a missing secret fails boot.
+**Environments:** `local` (docker-compose with Postgres, Redis, MinIO, Mailpit, mock OIDC, fake push; `PROFILE=local` or `PROFILE=vercel` adapters), `local-vercel` (production build rehearsal over HTTPS with PgBouncer, fake Blob, queue devserver and the test inbox; ADR-0017), `prod` (Vercel). Config via environment variables validated at startup; a missing secret fails boot.
 
 ## 13. Non-functional requirements
 
@@ -538,7 +544,7 @@ The app handles money and receipts, so correctness and privacy outrank features.
 | Area | Requirement |
 | --- | --- |
 | Performance | Bill page interactive under 2.5 s on a mid-range phone over 4G (LCP < 2.5 s, INP < 200 ms, CLS < 0.1); API p95 < 300 ms excluding extraction; JS bundle for a link page < 150 KB gzipped |
-| Availability | 99.5% monthly; daily automated Postgres backups kept 14 days plus point-in-time recovery; restore tested monthly |
+| Availability | Best effort on Vercel Hobby; Neon point-in-time restore plus a daily logical export to Blob; `make restore-drill` proves a restore |
 | Correctness | Share invariant (section 6) checked on every write; property-based tests over 10,000 random bills; no float money anywhere (lint rule) |
 | Security | OWASP ASVS Level 2 as checklist; TLS 1.2+, HSTS; strict CSP (no inline scripts, nonce-based); secrets in a managed vault; dependency scanning in CI; image uploads served from a separate domain with `Content-Disposition: attachment` |
 | Abuse | Rate limits per section 7 and 11; CAPTCHA on repeated OTP; per-house extraction cap; token brute-force lockout after 20 invalid link tokens per IP per hour |
@@ -547,6 +553,7 @@ The app handles money and receipts, so correctness and privacy outrank features.
 | Retention | Receipt images deleted 2 years after bill settles; OTP rows after 24 h; sessions 30 days after expiry; activity log kept for life of the bill |
 | Accessibility | WCAG 2.2 AA: 4.5:1 text contrast in both themes, 44×44 px touch targets, full keyboard support, screen-reader labels on every checkbox ("Arjun uses Whole milk, checked"), honors `prefers-reduced-motion` and `prefers-color-scheme` |
 | Compatibility | iOS Safari 16.4+, Chrome Android 110+, desktop Chrome, Safari, Firefox and Edge latest 2; responsive from 320 px to 1440 px |
+| Platform limits | Vercel Hobby: request and response bodies at most 4.5 MB, function duration at most 300 s, 2 GB memory, Python bundle under 500 MB, cron at most daily; all enforced in the local-vercel rehearsal |
 | Offline and network | PWA service worker caches the app shell and the last 5 viewed bills read-only; writes need network and show a clear retry state; never queue money writes offline |
 | Observability | Structured JSON logs with request id; Sentry for frontend and backend errors; OpenTelemetry traces; dashboards for extraction latency, failure rate and cost; alerts on error rate > 2% for 5 min |
 | Localization | English only; all strings in one catalog file; dates and money formatted with `Intl`; store currency per bill for future expansion |
@@ -936,7 +943,7 @@ These are decided by default as written; change any before milestone 3 starts.
 | A4 | Who edits whose ticks | Members edit only themselves; payer edits anyone |
 | A5 | Market | US only, USD, US phone numbers for SMS |
 | A6 | Bill visibility via link | Anyone with the link can view (not edit) store, total and names; no per-person amounts in link previews |
-| A7 | Hosting | Vercel (web), Fly.io or AWS (API + worker), managed Postgres, S3-compatible storage, Redis |
+| A7 | Hosting | One Vercel project on the Hobby plan: Next.js and FastAPI as Vercel Services, Neon Postgres, Vercel Blob, Vercel Queues; no Redis in production (ADR-0011) |
 
 **Open questions**
 
