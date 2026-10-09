@@ -1,0 +1,1478 @@
+{
+ "id": "i13",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i13.jpg",
+   "width": 1519,
+   "height": 2113,
+   "preprocess": {
+    "deskew_deg": 6.9,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "TARGET",
+     "bbox": [
+      652,
+      219,
+      866,
+      257
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "TARGET",
+       "bbox": [
+        652,
+        219,
+        866,
+        257
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "Hoboken - 1 Washington St",
+     "bbox": [
+      546,
+      281,
+      975,
+      308
+     ],
+     "confidence": 92.3,
+     "words": [
+      {
+       "text": "Hoboken",
+       "bbox": [
+        546,
+        281,
+        665,
+        304
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "-",
+       "bbox": [
+        685,
+        291,
+        699,
+        296
+       ],
+       "confidence": 81.4
+      },
+      {
+       "text": "1",
+       "bbox": [
+        722,
+        282,
+        732,
+        303
+       ],
+       "confidence": 94.5
+      },
+      {
+       "text": "Washington",
+       "bbox": [
+        753,
+        282,
+        925,
+        308
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "St",
+       "bbox": [
+        945,
+        284,
+        975,
+        303
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "201-555-0188",
+     "bbox": [
+      659,
+      322,
+      864,
+      345
+     ],
+     "confidence": 91.9,
+     "words": [
+      {
+       "text": "201-555-0188",
+       "bbox": [
+        659,
+        322,
+        864,
+        345
+       ],
+       "confidence": 91.9
+      }
+     ]
+    },
+    {
+     "text": "10/05/2026 06:41 PM",
+     "bbox": [
+      600,
+      364,
+      928,
+      387
+     ],
+     "confidence": 95.2,
+     "words": [
+      {
+       "text": "10/05/2026",
+       "bbox": [
+        600,
+        364,
+        769,
+        387
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "06:41",
+       "bbox": [
+        790,
+        365,
+        872,
+        386
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "PM",
+       "bbox": [
+        895,
+        366,
+        928,
+        386
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      373,
+      448,
+      495,
+      470
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        373,
+        448,
+        495,
+        470
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "018-93-3405 GG HONEY NUT CEREAL     NF $4.49",
+     "bbox": [
+      372,
+      489,
+      1144,
+      513
+     ],
+     "confidence": 93.4,
+     "words": [
+      {
+       "text": "018-93-3405",
+       "bbox": [
+        372,
+        489,
+        562,
+        513
+       ],
+       "confidence": 82.6
+      },
+      {
+       "text": "GG",
+       "bbox": [
+        582,
+        491,
+        616,
+        511
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "HONEY",
+       "bbox": [
+        635,
+        491,
+        721,
+        513
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "NUT",
+       "bbox": [
+        741,
+        491,
+        792,
+        511
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "CEREAL",
+       "bbox": [
+        810,
+        492,
+        916,
+        512
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        1005,
+        492,
+        1040,
+        512
+       ],
+       "confidence": 93.8
+      },
+      {
+       "text": "$4.49",
+       "bbox": [
+        1059,
+        490,
+        1144,
+        513
+       ],
+       "confidence": 93.8
+      }
+     ]
+    },
+    {
+     "text": "DAIRY",
+     "bbox": [
+      372,
+      533,
+      457,
+      555
+     ],
+     "confidence": 92.7,
+     "words": [
+      {
+       "text": "DAIRY",
+       "bbox": [
+        372,
+        533,
+        457,
+        555
+       ],
+       "confidence": 92.7
+      }
+     ]
+    },
+    {
+     "text": "043-18-3876 GG WHOLE MILK 1 GAL     NF $3.99",
+     "bbox": [
+      373,
+      573,
+      1151,
+      598
+     ],
+     "confidence": 94.4,
+     "words": [
+      {
+       "text": "043-18-3876",
+       "bbox": [
+        373,
+        573,
+        565,
+        597
+       ],
+       "confidence": 84
+      },
+      {
+       "text": "GG",
+       "bbox": [
+        585,
+        576,
+        620,
+        596
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "WHOLE",
+       "bbox": [
+        638,
+        576,
+        725,
+        598
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "MILK",
+       "bbox": [
+        744,
+        575,
+        815,
+        596
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "1",
+       "bbox": [
+        836,
+        576,
+        848,
+        597
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "GAL",
+       "bbox": [
+        869,
+        577,
+        922,
+        597
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        1011,
+        576,
+        1046,
+        597
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "$3.99",
+       "bbox": [
+        1066,
+        575,
+        1151,
+        598
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      372,
+      618,
+      496,
+      641
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        372,
+        618,
+        496,
+        641
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "134-92~9230 RETURN GG CHOC CHIP",
+     "bbox": [
+      371,
+      660,
+      922,
+      684
+     ],
+     "confidence": 92.4,
+     "words": [
+      {
+       "text": "134-92~9230",
+       "bbox": [
+        371,
+        660,
+        563,
+        684
+       ],
+       "confidence": 76.1
+      },
+      {
+       "text": "RETURN",
+       "bbox": [
+        583,
+        661,
+        689,
+        684
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "GG",
+       "bbox": [
+        708,
+        662,
+        743,
+        683
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "CHOC",
+       "bbox": [
+        761,
+        662,
+        832,
+        683
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "CHIP",
+       "bbox": [
+        851,
+        663,
+        922,
+        684
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "COOKIES                            NF -$3.99",
+     "bbox": [
+      364,
+      705,
+      1152,
+      729
+     ],
+     "confidence": 82.8,
+     "words": [
+      {
+       "text": "COOKIES",
+       "bbox": [
+        364,
+        706,
+        487,
+        729
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        992,
+        707,
+        1028,
+        728
+       ],
+       "confidence": 90.9
+      },
+      {
+       "text": "-$3.99",
+       "bbox": [
+        1047,
+        705,
+        1152,
+        729
+       ],
+       "confidence": 62.6
+      }
+     ]
+    },
+    {
+     "text": "097~55-6027 GG BLACK BEANS 150Z     NF $3.56",
+     "bbox": [
+      363,
+      748,
+      1152,
+      773
+     ],
+     "confidence": 85.8,
+     "words": [
+      {
+       "text": "097~55-6027",
+       "bbox": [
+        363,
+        748,
+        556,
+        773
+       ],
+       "confidence": 51
+      },
+      {
+       "text": "GG",
+       "bbox": [
+        577,
+        751,
+        613,
+        772
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "BLACK",
+       "bbox": [
+        632,
+        751,
+        721,
+        773
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "BEANS",
+       "bbox": [
+        741,
+        750,
+        828,
+        771
+       ],
+       "confidence": 90.3
+      },
+      {
+       "text": "150Z",
+       "bbox": [
+        851,
+        751,
+        918,
+        773
+       ],
+       "confidence": 84
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        1010,
+        751,
+        1045,
+        772
+       ],
+       "confidence": 92.5
+      },
+      {
+       "text": "$3.56",
+       "bbox": [
+        1066,
+        750,
+        1152,
+        773
+       ],
+       "confidence": 89.4
+      }
+     ]
+    },
+    {
+     "text": "4 @ 50.89 ea",
+     "bbox": [
+      400,
+      792,
+      612,
+      818
+     ],
+     "confidence": 87.8,
+     "words": [
+      {
+       "text": "4",
+       "bbox": [
+        400,
+        795,
+        413,
+        817
+       ],
+       "confidence": 82
+      },
+      {
+       "text": "@",
+       "bbox": [
+        435,
+        795,
+        449,
+        818
+       ],
+       "confidence": 82
+      },
+      {
+       "text": "50.89",
+       "bbox": [
+        472,
+        792,
+        559,
+        817
+       ],
+       "confidence": 91.1
+      },
+      {
+       "text": "ea",
+       "bbox": [
+        579,
+        799,
+        612,
+        816
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "FROZEN",
+     "bbox": [
+      364,
+      838,
+      470,
+      862
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "FROZEN",
+       "bbox": [
+        364,
+        838,
+        470,
+        862
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "176-73-6314 GG FRZ PEAS 1602        NF $0.00",
+     "bbox": [
+      365,
+      882,
+      1160,
+      907
+     ],
+     "confidence": 92,
+     "words": [
+      {
+       "text": "176-73-6314",
+       "bbox": [
+        365,
+        882,
+        558,
+        906
+       ],
+       "confidence": 77.9
+      },
+      {
+       "text": "GG",
+       "bbox": [
+        579,
+        884,
+        614,
+        905
+       ],
+       "confidence": 92.9
+      },
+      {
+       "text": "FRZ",
+       "bbox": [
+        636,
+        885,
+        686,
+        907
+       ],
+       "confidence": 91.5
+      },
+      {
+       "text": "PEAS",
+       "bbox": [
+        709,
+        884,
+        778,
+        906
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "1602",
+       "bbox": [
+        802,
+        884,
+        869,
+        907
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        1017,
+        885,
+        1052,
+        906
+       ],
+       "confidence": 94.1
+      },
+      {
+       "text": "$0.00",
+       "bbox": [
+        1073,
+        883,
+        1160,
+        907
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "027-32-7097 FRZ PEPPERONI PIZZA     NF $6.99",
+     "bbox": [
+      361,
+      928,
+      1162,
+      954
+     ],
+     "confidence": 90.8,
+     "words": [
+      {
+       "text": "027-32-7097",
+       "bbox": [
+        361,
+        928,
+        557,
+        954
+       ],
+       "confidence": 86.4
+      },
+      {
+       "text": "FRZ",
+       "bbox": [
+        580,
+        930,
+        631,
+        953
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "PEPPERONI",
+       "bbox": [
+        653,
+        930,
+        812,
+        954
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "PIZZA",
+       "bbox": [
+        836,
+        931,
+        925,
+        953
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        1018,
+        931,
+        1053,
+        953
+       ],
+       "confidence": 91.7
+      },
+      {
+       "text": "$6.99",
+       "bbox": [
+        1073,
+        930,
+        1162,
+        954
+       ],
+       "confidence": 82.3
+      }
+     ]
+    },
+    {
+     "text": "Target Circle 15% off                 -$1.0%",
+     "bbox": [
+      358,
+      975,
+      1162,
+      1005
+     ],
+     "confidence": 87.5,
+     "words": [
+      {
+       "text": "Target",
+       "bbox": [
+        358,
+        975,
+        464,
+        1005
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Circle",
+       "bbox": [
+        485,
+        975,
+        594,
+        997
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "15%",
+       "bbox": [
+        617,
+        976,
+        666,
+        999
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "off",
+       "bbox": [
+        688,
+        975,
+        740,
+        998
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "-$1.0%",
+       "bbox": [
+        1055,
+        975,
+        1162,
+        999
+       ],
+       "confidence": 53.1
+      }
+     ]
+    },
+    {
+     "text": "HOUSEHOLD",
+     "bbox": [
+      355,
+      1021,
+      520,
+      1045
+     ],
+     "confidence": 93,
+     "words": [
+      {
+       "text": "HOUSEHOLD",
+       "bbox": [
+        355,
+        1021,
+        520,
+        1045
+       ],
+       "confidence": 93
+      }
+     ]
+    },
+    {
+     "text": "020-80-3426 TRASH BAGS 40CT          T $8.99",
+     "bbox": [
+      353,
+      1065,
+      1163,
+      1091
+     ],
+     "confidence": 91.9,
+     "words": [
+      {
+       "text": "020-80-3426",
+       "bbox": [
+        353,
+        1065,
+        552,
+        1091
+       ],
+       "confidence": 81.6
+      },
+      {
+       "text": "TRASH",
+       "bbox": [
+        574,
+        1067,
+        663,
+        1091
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "BAGS",
+       "bbox": [
+        685,
+        1067,
+        756,
+        1090
+       ],
+       "confidence": 92.9
+      },
+      {
+       "text": "40CT",
+       "bbox": [
+        778,
+        1067,
+        849,
+        1090
+       ],
+       "confidence": 92.9
+      },
+      {
+       "text": "T",
+       "bbox": [
+        1035,
+        1068,
+        1053,
+        1090
+       ],
+       "confidence": 91.3
+      },
+      {
+       "text": "$8.99",
+       "bbox": [
+        1074,
+        1067,
+        1163,
+        1091
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      350,
+      1114,
+      477,
+      1138
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        350,
+        1114,
+        477,
+        1138
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "002-11-7262 GREEN TEA 20CT          NF $3.49",
+     "bbox": [
+      352,
+      1160,
+      1168,
+      1187
+     ],
+     "confidence": 88.5,
+     "words": [
+      {
+       "text": "002-11-7262",
+       "bbox": [
+        352,
+        1160,
+        552,
+        1186
+       ],
+       "confidence": 60.2
+      },
+      {
+       "text": "GREEN",
+       "bbox": [
+        574,
+        1162,
+        665,
+        1186
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "TEA",
+       "bbox": [
+        686,
+        1162,
+        741,
+        1185
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "20CT",
+       "bbox": [
+        761,
+        1161,
+        833,
+        1185
+       ],
+       "confidence": 92
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        1020,
+        1163,
+        1057,
+        1185
+       ],
+       "confidence": 94.7
+      },
+      {
+       "text": "$3.49",
+       "bbox": [
+        1079,
+        1161,
+        1168,
+        1187
+       ],
+       "confidence": 94.7
+      }
+     ]
+    },
+    {
+     "text": "DAIRY",
+     "bbox": [
+      353,
+      1209,
+      442,
+      1233
+     ],
+     "confidence": 96,
+     "words": [
+      {
+       "text": "DAIRY",
+       "bbox": [
+        353,
+        1209,
+        442,
+        1233
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "014-46-9429 GG UNSLT BUTTER 1LB     NF $4.99",
+     "bbox": [
+      351,
+      1254,
+      1173,
+      1281
+     ],
+     "confidence": 88.4,
+     "words": [
+      {
+       "text": "014-46-9429",
+       "bbox": [
+        351,
+        1254,
+        554,
+        1281
+       ],
+       "confidence": 75.5
+      },
+      {
+       "text": "GG",
+       "bbox": [
+        574,
+        1257,
+        611,
+        1280
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "UNSLT",
+       "bbox": [
+        632,
+        1257,
+        724,
+        1281
+       ],
+       "confidence": 91.9
+      },
+      {
+       "text": "BUTTER",
+       "bbox": [
+        744,
+        1257,
+        854,
+        1280
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "1LB",
+       "bbox": [
+        877,
+        1257,
+        929,
+        1281
+       ],
+       "confidence": 81.2
+      },
+      {
+       "text": "NF",
+       "bbox": [
+        1025,
+        1257,
+        1062,
+        1280
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "$4.99",
+       "bbox": [
+        1083,
+        1256,
+        1173,
+        1281
+       ],
+       "confidence": 89.2
+      }
+     ]
+    },
+    {
+     "text": "SUBTOTAL                              $31.46",
+     "bbox": [
+      341,
+      1353,
+      1170,
+      1379
+     ],
+     "confidence": 94.5,
+     "words": [
+      {
+       "text": "SUBTOTAL",
+       "bbox": [
+        341,
+        1353,
+        490,
+        1378
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "$31.46",
+       "bbox": [
+        1060,
+        1353,
+        1170,
+        1379
+       ],
+       "confidence": 92.8
+      }
+     ]
+    },
+    {
+     "text": "T «= NJ TAX 6.6250 on $8.99             $0.60",
+     "bbox": [
+      340,
+      1401,
+      1172,
+      1428
+     ],
+     "confidence": 89.7,
+     "words": [
+      {
+       "text": "T",
+       "bbox": [
+        340,
+        1402,
+        358,
+        1426
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "«=",
+       "bbox": [
+        379,
+        1411,
+        395,
+        1421
+       ],
+       "confidence": 47.1
+      },
+      {
+       "text": "NJ",
+       "bbox": [
+        416,
+        1404,
+        452,
+        1428
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "TAX",
+       "bbox": [
+        472,
+        1401,
+        528,
+        1426
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "6.6250",
+       "bbox": [
+        551,
+        1401,
+        660,
+        1427
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "on",
+       "bbox": [
+        682,
+        1409,
+        717,
+        1426
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "$8.99",
+       "bbox": [
+        740,
+        1401,
+        831,
+        1426
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "$0.60",
+       "bbox": [
+        1082,
+        1402,
+        1172,
+        1428
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "TOTAL                                 $32.06",
+     "bbox": [
+      341,
+      1451,
+      1177,
+      1477
+     ],
+     "confidence": 96.6,
+     "words": [
+      {
+       "text": "TOTAL",
+       "bbox": [
+        341,
+        1451,
+        435,
+        1477
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "$32.06",
+       "bbox": [
+        1067,
+        1451,
+        1177,
+        1477
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "*4412 VISA CHARGE                     $32.06",
+     "bbox": [
+      345,
+      1499,
+      1180,
+      1526
+     ],
+     "confidence": 89.5,
+     "words": [
+      {
+       "text": "*4412",
+       "bbox": [
+        345,
+        1501,
+        433,
+        1526
+       ],
+       "confidence": 71.5
+      },
+      {
+       "text": "VISA",
+       "bbox": [
+        455,
+        1499,
+        531,
+        1524
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "CHARGE",
+       "bbox": [
+        551,
+        1500,
+        664,
+        1526
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "$32.06",
+       "bbox": [
+        1069,
+        1500,
+        1180,
+        1526
+       ],
+       "confidence": 95.4
+      }
+     ]
+    },
+    {
+     "text": "AID: A0000000031010",
+     "bbox": [
+      338,
+      1549,
+      700,
+      1576
+     ],
+     "confidence": 91.4,
+     "words": [
+      {
+       "text": "AID:",
+       "bbox": [
+        338,
+        1550,
+        408,
+        1576
+       ],
+       "confidence": 92.4
+      },
+      {
+       "text": "A0000000031010",
+       "bbox": [
+        433,
+        1549,
+        700,
+        1576
+       ],
+       "confidence": 90.5
+      }
+     ]
+    },
+    {
+     "text": "Target Circle: 1% earned today",
+     "bbox": [
+      333,
+      1651,
+      912,
+      1685
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "Target",
+       "bbox": [
+        333,
+        1652,
+        444,
+        1685
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "Circle:",
+       "bbox": [
+        468,
+        1651,
+        597,
+        1677
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "1%",
+       "bbox": [
+        626,
+        1654,
+        659,
+        1678
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "earned",
+       "bbox": [
+        681,
+        1652,
+        796,
+        1677
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "today",
+       "bbox": [
+        819,
+        1654,
+        912,
+        1685
+       ],
+       "confidence": 96.2
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

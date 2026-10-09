@@ -1,0 +1,1916 @@
+{
+ "id": "i04",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i04.jpg",
+   "width": 1152,
+   "height": 2037,
+   "preprocess": {
+    "deskew_deg": -2,
+    "scale": 0.946
+   },
+   "lines": [
+    {
+     "text": "COSTCO",
+     "bbox": [
+      471,
+      122,
+      678,
+      159
+     ],
+     "confidence": 93.1,
+     "words": [
+      {
+       "text": "COSTCO",
+       "bbox": [
+        471,
+        122,
+        678,
+        159
+       ],
+       "confidence": 93.1
+      }
+     ]
+    },
+    {
+     "text": "WHOLECALE",
+     "bbox": [
+      499,
+      184,
+      647,
+      203
+     ],
+     "confidence": 12,
+     "words": [
+      {
+       "text": "WHOLECALE",
+       "bbox": [
+        499,
+        184,
+        647,
+        203
+       ],
+       "confidence": 12
+      }
+     ]
+    },
+    {
+     "text": "Teterboro $1062",
+     "bbox": [
+      451,
+      221,
+      698,
+      243
+     ],
+     "confidence": 60.5,
+     "words": [
+      {
+       "text": "Teterboro",
+       "bbox": [
+        451,
+        222,
+        599,
+        243
+       ],
+       "confidence": 47.8
+      },
+      {
+       "text": "$1062",
+       "bbox": [
+        621,
+        221,
+        698,
+        242
+       ],
+       "confidence": 73.1
+      }
+     ]
+    },
+    {
+     "text": "1 Industrial Ave",
+     "bbox": [
+      448,
+      261,
+      710,
+      282
+     ],
+     "confidence": 94,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        448,
+        262,
+        456,
+        280
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "Industrial",
+       "bbox": [
+        482,
+        261,
+        641,
+        282
+       ],
+       "confidence": 91
+      },
+      {
+       "text": "Ave",
+       "bbox": [
+        662,
+        261,
+        710,
+        279
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "Teterboro, NJ 07608",
+     "bbox": [
+      419,
+      300,
+      734,
+      326
+     ],
+     "confidence": 87,
+     "words": [
+      {
+       "text": "Teterboro,",
+       "bbox": [
+        419,
+        301,
+        579,
+        326
+       ],
+       "confidence": 72.2
+      },
+      {
+       "text": "NJ",
+       "bbox": [
+        604,
+        302,
+        635,
+        321
+       ],
+       "confidence": 94.4
+      },
+      {
+       "text": "07608",
+       "bbox": [
+        655,
+        300,
+        734,
+        320
+       ],
+       "confidence": 94.4
+      }
+     ]
+    },
+    {
+     "text": "Member 111987654321",
+     "bbox": [
+      416,
+      340,
+      730,
+      362
+     ],
+     "confidence": 66.2,
+     "words": [
+      {
+       "text": "Member",
+       "bbox": [
+        416,
+        341,
+        511,
+        360
+       ],
+       "confidence": 93.5
+      },
+      {
+       "text": "111987654321",
+       "bbox": [
+        538,
+        340,
+        730,
+        362
+       ],
+       "confidence": 39
+      }
+     ]
+    },
+    {
+     "text": "E 862764 KS LG E568 1&CT                 7.499",
+     "bbox": [
+      205,
+      420,
+      946,
+      443
+     ],
+     "confidence": 70.2,
+     "words": [
+      {
+       "text": "E",
+       "bbox": [
+        205,
+        422,
+        219,
+        441
+       ],
+       "confidence": 92.5
+      },
+      {
+       "text": "862764",
+       "bbox": [
+        240,
+        423,
+        335,
+        442
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "KS",
+       "bbox": [
+        357,
+        424,
+        387,
+        442
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "LG",
+       "bbox": [
+        409,
+        423,
+        439,
+        441
+       ],
+       "confidence": 86.6
+      },
+      {
+       "text": "E568",
+       "bbox": [
+        458,
+        422,
+        523,
+        441
+       ],
+       "confidence": 41
+      },
+      {
+       "text": "1&CT",
+       "bbox": [
+        545,
+        423,
+        608,
+        443
+       ],
+       "confidence": 11.1
+      },
+      {
+       "text": "7.499",
+       "bbox": [
+        881,
+        420,
+        946,
+        440
+       ],
+       "confidence": 69.4
+      }
+     ]
+    },
+    {
+     "text": "E 1296229 KS RSTD ALMONDS 1602         13.49",
+     "bbox": [
+      206,
+      461,
+      949,
+      483
+     ],
+     "confidence": 89.3,
+     "words": [
+      {
+       "text": "E",
+       "bbox": [
+        206,
+        463,
+        220,
+        482
+       ],
+       "confidence": 89.4
+      },
+      {
+       "text": "1296229",
+       "bbox": [
+        243,
+        464,
+        355,
+        483
+       ],
+       "confidence": 75
+      },
+      {
+       "text": "KS",
+       "bbox": [
+        375,
+        464,
+        406,
+        482
+       ],
+       "confidence": 92.6
+      },
+      {
+       "text": "RSTD",
+       "bbox": [
+        426,
+        462,
+        491,
+        482
+       ],
+       "confidence": 89.4
+      },
+      {
+       "text": "ALMONDS",
+       "bbox": [
+        510,
+        463,
+        626,
+        483
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "1602",
+       "bbox": [
+        649,
+        461,
+        711,
+        482
+       ],
+       "confidence": 86.7
+      },
+      {
+       "text": "13.49",
+       "bbox": [
+        869,
+        461,
+        949,
+        482
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "302238 71296229                        3.00~",
+     "bbox": [
+      208,
+      502,
+      950,
+      524
+     ],
+     "confidence": 54.5,
+     "words": [
+      {
+       "text": "302238",
+       "bbox": [
+        208,
+        503,
+        303,
+        523
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "71296229",
+       "bbox": [
+        325,
+        503,
+        458,
+        524
+       ],
+       "confidence": 0
+      },
+      {
+       "text": "3.00~",
+       "bbox": [
+        870,
+        502,
+        950,
+        522
+       ],
+       "confidence": 80.7
+      }
+     ]
+    },
+    {
+     "text": "448648 KS PAPER TOWELS 6PK           21.99 A",
+     "bbox": [
+      204,
+      542,
+      951,
+      565
+     ],
+     "confidence": 86.2,
+     "words": [
+      {
+       "text": "448648",
+       "bbox": [
+        204,
+        544,
+        300,
+        564
+       ],
+       "confidence": 52.5
+      },
+      {
+       "text": "KS",
+       "bbox": [
+        321,
+        545,
+        352,
+        564
+       ],
+       "confidence": 95.1
+      },
+      {
+       "text": "PAPER",
+       "bbox": [
+        374,
+        545,
+        455,
+        564
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "TOWELS",
+       "bbox": [
+        475,
+        544,
+        574,
+        565
+       ],
+       "confidence": 92.7
+      },
+      {
+       "text": "6PK",
+       "bbox": [
+        595,
+        544,
+        643,
+        564
+       ],
+       "confidence": 88.8
+      },
+      {
+       "text": "21.99",
+       "bbox": [
+        834,
+        542,
+        916,
+        564
+       ],
+       "confidence": 89.2
+      },
+      {
+       "text": "A",
+       "bbox": [
+        934,
+        545,
+        951,
+        564
+       ],
+       "confidence": 89.2
+      }
+     ]
+    },
+    {
+     "text": "386073 7448648                         4.00~",
+     "bbox": [
+      202,
+      585,
+      948,
+      608
+     ],
+     "confidence": 40.8,
+     "words": [
+      {
+       "text": "386073",
+       "bbox": [
+        202,
+        586,
+        298,
+        606
+       ],
+       "confidence": 94.5
+      },
+      {
+       "text": "7448648",
+       "bbox": [
+        320,
+        587,
+        435,
+        608
+       ],
+       "confidence": 0
+      },
+      {
+       "text": "4.00~",
+       "bbox": [
+        867,
+        585,
+        948,
+        605
+       ],
+       "confidence": 51.3
+      }
+     ]
+    },
+    {
+     "text": "E 1269606 KS EVOO 5S500ML                16.99",
+     "bbox": [
+      199,
+      626,
+      951,
+      649
+     ],
+     "confidence": 77.1,
+     "words": [
+      {
+       "text": "E",
+       "bbox": [
+        199,
+        628,
+        214,
+        648
+       ],
+       "confidence": 93
+      },
+      {
+       "text": "1269606",
+       "bbox": [
+        235,
+        628,
+        350,
+        648
+       ],
+       "confidence": 43.5
+      },
+      {
+       "text": "KS",
+       "bbox": [
+        370,
+        629,
+        401,
+        648
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "EVOO",
+       "bbox": [
+        422,
+        628,
+        488,
+        647
+       ],
+       "confidence": 82.9
+      },
+      {
+       "text": "5S500ML",
+       "bbox": [
+        508,
+        628,
+        592,
+        649
+       ],
+       "confidence": 55.7
+      },
+      {
+       "text": "16.99",
+       "bbox": [
+        870,
+        626,
+        951,
+        648
+       ],
+       "confidence": 94
+      }
+     ]
+    },
+    {
+     "text": "2 & 5.99",
+     "bbox": [
+      235,
+      669,
+      368,
+      691
+     ],
+     "confidence": 57.4,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        235,
+        670,
+        247,
+        690
+       ],
+       "confidence": 71.3
+      },
+      {
+       "text": "&",
+       "bbox": [
+        268,
+        669,
+        282,
+        691
+       ],
+       "confidence": 14
+      },
+      {
+       "text": "5.99",
+       "bbox": [
+        304,
+        669,
+        368,
+        690
+       ],
+       "confidence": 86.7
+      }
+     ]
+    },
+    {
+     "text": "E 1306043 BLUEBERRIES PINT             11.98",
+     "bbox": [
+      200,
+      709,
+      955,
+      733
+     ],
+     "confidence": 95.3,
+     "words": [
+      {
+       "text": "E",
+       "bbox": [
+        200,
+        711,
+        215,
+        731
+       ],
+       "confidence": 93.2
+      },
+      {
+       "text": "1306043",
+       "bbox": [
+        237,
+        712,
+        352,
+        732
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "BLUEBERRIES",
+       "bbox": [
+        372,
+        711,
+        559,
+        732
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "PINT",
+       "bbox": [
+        581,
+        711,
+        646,
+        733
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "11.98",
+       "bbox": [
+        875,
+        709,
+        955,
+        731
+       ],
+       "confidence": 95.4
+      }
+     ]
+    },
+    {
+     "text": "E 1963675 ATL SALMON FILLET            34.99",
+     "bbox": [
+      197,
+      751,
+      956,
+      775
+     ],
+     "confidence": 95.4,
+     "words": [
+      {
+       "text": "E",
+       "bbox": [
+        197,
+        753,
+        212,
+        773
+       ],
+       "confidence": 93.2
+      },
+      {
+       "text": "1963675",
+       "bbox": [
+        235,
+        754,
+        349,
+        774
+       ],
+       "confidence": 93.9
+      },
+      {
+       "text": "ATL",
+       "bbox": [
+        369,
+        754,
+        420,
+        774
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "SALMON",
+       "bbox": [
+        439,
+        753,
+        541,
+        774
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "FILLET",
+       "bbox": [
+        561,
+        753,
+        663,
+        775
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "34.99",
+       "bbox": [
+        874,
+        751,
+        956,
+        773
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "E 1575660 KS COFFEE BEANS 1202         18.99",
+     "bbox": [
+      195,
+      795,
+      955,
+      819
+     ],
+     "confidence": 88.9,
+     "words": [
+      {
+       "text": "E",
+       "bbox": [
+        195,
+        796,
+        209,
+        817
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "1575660",
+       "bbox": [
+        233,
+        797,
+        347,
+        818
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "KS",
+       "bbox": [
+        368,
+        798,
+        400,
+        817
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "COFFEE",
+       "bbox": [
+        419,
+        796,
+        521,
+        817
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "BEANS",
+       "bbox": [
+        541,
+        798,
+        625,
+        819
+       ],
+       "confidence": 95.1
+      },
+      {
+       "text": "1202",
+       "bbox": [
+        649,
+        795,
+        712,
+        816
+       ],
+       "confidence": 50.9
+      },
+      {
+       "text": "18.99",
+       "bbox": [
+        874,
+        795,
+        955,
+        817
+       ],
+       "confidence": 95
+      }
+     ]
+    },
+    {
+     "text": "385807 /1575660                         3.50-",
+     "bbox": [
+      196,
+      837,
+      955,
+      862
+     ],
+     "confidence": 85.3,
+     "words": [
+      {
+       "text": "385807",
+       "bbox": [
+        196,
+        839,
+        293,
+        860
+       ],
+       "confidence": 92.9
+      },
+      {
+       "text": "/1575660",
+       "bbox": [
+        316,
+        839,
+        451,
+        862
+       ],
+       "confidence": 90.8
+      },
+      {
+       "text": "3.50-",
+       "bbox": [
+        873,
+        837,
+        955,
+        858
+       ],
+       "confidence": 72
+      }
+     ]
+    },
+    {
+     "text": "378970 KS LNDRY DETERGENT            19.99 A",
+     "bbox": [
+      195,
+      880,
+      960,
+      904
+     ],
+     "confidence": 93.5,
+     "words": [
+      {
+       "text": "378970",
+       "bbox": [
+        195,
+        882,
+        295,
+        903
+       ],
+       "confidence": 94.9
+      },
+      {
+       "text": "KS",
+       "bbox": [
+        315,
+        883,
+        347,
+        903
+       ],
+       "confidence": 92.9
+      },
+      {
+       "text": "LNDRY",
+       "bbox": [
+        369,
+        882,
+        452,
+        903
+       ],
+       "confidence": 90.2
+      },
+      {
+       "text": "DETERGENT",
+       "bbox": [
+        473,
+        882,
+        627,
+        904
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "19.99",
+       "bbox": [
+        841,
+        880,
+        923,
+        903
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "A",
+       "bbox": [
+        943,
+        883,
+        960,
+        904
+       ],
+       "confidence": 90.5
+      }
+     ]
+    },
+    {
+     "text": "E 198192 FRZ PORK DUMPLINGS            13.49",
+     "bbox": [
+      193,
+      923,
+      961,
+      947
+     ],
+     "confidence": 93.7,
+     "words": [
+      {
+       "text": "E",
+       "bbox": [
+        193,
+        925,
+        209,
+        946
+       ],
+       "confidence": 91
+      },
+      {
+       "text": "198192",
+       "bbox": [
+        231,
+        926,
+        329,
+        947
+       ],
+       "confidence": 93.2
+      },
+      {
+       "text": "FRZ",
+       "bbox": [
+        352,
+        926,
+        401,
+        946
+       ],
+       "confidence": 90.4
+      },
+      {
+       "text": "PORK",
+       "bbox": [
+        422,
+        925,
+        489,
+        946
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "DUMPLINGS",
+       "bbox": [
+        509,
+        925,
+        663,
+        947
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "13.49",
+       "bbox": [
+        878,
+        923,
+        961,
+        946
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "£ 749390 WHL WHT BKEAD                 5.99",
+     "bbox": [
+      192,
+      966,
+      963,
+      991
+     ],
+     "confidence": 89.7,
+     "words": [
+      {
+       "text": "£",
+       "bbox": [
+        192,
+        968,
+        207,
+        989
+       ],
+       "confidence": 74.3
+      },
+      {
+       "text": "749390",
+       "bbox": [
+        229,
+        968,
+        329,
+        989
+       ],
+       "confidence": 93
+      },
+      {
+       "text": "WHL",
+       "bbox": [
+        350,
+        969,
+        401,
+        989
+       ],
+       "confidence": 91.6
+      },
+      {
+       "text": "WHT",
+       "bbox": [
+        419,
+        968,
+        471,
+        988
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "BKEAD",
+       "bbox": [
+        491,
+        969,
+        577,
+        991
+       ],
+       "confidence": 90.5
+      },
+      {
+       "text": "5.99",
+       "bbox": [
+        896,
+        966,
+        963,
+        989
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "SUBTOTAL                             155.39",
+     "bbox": [
+      187,
+      1053,
+      962,
+      1078
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "SUBTOTAL",
+       "bbox": [
+        187,
+        1056,
+        327,
+        1078
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "155.39",
+       "bbox": [
+        861,
+        1053,
+        962,
+        1077
+       ],
+       "confidence": 95.1
+      }
+     ]
+    },
+    {
+     "text": "TAX                                    2.52",
+     "bbox": [
+      187,
+      1097,
+      962,
+      1122
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "TAX",
+       "bbox": [
+        187,
+        1100,
+        237,
+        1122
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "2.52",
+       "bbox": [
+        896,
+        1097,
+        962,
+        1122
+       ],
+       "confidence": 95.2
+      }
+     ]
+    },
+    {
+     "text": "¢ee¢* TOTAL                            157.91",
+     "bbox": [
+      189,
+      1142,
+      964,
+      1167
+     ],
+     "confidence": 71.7,
+     "words": [
+      {
+       "text": "¢ee¢*",
+       "bbox": [
+        189,
+        1145,
+        253,
+        1157
+       ],
+       "confidence": 22.4
+      },
+      {
+       "text": "TOTAL",
+       "bbox": [
+        275,
+        1145,
+        363,
+        1166
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "157.91",
+       "bbox": [
+        864,
+        1142,
+        964,
+        1167
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "XXXXXXXXXXXX4412 CHIP Read",
+     "bbox": [
+      187,
+      1188,
+      648,
+      1212
+     ],
+     "confidence": 91.5,
+     "words": [
+      {
+       "text": "XXXXXXXXXXXX4412",
+       "bbox": [
+        187,
+        1188,
+        468,
+        1211
+       ],
+       "confidence": 81.8
+      },
+      {
+       "text": "CHIP",
+       "bbox": [
+        489,
+        1189,
+        559,
+        1212
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Read",
+       "bbox": [
+        578,
+        1188,
+        648,
+        1212
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "AID: A0000000031010",
+     "bbox": [
+      183,
+      1234,
+      521,
+      1257
+     ],
+     "confidence": 85.8,
+     "words": [
+      {
+       "text": "AID:",
+       "bbox": [
+        183,
+        1235,
+        249,
+        1257
+       ],
+       "confidence": 85
+      },
+      {
+       "text": "A0000000031010",
+       "bbox": [
+        272,
+        1234,
+        521,
+        1257
+       ],
+       "confidence": 86.5
+      }
+     ]
+    },
+    {
+     "text": "Seqé 12345 Appd: 03312B",
+     "bbox": [
+      183,
+      1278,
+      593,
+      1308
+     ],
+     "confidence": 63.6,
+     "words": [
+      {
+       "text": "Seqé",
+       "bbox": [
+        183,
+        1279,
+        249,
+        1308
+       ],
+       "confidence": 58.9
+      },
+      {
+       "text": "12345",
+       "bbox": [
+        274,
+        1280,
+        358,
+        1302
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "Appd:",
+       "bbox": [
+        378,
+        1278,
+        462,
+        1307
+       ],
+       "confidence": 44.4
+      },
+      {
+       "text": "03312B",
+       "bbox": [
+        487,
+        1280,
+        593,
+        1304
+       ],
+       "confidence": 58
+      }
+     ]
+    },
+    {
+     "text": "Visa Resp: APPROVED",
+     "bbox": [
+      180,
+      1325,
+      521,
+      1354
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "Visa",
+       "bbox": [
+        180,
+        1326,
+        250,
+        1348
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "Resp:",
+       "bbox": [
+        271,
+        1326,
+        353,
+        1354
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "APPROVED",
+       "bbox": [
+        377,
+        1325,
+        521,
+        1348
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "AMOUNT:                              $157.91",
+     "bbox": [
+      180,
+      1368,
+      970,
+      1395
+     ],
+     "confidence": 94,
+     "words": [
+      {
+       "text": "AMOUNT:",
+       "bbox": [
+        180,
+        1371,
+        300,
+        1394
+       ],
+       "confidence": 92
+      },
+      {
+       "text": "$157.91",
+       "bbox": [
+        849,
+        1368,
+        970,
+        1395
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "09/26/2026 15:22 1062 12 412 TM",
+     "bbox": [
+      181,
+      1415,
+      737,
+      1441
+     ],
+     "confidence": 88.6,
+     "words": [
+      {
+       "text": "09/26/2026",
+       "bbox": [
+        181,
+        1416,
+        359,
+        1441
+       ],
+       "confidence": 93.8
+      },
+      {
+       "text": "15:22",
+       "bbox": [
+        381,
+        1416,
+        466,
+        1440
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "1062",
+       "bbox": [
+        490,
+        1417,
+        556,
+        1441
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "12",
+       "bbox": [
+        580,
+        1418,
+        610,
+        1441
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "412",
+       "bbox": [
+        633,
+        1415,
+        683,
+        1439
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "TM",
+       "bbox": [
+        705,
+        1415,
+        737,
+        1438
+       ],
+       "confidence": 54.9
+      }
+     ]
+    },
+    {
+     "text": "Visa                                  157.91",
+     "bbox": [
+      178,
+      1461,
+      972,
+      1487
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "Visa",
+       "bbox": [
+        178,
+        1464,
+        248,
+        1487
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "157.91",
+       "bbox": [
+        870,
+        1461,
+        972,
+        1487
+       ],
+       "confidence": 94.8
+      }
+     ]
+    },
+    {
+     "text": "CHANGE                                  0.00",
+     "bbox": [
+      176,
+      1508,
+      974,
+      1534
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "CHANGE",
+       "bbox": [
+        176,
+        1511,
+        284,
+        1534
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "0.00",
+       "bbox": [
+        905,
+        1508,
+        974,
+        1534
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "A 6.625% TAX                            2.52",
+     "bbox": [
+      174,
+      1555,
+      974,
+      1581
+     ],
+     "confidence": 94.9,
+     "words": [
+      {
+       "text": "A",
+       "bbox": [
+        174,
+        1558,
+        192,
+        1580
+       ],
+       "confidence": 93.6
+      },
+      {
+       "text": "6.625%",
+       "bbox": [
+        213,
+        1557,
+        317,
+        1581
+       ],
+       "confidence": 93.6
+      },
+      {
+       "text": "TAX",
+       "bbox": [
+        339,
+        1558,
+        392,
+        1581
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "2.52",
+       "bbox": [
+        905,
+        1555,
+        974,
+        1581
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "TOTAL TAX                                2.52",
+     "bbox": [
+      175,
+      1602,
+      976,
+      1628
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "TOTAL",
+       "bbox": [
+        175,
+        1605,
+        265,
+        1628
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "TAX",
+       "bbox": [
+        284,
+        1606,
+        336,
+        1628
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "2.52",
+       "bbox": [
+        907,
+        1602,
+        976,
+        1628
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "TOTAL NUMBER OF ITEMS SOLD = 10",
+     "bbox": [
+      174,
+      1651,
+      740,
+      1677
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "TOTAL",
+       "bbox": [
+        174,
+        1652,
+        264,
+        1676
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "NUMBER",
+       "bbox": [
+        283,
+        1652,
+        392,
+        1676
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "OF",
+       "bbox": [
+        411,
+        1652,
+        448,
+        1675
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "ITEMS",
+       "bbox": [
+        470,
+        1652,
+        556,
+        1676
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "SOLD",
+       "bbox": [
+        578,
+        1652,
+        650,
+        1677
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "=",
+       "bbox": [
+        669,
+        1657,
+        685,
+        1667
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "10",
+       "bbox": [
+        708,
+        1651,
+        740,
+        1675
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "INSTANT SAVINGS                      $10.50",
+     "bbox": [
+      175,
+      1698,
+      980,
+      1725
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "INSTANT",
+       "bbox": [
+        175,
+        1701,
+        300,
+        1725
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "SAVINGS",
+       "bbox": [
+        319,
+        1701,
+        446,
+        1724
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "$10.50",
+       "bbox": [
+        873,
+        1698,
+        980,
+        1725
+       ],
+       "confidence": 95.6
+      }
+     ]
+    },
+    {
+     "text": "OP#: 412 Name: Kim",
+     "bbox": [
+      170,
+      1747,
+      502,
+      1773
+     ],
+     "confidence": 89.9,
+     "words": [
+      {
+       "text": "OP#:",
+       "bbox": [
+        170,
+        1747,
+        238,
+        1773
+       ],
+       "confidence": 71.2
+      },
+      {
+       "text": "412",
+       "bbox": [
+        264,
+        1749,
+        315,
+        1773
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Name:",
+       "bbox": [
+        337,
+        1750,
+        423,
+        1772
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Kim",
+       "bbox": [
+        447,
+        1748,
+        502,
+        1772
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "Thank You!",
+     "bbox": [
+      170,
+      1797,
+      347,
+      1821
+     ],
+     "confidence": 95.4,
+     "words": [
+      {
+       "text": "Thank",
+       "bbox": [
+        170,
+        1797,
+        260,
+        1821
+       ],
+       "confidence": 95.2
+      },
+      {
+       "text": "You!",
+       "bbox": [
+        281,
+        1798,
+        347,
+        1821
+       ],
+       "confidence": 95.5
+      }
+     ]
+    },
+    {
+     "text": "Please Come Again",
+     "bbox": [
+      170,
+      1845,
+      482,
+      1875
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "Please",
+       "bbox": [
+        170,
+        1845,
+        277,
+        1870
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Come",
+       "bbox": [
+        297,
+        1847,
+        370,
+        1870
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "Again",
+       "bbox": [
+        390,
+        1845,
+        482,
+        1875
+       ],
+       "confidence": 95.8
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

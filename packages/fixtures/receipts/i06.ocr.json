@@ -1,0 +1,4060 @@
+{
+ "id": "i06",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i06.pdf",
+   "width": 1909,
+   "height": 2048,
+   "preprocess": {
+    "deskew_deg": 1.5,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "amazon",
+     "bbox": [
+      231,
+      218,
+      475,
+      257
+     ],
+     "confidence": 96,
+     "words": [
+      {
+       "text": "amazon",
+       "bbox": [
+        231,
+        218,
+        475,
+        257
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "Whole Foods Market order",
+     "bbox": [
+      229,
+      300,
+      628,
+      326
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "Whole",
+       "bbox": [
+        229,
+        300,
+        324,
+        326
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        335,
+        300,
+        426,
+        326
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Market",
+       "bbox": [
+        438,
+        300,
+        539,
+        326
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "order",
+       "bbox": [
+        548,
+        301,
+        628,
+        326
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "Order placed: September 24, 2026",
+     "bbox": [
+      230,
+      347,
+      746,
+      380
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "Order",
+       "bbox": [
+        230,
+        347,
+        315,
+        373
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "placed:",
+       "bbox": [
+        326,
+        347,
+        430,
+        380
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "September",
+       "bbox": [
+        443,
+        347,
+        607,
+        380
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "24,",
+       "bbox": [
+        616,
+        347,
+        660,
+        377
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "2026",
+       "bbox": [
+        672,
+        347,
+        746,
+        373
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "Order # 112-4471932-5518206",
+     "bbox": [
+      230,
+      394,
+      689,
+      420
+     ],
+     "confidence": 92.6,
+     "words": [
+      {
+       "text": "Order",
+       "bbox": [
+        230,
+        394,
+        315,
+        420
+       ],
+       "confidence": 93
+      },
+      {
+       "text": "#",
+       "bbox": [
+        324,
+        394,
+        343,
+        420
+       ],
+       "confidence": 93
+      },
+      {
+       "text": "112-4471932-5518206",
+       "bbox": [
+        355,
+        394,
+        689,
+        420
+       ],
+       "confidence": 91.9
+      }
+     ]
+    },
+    {
+     "text": "Qty          item                                                                                                        Price",
+     "bbox": [
+      230,
+      464,
+      1680,
+      506
+     ],
+     "confidence": 92.7,
+     "words": [
+      {
+       "text": "Qty",
+       "bbox": [
+        230,
+        464,
+        285,
+        506
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "item",
+       "bbox": [
+        391,
+        468,
+        458,
+        494
+       ],
+       "confidence": 84.9
+      },
+      {
+       "text": "Price",
+       "bbox": [
+        1600,
+        468,
+        1680,
+        494
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Whole Milk, 1 Gallon                                       $4.29",
+     "bbox": [
+      232,
+      526,
+      1680,
+      559
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        526,
+        243,
+        553
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        526,
+        446,
+        552
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        527,
+        491,
+        559
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        501,
+        527,
+        595,
+        552
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        526,
+        698,
+        552
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        527,
+        818,
+        557
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        829,
+        527,
+        924,
+        552
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Milk,",
+       "bbox": [
+        935,
+        527,
+        1001,
+        557
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "1",
+       "bbox": [
+        1015,
+        527,
+        1026,
+        552
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "Gallon",
+       "bbox": [
+        1041,
+        526,
+        1136,
+        552
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "$4.29",
+       "bbox": [
+        1597,
+        526,
+        1680,
+        555
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "1             Large Eggs, 18 ct                                                                                $5.49",
+     "bbox": [
+      232,
+      573,
+      1680,
+      606
+     ],
+     "confidence": 96.7,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        573,
+        243,
+        599
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Large",
+       "bbox": [
+        392,
+        573,
+        476,
+        606
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Eggs,",
+       "bbox": [
+        487,
+        573,
+        569,
+        606
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "18",
+       "bbox": [
+        584,
+        573,
+        617,
+        599
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "ct",
+       "bbox": [
+        628,
+        574,
+        654,
+        599
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "$5.49",
+       "bbox": [
+        1597,
+        573,
+        1680,
+        602
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "1             Greek Yogurt Plain, 32 oz                                                                         $6.79",
+     "bbox": [
+      232,
+      619,
+      1680,
+      653
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        620,
+        243,
+        646
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Greek",
+       "bbox": [
+        391,
+        620,
+        481,
+        646
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Yogurt",
+       "bbox": [
+        491,
+        620,
+        586,
+        653
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Plain,",
+       "bbox": [
+        597,
+        620,
+        677,
+        650
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "32",
+       "bbox": [
+        690,
+        620,
+        725,
+        646
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        736,
+        626,
+        771,
+        646
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "$6.79",
+       "bbox": [
+        1597,
+        619,
+        1680,
+        649
+       ],
+       "confidence": 96.9
+      }
+     ]
+    },
+    {
+     "text": "2             365 by Whole Foods Market, Organic Baby Spinach, 5",
+     "bbox": [
+      229,
+      667,
+      1200,
+      700
+     ],
+     "confidence": 96.7,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        229,
+        667,
+        247,
+        693
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        667,
+        446,
+        693
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        667,
+        491,
+        700
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        667,
+        595,
+        693
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        667,
+        698,
+        693
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        667,
+        818,
+        697
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Organic",
+       "bbox": [
+        830,
+        667,
+        947,
+        700
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Baby",
+       "bbox": [
+        958,
+        667,
+        1032,
+        700
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Spinach,",
+       "bbox": [
+        1043,
+        667,
+        1170,
+        700
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "5",
+       "bbox": [
+        1183,
+        667,
+        1200,
+        693
+       ],
+       "confidence": 96.9
+      }
+     ]
+    },
+    {
+     "text": "oz                                                                                                          $7.98",
+     "bbox": [
+      390,
+      714,
+      1680,
+      743
+     ],
+     "confidence": 92.9,
+     "words": [
+      {
+       "text": "oz",
+       "bbox": [
+        390,
+        721,
+        426,
+        741
+       ],
+       "confidence": 89.1
+      },
+      {
+       "text": "$7.98",
+       "bbox": [
+        1597,
+        714,
+        1680,
+        743
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "$3.99 each",
+     "bbox": [
+      391,
+      761,
+      539,
+      788
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "$3.99",
+       "bbox": [
+        391,
+        761,
+        465,
+        788
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "each",
+       "bbox": [
+        475,
+        762,
+        539,
+        785
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "1          Strawberries, 1 Ib                                                               $4.49",
+     "bbox": [
+      232,
+      808,
+      1680,
+      839
+     ],
+     "confidence": 95,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        808,
+        243,
+        835
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Strawberries,",
+       "bbox": [
+        391,
+        808,
+        586,
+        839
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "1",
+       "bbox": [
+        600,
+        809,
+        611,
+        834
+       ],
+       "confidence": 92.9
+      },
+      {
+       "text": "Ib",
+       "bbox": [
+        627,
+        808,
+        651,
+        834
+       ],
+       "confidence": 92.6
+      },
+      {
+       "text": "$4.49",
+       "bbox": [
+        1597,
+        808,
+        1680,
+        837
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "1          Blueberries, 1 pint                                                            $3.99",
+     "bbox": [
+      232,
+      855,
+      1680,
+      888
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        855,
+        243,
+        881
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Blueberries,",
+       "bbox": [
+        392,
+        855,
+        567,
+        886
+       ],
+       "confidence": 95.1
+      },
+      {
+       "text": "1",
+       "bbox": [
+        582,
+        855,
+        592,
+        881
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "pint",
+       "bbox": [
+        608,
+        855,
+        661,
+        888
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "$3.99",
+       "bbox": [
+        1597,
+        855,
+        1680,
+        884
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "Prime member savings                                                                                          -$0.39",
+     "bbox": [
+      392,
+      902,
+      1680,
+      932
+     ],
+     "confidence": 95.2,
+     "words": [
+      {
+       "text": "Prime",
+       "bbox": [
+        392,
+        902,
+        469,
+        926
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "member",
+       "bbox": [
+        479,
+        903,
+        589,
+        926
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "savings",
+       "bbox": [
+        597,
+        902,
+        699,
+        932
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "-$0.39",
+       "bbox": [
+        1595,
+        902,
+        1680,
+        928
+       ],
+       "confidence": 92.2
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Hass Avocado, Large                                        $1.29",
+     "bbox": [
+      232,
+      949,
+      1680,
+      983
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        950,
+        243,
+        976
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        950,
+        446,
+        976
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        950,
+        491,
+        983
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        950,
+        595,
+        976
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        950,
+        698,
+        976
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        950,
+        818,
+        981
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Hass",
+       "bbox": [
+        831,
+        950,
+        905,
+        976
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Avocado,",
+       "bbox": [
+        913,
+        950,
+        1050,
+        981
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "Large",
+       "bbox": [
+        1063,
+        950,
+        1147,
+        983
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "$1.29",
+       "bbox": [
+        1597,
+        949,
+        1680,
+        979
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "1             Limes                                                                                                      $0.50",
+     "bbox": [
+      232,
+      996,
+      1680,
+      1025
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        997,
+        243,
+        1023
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Limes",
+       "bbox": [
+        391,
+        997,
+        480,
+        1023
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "$0.50",
+       "bbox": [
+        1597,
+        996,
+        1680,
+        1025
+       ],
+       "confidence": 96.9
+      }
+     ]
+    },
+    {
+     "text": "1             Garlic Bulb                                                                                               $0.79",
+     "bbox": [
+      232,
+      1043,
+      1680,
+      1072
+     ],
+     "confidence": 96.6,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1043,
+        243,
+        1070
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Garlic",
+       "bbox": [
+        391,
+        1044,
+        478,
+        1070
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "Bulb",
+       "bbox": [
+        489,
+        1044,
+        554,
+        1070
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "$0.79",
+       "bbox": [
+        1597,
+        1043,
+        1680,
+        1072
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Cilantro Bunch                                               $0.99",
+     "bbox": [
+      232,
+      1090,
+      1680,
+      1124
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1090,
+        243,
+        1117
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        1091,
+        446,
+        1117
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        1091,
+        491,
+        1124
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        1091,
+        595,
+        1116
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        1090,
+        698,
+        1117
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        1090,
+        817,
+        1121
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "Cilantro",
+       "bbox": [
+        830,
+        1090,
+        944,
+        1117
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Bunch",
+       "bbox": [
+        956,
+        1090,
+        1048,
+        1117
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "$0.99",
+       "bbox": [
+        1597,
+        1090,
+        1680,
+        1119
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "2             Carrots, 2 Ib Bag                                                                                       $4.58",
+     "bbox": [
+      229,
+      1137,
+      1680,
+      1171
+     ],
+     "confidence": 95.4,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        229,
+        1137,
+        247,
+        1164
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Carrots,",
+       "bbox": [
+        391,
+        1137,
+        508,
+        1168
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "2",
+       "bbox": [
+        519,
+        1137,
+        537,
+        1164
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Ib",
+       "bbox": [
+        548,
+        1137,
+        573,
+        1163
+       ],
+       "confidence": 90.2
+      },
+      {
+       "text": "Bag",
+       "bbox": [
+        584,
+        1137,
+        641,
+        1171
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "$4.58",
+       "bbox": [
+        1597,
+        1137,
+        1680,
+        1166
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "$2.29 each",
+     "bbox": [
+      390,
+      1184,
+      539,
+      1211
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "$2.29",
+       "bbox": [
+        390,
+        1184,
+        465,
+        1211
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "each",
+       "bbox": [
+        475,
+        1184,
+        539,
+        1208
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "1          Unsalted Butter, 1 Ib                                                              $4.99",
+     "bbox": [
+      232,
+      1231,
+      1680,
+      1262
+     ],
+     "confidence": 95.3,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1232,
+        243,
+        1258
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Unsalted",
+       "bbox": [
+        392,
+        1232,
+        521,
+        1258
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Butter,",
+       "bbox": [
+        534,
+        1232,
+        627,
+        1262
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "1",
+       "bbox": [
+        641,
+        1232,
+        652,
+        1258
+       ],
+       "confidence": 94.9
+      },
+      {
+       "text": "Ib",
+       "bbox": [
+        668,
+        1232,
+        692,
+        1258
+       ],
+       "confidence": 91.1
+      },
+      {
+       "text": "$4.99",
+       "bbox": [
+        1597,
+        1231,
+        1680,
+        1261
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "1            365 by Whole Foods Market, Fresh Mozzarella, 8 oz                                    $4.49",
+     "bbox": [
+      232,
+      1278,
+      1680,
+      1312
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1279,
+        243,
+        1305
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        1279,
+        446,
+        1305
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        1279,
+        491,
+        1312
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        1279,
+        595,
+        1305
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        1279,
+        698,
+        1305
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        710,
+        1279,
+        817,
+        1309
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Fresh",
+       "bbox": [
+        831,
+        1279,
+        914,
+        1305
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Mozzarella,",
+       "bbox": [
+        926,
+        1279,
+        1094,
+        1309
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "8",
+       "bbox": [
+        1106,
+        1279,
+        1123,
+        1305
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        1134,
+        1285,
+        1169,
+        1305
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "$4.49",
+       "bbox": [
+        1597,
+        1278,
+        1680,
+        1307
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "1             Oat Milk Original, 64 fl oz                                                                          $4.59",
+     "bbox": [
+      232,
+      1325,
+      1680,
+      1359
+     ],
+     "confidence": 94.1,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1326,
+        243,
+        1352
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Oat",
+       "bbox": [
+        391,
+        1326,
+        444,
+        1352
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Milk",
+       "bbox": [
+        455,
+        1326,
+        513,
+        1352
+       ],
+       "confidence": 94.6
+      },
+      {
+       "text": "Original,",
+       "bbox": [
+        524,
+        1326,
+        646,
+        1359
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "64",
+       "bbox": [
+        658,
+        1326,
+        694,
+        1352
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "fl",
+       "bbox": [
+        704,
+        1326,
+        719,
+        1352
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        730,
+        1332,
+        766,
+        1352
+       ],
+       "confidence": 79.1
+      },
+      {
+       "text": "$4.59",
+       "bbox": [
+        1597,
+        1325,
+        1680,
+        1354
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "Prime member savings                                                                                                    -$0.45",
+     "bbox": [
+      391,
+      1372,
+      1680,
+      1402
+     ],
+     "confidence": 95,
+     "words": [
+      {
+       "text": "Prime",
+       "bbox": [
+        391,
+        1373,
+        469,
+        1396
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "member",
+       "bbox": [
+        479,
+        1373,
+        589,
+        1397
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "savings",
+       "bbox": [
+        597,
+        1373,
+        699,
+        1402
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "-$0.45",
+       "bbox": [
+        1595,
+        1372,
+        1680,
+        1399
+       ],
+       "confidence": 91.4
+      }
+     ]
+    },
+    {
+     "text": "1             Orange Juice No Pulp, 52 fl oz                                                                   $3.99",
+     "bbox": [
+      232,
+      1420,
+      1680,
+      1453
+     ],
+     "confidence": 93.5,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1420,
+        243,
+        1447
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Orange",
+       "bbox": [
+        391,
+        1420,
+        502,
+        1453
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Juice",
+       "bbox": [
+        512,
+        1420,
+        589,
+        1446
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "No",
+       "bbox": [
+        601,
+        1421,
+        642,
+        1446
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "Pulp,",
+       "bbox": [
+        653,
+        1420,
+        726,
+        1453
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "52",
+       "bbox": [
+        739,
+        1420,
+        774,
+        1446
+       ],
+       "confidence": 89
+      },
+      {
+       "text": "fl",
+       "bbox": [
+        784,
+        1420,
+        800,
+        1446
+       ],
+       "confidence": 89
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        811,
+        1426,
+        846,
+        1447
+       ],
+       "confidence": 84.6
+      },
+      {
+       "text": "$3.99",
+       "bbox": [
+        1597,
+        1420,
+        1680,
+        1449
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Organic Firm Tofu, 14",
+     "bbox": [
+      232,
+      1467,
+      1151,
+      1500
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1467,
+        243,
+        1493
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        1467,
+        446,
+        1493
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        1468,
+        491,
+        1500
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        1467,
+        595,
+        1493
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        1467,
+        698,
+        1493
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        1467,
+        817,
+        1498
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Organic",
+       "bbox": [
+        830,
+        1467,
+        947,
+        1500
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Firm",
+       "bbox": [
+        958,
+        1467,
+        1022,
+        1493
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Tofu,",
+       "bbox": [
+        1032,
+        1467,
+        1103,
+        1498
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "14",
+       "bbox": [
+        1117,
+        1467,
+        1151,
+        1493
+       ],
+       "confidence": 97
+      }
+     ]
+    },
+    {
+     "text": "oz                                                                                                          $2.49",
+     "bbox": [
+      390,
+      1513,
+      1680,
+      1543
+     ],
+     "confidence": 94.8,
+     "words": [
+      {
+       "text": "oz",
+       "bbox": [
+        390,
+        1520,
+        426,
+        1540
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "$2.49",
+       "bbox": [
+        1597,
+        1513,
+        1680,
+        1543
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "1              Classic Hummus, 10 oz                                                                                 $3.99",
+     "bbox": [
+      232,
+      1560,
+      1680,
+      1591
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1561,
+        243,
+        1587
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Classic",
+       "bbox": [
+        391,
+        1561,
+        499,
+        1587
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Hummus,",
+       "bbox": [
+        509,
+        1561,
+        650,
+        1591
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "10",
+       "bbox": [
+        664,
+        1561,
+        697,
+        1587
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        708,
+        1567,
+        743,
+        1587
+       ],
+       "confidence": 91.1
+      },
+      {
+       "text": "$3.99",
+       "bbox": [
+        1597,
+        1560,
+        1680,
+        1590
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "2              Spaghetti Pasta, 16 oz                                                                                       $2.98",
+     "bbox": [
+      229,
+      1607,
+      1680,
+      1641
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        229,
+        1608,
+        247,
+        1634
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Spaghetti",
+       "bbox": [
+        391,
+        1608,
+        531,
+        1641
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "Pasta,",
+       "bbox": [
+        543,
+        1608,
+        635,
+        1638
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "16",
+       "bbox": [
+        649,
+        1608,
+        683,
+        1634
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        693,
+        1614,
+        729,
+        1634
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "$2.98",
+       "bbox": [
+        1597,
+        1607,
+        1680,
+        1636
+       ],
+       "confidence": 96.6
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "page": 2,
+   "file": "i06.pdf",
+   "width": 1909,
+   "height": 2048,
+   "preprocess": {
+    "deskew_deg": 1.5,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "$1.49 each",
+     "bbox": [
+      391,
+      201,
+      539,
+      228
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "$1.49",
+       "bbox": [
+        391,
+        201,
+        465,
+        228
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "each",
+       "bbox": [
+        475,
+        202,
+        539,
+        225
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "1            365 by Whole Foods Market, Old Fashioned Rolled",
+     "bbox": [
+      232,
+      248,
+      1151,
+      281
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        248,
+        243,
+        274
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        248,
+        445,
+        274
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        248,
+        491,
+        281
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        248,
+        595,
+        274
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        248,
+        698,
+        274
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        248,
+        818,
+        279
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Old",
+       "bbox": [
+        830,
+        248,
+        880,
+        274
+       ],
+       "confidence": 91.8
+      },
+      {
+       "text": "Fashioned",
+       "bbox": [
+        893,
+        248,
+        1046,
+        274
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Rolled",
+       "bbox": [
+        1059,
+        248,
+        1151,
+        274
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "Oats, 42 0z                                                                                              $5.29",
+     "bbox": [
+      391,
+      294,
+      1680,
+      326
+     ],
+     "confidence": 90.2,
+     "words": [
+      {
+       "text": "Oats,",
+       "bbox": [
+        391,
+        295,
+        468,
+        326
+       ],
+       "confidence": 94.3
+      },
+      {
+       "text": "42",
+       "bbox": [
+        480,
+        295,
+        516,
+        321
+       ],
+       "confidence": 93
+      },
+      {
+       "text": "0z",
+       "bbox": [
+        527,
+        301,
+        562,
+        321
+       ],
+       "confidence": 77
+      },
+      {
+       "text": "$5.29",
+       "bbox": [
+        1597,
+        294,
+        1680,
+        324
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "1             Whole Wheat Sandwich Bread                                                                 $3.49",
+     "bbox": [
+      232,
+      341,
+      1680,
+      371
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        342,
+        243,
+        368
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        390,
+        342,
+        485,
+        368
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Wheat",
+       "bbox": [
+        495,
+        342,
+        592,
+        368
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Sandwich",
+       "bbox": [
+        602,
+        342,
+        745,
+        368
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Bread",
+       "bbox": [
+        758,
+        342,
+        844,
+        368
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "$3.49",
+       "bbox": [
+        1597,
+        341,
+        1680,
+        371
+       ],
+       "confidence": 95.6
+      }
+     ]
+    },
+    {
+     "text": "1              Creamy Peanut Butter, 16 oz                                                                          $2.79",
+     "bbox": [
+      232,
+      389,
+      1680,
+      423
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        390,
+        243,
+        416
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "Creamy",
+       "bbox": [
+        391,
+        390,
+        508,
+        423
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Peanut",
+       "bbox": [
+        519,
+        390,
+        624,
+        416
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Butter,",
+       "bbox": [
+        635,
+        390,
+        728,
+        420
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "16",
+       "bbox": [
+        742,
+        390,
+        776,
+        416
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        786,
+        396,
+        822,
+        416
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "$2.79",
+       "bbox": [
+        1597,
+        389,
+        1680,
+        418
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Extra Virgin Olive Oil,",
+     "bbox": [
+      232,
+      436,
+      1146,
+      470
+     ],
+     "confidence": 95.6,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        436,
+        243,
+        463
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        437,
+        446,
+        463
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        437,
+        491,
+        470
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        501,
+        437,
+        595,
+        463
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        437,
+        698,
+        463
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        437,
+        817,
+        467
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Extra",
+       "bbox": [
+        831,
+        437,
+        906,
+        463
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Virgin",
+       "bbox": [
+        917,
+        437,
+        1001,
+        470
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Olive",
+       "bbox": [
+        1012,
+        437,
+        1087,
+        463
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "Oil,",
+       "bbox": [
+        1098,
+        437,
+        1146,
+        467
+       ],
+       "confidence": 86.3
+      }
+     ]
+    },
+    {
+     "text": "500 mi                                                                                            $8.99",
+     "bbox": [
+      391,
+      483,
+      1680,
+      512
+     ],
+     "confidence": 96.8,
+     "words": [
+      {
+       "text": "500",
+       "bbox": [
+        391,
+        484,
+        445,
+        510
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "mi",
+       "bbox": [
+        457,
+        484,
+        490,
+        510
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "$8.99",
+       "bbox": [
+        1597,
+        483,
+        1680,
+        512
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "Prime member savings                                                                                                    -$0.89",
+     "bbox": [
+      391,
+      530,
+      1680,
+      560
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "Prime",
+       "bbox": [
+        391,
+        530,
+        469,
+        554
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "member",
+       "bbox": [
+        479,
+        531,
+        589,
+        554
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "savings",
+       "bbox": [
+        597,
+        531,
+        699,
+        560
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "-$0.89",
+       "bbox": [
+        1595,
+        530,
+        1680,
+        557
+       ],
+       "confidence": 92.1
+      }
+     ]
+    },
+    {
+     "text": "1              Black Beans, 15 oz Can                                                                                 $1.19",
+     "bbox": [
+      232,
+      577,
+      1680,
+      608
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        577,
+        243,
+        603
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Black",
+       "bbox": [
+        392,
+        577,
+        472,
+        603
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Beans,",
+       "bbox": [
+        483,
+        577,
+        584,
+        608
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "15",
+       "bbox": [
+        598,
+        577,
+        633,
+        603
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        643,
+        583,
+        678,
+        603
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "Can",
+       "bbox": [
+        688,
+        577,
+        747,
+        603
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "$1.19",
+       "bbox": [
+        1597,
+        577,
+        1680,
+        606
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "1             Diced Tomatoes, 28 oz Can                                                                       $1.99",
+     "bbox": [
+      232,
+      624,
+      1680,
+      655
+     ],
+     "confidence": 91.2,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        625,
+        243,
+        651
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "Diced",
+       "bbox": [
+        392,
+        625,
+        474,
+        651
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Tomatoes,",
+       "bbox": [
+        485,
+        625,
+        637,
+        655
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "28",
+       "bbox": [
+        649,
+        625,
+        686,
+        651
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        696,
+        631,
+        731,
+        651
+       ],
+       "confidence": 59.4
+      },
+      {
+       "text": "Can",
+       "bbox": [
+        742,
+        625,
+        801,
+        651
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "$1.99",
+       "bbox": [
+        1597,
+        624,
+        1680,
+        654
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "2            365 by Whole Foods Market, Whole Bean Coffee,",
+     "bbox": [
+      229,
+      672,
+      1127,
+      705
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        229,
+        672,
+        247,
+        698
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        672,
+        446,
+        698
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        672,
+        491,
+        705
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        672,
+        595,
+        698
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        672,
+        698,
+        698
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        672,
+        818,
+        702
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        829,
+        672,
+        924,
+        698
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Bean",
+       "bbox": [
+        935,
+        672,
+        1010,
+        698
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Coffee,",
+       "bbox": [
+        1022,
+        672,
+        1127,
+        703
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "Medium Roast, 12 oz                                                                $19.98",
+     "bbox": [
+      392,
+      718,
+      1680,
+      749
+     ],
+     "confidence": 89.7,
+     "words": [
+      {
+       "text": "Medium",
+       "bbox": [
+        392,
+        719,
+        508,
+        745
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "Roast,",
+       "bbox": [
+        521,
+        719,
+        614,
+        749
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "12",
+       "bbox": [
+        629,
+        719,
+        662,
+        745
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        672,
+        725,
+        708,
+        745
+       ],
+       "confidence": 64.4
+      },
+      {
+       "text": "$19.98",
+       "bbox": [
+        1578,
+        718,
+        1680,
+        748
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "$9.99 each",
+     "bbox": [
+      391,
+      765,
+      539,
+      792
+     ],
+     "confidence": 96.8,
+     "words": [
+      {
+       "text": "$9.99",
+       "bbox": [
+        391,
+        765,
+        465,
+        792
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "each",
+       "bbox": [
+        475,
+        766,
+        539,
+        790
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "1             Green Tea, 20 Bags                                                                                   $3.49",
+     "bbox": [
+      232,
+      812,
+      1680,
+      846
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        812,
+        243,
+        839
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Green",
+       "bbox": [
+        391,
+        812,
+        482,
+        839
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Tea,",
+       "bbox": [
+        492,
+        812,
+        553,
+        843
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "20",
+       "bbox": [
+        566,
+        812,
+        602,
+        839
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Bags",
+       "bbox": [
+        614,
+        812,
+        688,
+        846
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "$3.49",
+       "bbox": [
+        1597,
+        812,
+        1680,
+        841
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "1              Tortilla Chips, 13 oz                                                                                       $4.29",
+     "bbox": [
+      232,
+      860,
+      1680,
+      893
+     ],
+     "confidence": 95.4,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        860,
+        243,
+        887
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Tortilla",
+       "bbox": [
+        390,
+        860,
+        486,
+        886
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Chips,",
+       "bbox": [
+        498,
+        860,
+        590,
+        893
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "13",
+       "bbox": [
+        604,
+        860,
+        638,
+        886
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        648,
+        866,
+        683,
+        887
+       ],
+       "confidence": 90.5
+      },
+      {
+       "text": "$4.29",
+       "bbox": [
+        1597,
+        860,
+        1680,
+        889
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Roasted Almonds, 16 oz                                     $6.99",
+     "bbox": [
+      232,
+      907,
+      1680,
+      940
+     ],
+     "confidence": 95.2,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        907,
+        243,
+        933
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        907,
+        446,
+        933
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        907,
+        491,
+        940
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        907,
+        595,
+        933
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        907,
+        698,
+        933
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        907,
+        817,
+        938
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Roasted",
+       "bbox": [
+        831,
+        907,
+        953,
+        933
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Almonds,",
+       "bbox": [
+        961,
+        907,
+        1100,
+        938
+       ],
+       "confidence": 83.3
+      },
+      {
+       "text": "16",
+       "bbox": [
+        1114,
+        907,
+        1148,
+        933
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        1158,
+        913,
+        1193,
+        933
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "$6.99",
+       "bbox": [
+        1597,
+        907,
+        1680,
+        936
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "1              Chocolate Chip Cookies, 13 oz                                                                        $3.99",
+     "bbox": [
+      232,
+      953,
+      1680,
+      987
+     ],
+     "confidence": 95.6,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        954,
+        243,
+        980
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Chocolate",
+       "bbox": [
+        391,
+        954,
+        541,
+        980
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "Chip",
+       "bbox": [
+        551,
+        954,
+        620,
+        987
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Cookies,",
+       "bbox": [
+        630,
+        954,
+        758,
+        984
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "13",
+       "bbox": [
+        772,
+        954,
+        806,
+        980
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        816,
+        960,
+        852,
+        980
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "$3.99",
+       "bbox": [
+        1597,
+        953,
+        1680,
+        982
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "1             Vanilla Bean Ice Cream, 1.5 gt                                                                 $5.49",
+     "bbox": [
+      232,
+      1000,
+      1680,
+      1034
+     ],
+     "confidence": 93.9,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1001,
+        243,
+        1027
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Vanilla",
+       "bbox": [
+        390,
+        1001,
+        487,
+        1027
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Bean",
+       "bbox": [
+        500,
+        1001,
+        575,
+        1027
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "Ice",
+       "bbox": [
+        588,
+        1001,
+        630,
+        1027
+       ],
+       "confidence": 94.1
+      },
+      {
+       "text": "Cream,",
+       "bbox": [
+        641,
+        1001,
+        748,
+        1031
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "1.5",
+       "bbox": [
+        762,
+        1001,
+        806,
+        1027
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "gt",
+       "bbox": [
+        816,
+        1002,
+        844,
+        1034
+       ],
+       "confidence": 78.8
+      },
+      {
+       "text": "$5.49",
+       "bbox": [
+        1597,
+        1000,
+        1680,
+        1029
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "Prime member savings                                                                                          -$0.54",
+     "bbox": [
+      392,
+      1047,
+      1680,
+      1078
+     ],
+     "confidence": 94.9,
+     "words": [
+      {
+       "text": "Prime",
+       "bbox": [
+        392,
+        1048,
+        469,
+        1072
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "member",
+       "bbox": [
+        479,
+        1048,
+        589,
+        1072
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "savings",
+       "bbox": [
+        598,
+        1048,
+        699,
+        1078
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "-$0.54",
+       "bbox": [
+        1595,
+        1047,
+        1680,
+        1074
+       ],
+       "confidence": 91.1
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Sweet Peas, Frozen, 16",
+     "bbox": [
+      232,
+      1095,
+      1187,
+      1129
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        232,
+        1095,
+        243,
+        1122
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "365",
+       "bbox": [
+        391,
+        1095,
+        446,
+        1122
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "by",
+       "bbox": [
+        457,
+        1096,
+        491,
+        1129
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        500,
+        1096,
+        595,
+        1122
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        607,
+        1096,
+        698,
+        1122
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        709,
+        1095,
+        818,
+        1126
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "Sweet",
+       "bbox": [
+        830,
+        1096,
+        923,
+        1122
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "Peas,",
+       "bbox": [
+        933,
+        1095,
+        1016,
+        1126
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "Frozen,",
+       "bbox": [
+        1029,
+        1095,
+        1139,
+        1126
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "16",
+       "bbox": [
+        1153,
+        1095,
+        1187,
+        1122
+       ],
+       "confidence": 97
+      }
+     ]
+    },
+    {
+     "text": "oz                                                                                                          $1.99",
+     "bbox": [
+      390,
+      1142,
+      1680,
+      1171
+     ],
+     "confidence": 95.3,
+     "words": [
+      {
+       "text": "oz",
+       "bbox": [
+        390,
+        1148,
+        426,
+        1169
+       ],
+       "confidence": 94.3
+      },
+      {
+       "text": "$1.99",
+       "bbox": [
+        1597,
+        1142,
+        1680,
+        1171
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "2            Paper Towels, 6 Double Rolls                                                             $19.98",
+     "bbox": [
+      229,
+      1189,
+      1680,
+      1222
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        229,
+        1189,
+        247,
+        1215
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "Paper",
+       "bbox": [
+        391,
+        1189,
+        481,
+        1222
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "Towels,",
+       "bbox": [
+        489,
+        1189,
+        598,
+        1220
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "6",
+       "bbox": [
+        610,
+        1189,
+        628,
+        1215
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "Double",
+       "bbox": [
+        640,
+        1189,
+        744,
+        1215
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Rolls",
+       "bbox": [
+        756,
+        1189,
+        828,
+        1216
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "$19.98",
+       "bbox": [
+        1578,
+        1189,
+        1680,
+        1218
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "$9.99 each",
+     "bbox": [
+      391,
+      1236,
+      539,
+      1262
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "$9.99",
+       "bbox": [
+        391,
+        1236,
+        466,
+        1262
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "each",
+       "bbox": [
+        475,
+        1236,
+        539,
+        1260
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "Item(s) Subtotal:                                                  $156.37",
+     "bbox": [
+      970,
+      1330,
+      1680,
+      1364
+     ],
+     "confidence": 90.9,
+     "words": [
+      {
+       "text": "Item(s)",
+       "bbox": [
+        970,
+        1331,
+        1072,
+        1364
+       ],
+       "confidence": 80.7
+      },
+      {
+       "text": "Subtotal:",
+       "bbox": [
+        1083,
+        1331,
+        1212,
+        1357
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "$156.37",
+       "bbox": [
+        1559,
+        1330,
+        1680,
+        1360
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "Service fee:                                                  $9.95",
+     "bbox": [
+      969,
+      1377,
+      1680,
+      1406
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "Service",
+       "bbox": [
+        969,
+        1378,
+        1080,
+        1404
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "fee:",
+       "bbox": [
+        1089,
+        1378,
+        1144,
+        1404
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "$9.95",
+       "bbox": [
+        1597,
+        1377,
+        1680,
+        1406
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "Driver tip:                                                      $8.00",
+     "bbox": [
+      970,
+      1424,
+      1680,
+      1457
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "Driver",
+       "bbox": [
+        970,
+        1424,
+        1058,
+        1451
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "tip:",
+       "bbox": [
+        1067,
+        1425,
+        1110,
+        1457
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "$8.00",
+       "bbox": [
+        1597,
+        1424,
+        1680,
+        1453
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "Estimated tax to be collected:                  $1.32",
+     "bbox": [
+      970,
+      1471,
+      1679,
+      1500
+     ],
+     "confidence": 96.6,
+     "words": [
+      {
+       "text": "Estimated",
+       "bbox": [
+        970,
+        1471,
+        1116,
+        1497
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "tax",
+       "bbox": [
+        1127,
+        1472,
+        1171,
+        1497
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "to",
+       "bbox": [
+        1181,
+        1472,
+        1209,
+        1497
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "be",
+       "bbox": [
+        1220,
+        1471,
+        1255,
+        1497
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "collected:",
+       "bbox": [
+        1265,
+        1471,
+        1405,
+        1497
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "$1.32",
+       "bbox": [
+        1597,
+        1471,
+        1679,
+        1500
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "Grand Total:                                   $175.64",
+     "bbox": [
+      969,
+      1536,
+      1680,
+      1569
+     ],
+     "confidence": 93.3,
+     "words": [
+      {
+       "text": "Grand",
+       "bbox": [
+        969,
+        1538,
+        1078,
+        1567
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Total:",
+       "bbox": [
+        1092,
+        1538,
+        1189,
+        1567
+       ],
+       "confidence": 86.7
+      },
+      {
+       "text": "$175.64",
+       "bbox": [
+        1543,
+        1536,
+        1680,
+        1569
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "Payment method: Visa ending in 4412",
+     "bbox": [
+      231,
+      1635,
+      795,
+      1668
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "Payment",
+       "bbox": [
+        231,
+        1635,
+        362,
+        1668
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "method:",
+       "bbox": [
+        372,
+        1635,
+        490,
+        1661
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Visa",
+       "bbox": [
+        501,
+        1635,
+        565,
+        1661
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "ending",
+       "bbox": [
+        576,
+        1635,
+        675,
+        1668
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "in",
+       "bbox": [
+        687,
+        1636,
+        710,
+        1661
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "4412",
+       "bbox": [
+        721,
+        1635,
+        795,
+        1662
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "Thank you for shopping with us.",
+     "bbox": [
+      229,
+      1682,
+      701,
+      1715
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "Thank",
+       "bbox": [
+        229,
+        1682,
+        322,
+        1708
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "you",
+       "bbox": [
+        332,
+        1688,
+        384,
+        1715
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "for",
+       "bbox": [
+        395,
+        1682,
+        435,
+        1708
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "shopping",
+       "bbox": [
+        444,
+        1682,
+        579,
+        1715
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "with",
+       "bbox": [
+        589,
+        1682,
+        648,
+        1708
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "us.",
+       "bbox": [
+        660,
+        1688,
+        701,
+        1708
+       ],
+       "confidence": 96.1
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

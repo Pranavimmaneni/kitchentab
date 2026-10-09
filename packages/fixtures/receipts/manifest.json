@@ -1,0 +1,448 @@
+{
+ "seed": 20261002,
+ "fixtures": [
+  {
+   "id": "r01",
+   "kind": "text_pdf",
+   "profile": "shoprite",
+   "files": [
+    "r01.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r02",
+   "kind": "text_pdf",
+   "profile": "walmart",
+   "files": [
+    "r02.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r03",
+   "kind": "text_pdf",
+   "profile": "target",
+   "files": [
+    "r03.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r04",
+   "kind": "text_pdf",
+   "profile": "costco",
+   "files": [
+    "r04.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r05",
+   "kind": "text_pdf",
+   "profile": "instacart",
+   "files": [
+    "r05.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r06",
+   "kind": "text_pdf",
+   "profile": "amazon",
+   "files": [
+    "r06.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r07",
+   "kind": "text_pdf",
+   "profile": "traderjoes",
+   "files": [
+    "r07.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r08",
+   "kind": "text_pdf",
+   "profile": "hmart",
+   "files": [
+    "r08.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r09",
+   "kind": "text_pdf",
+   "profile": "walmart",
+   "files": [
+    "r09.pdf"
+   ],
+   "expects_mismatch": true,
+   "notes": []
+  },
+  {
+   "id": "r10",
+   "kind": "text_pdf",
+   "profile": "costco",
+   "files": [
+    "r10.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r11",
+   "kind": "text_pdf",
+   "profile": "shoprite",
+   "files": [
+    "r11.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r12",
+   "kind": "text_pdf",
+   "profile": "instacart",
+   "files": [
+    "r12.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r13",
+   "kind": "text_pdf",
+   "profile": "target",
+   "files": [
+    "r13.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r14",
+   "kind": "text_pdf",
+   "profile": "traderjoes",
+   "files": [
+    "r14.pdf"
+   ],
+   "expects_mismatch": false,
+   "notes": []
+  },
+  {
+   "id": "r15",
+   "kind": "text_pdf",
+   "profile": "amazon",
+   "files": [
+    "r15.pdf"
+   ],
+   "expects_mismatch": true,
+   "notes": []
+  },
+  {
+   "id": "i01",
+   "kind": "image",
+   "source": "r01",
+   "profile": "shoprite",
+   "files": [
+    "i01.jpg"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": -3.5,
+    "blur": 0.8,
+    "shadow": 0.35,
+    "fade": 0.0,
+    "warp": 2.0,
+    "q": 72
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i02",
+   "kind": "image",
+   "source": "r02",
+   "profile": "walmart",
+   "files": [
+    "i02.jpg"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": 6.5,
+    "blur": 0.6,
+    "shadow": 0.2,
+    "fade": 0.25,
+    "warp": 3.0,
+    "persp": 0.05,
+    "q": 60
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i03",
+   "kind": "image",
+   "source": "r03",
+   "profile": "target",
+   "files": [
+    "i03.png"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": -6.8,
+    "blur": 1.0,
+    "shadow": 0.25,
+    "fade": 0.1,
+    "warp": 1.5,
+    "q": 0
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i04",
+   "kind": "image",
+   "source": "r04",
+   "profile": "costco",
+   "files": [
+    "i04.jpg"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": 2.0,
+    "blur": 1.6,
+    "shadow": 0.45,
+    "fade": 0.45,
+    "warp": 4.0,
+    "persp": 0.07,
+    "q": 40
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i05",
+   "kind": "scanned_pdf",
+   "source": "r05",
+   "profile": "instacart",
+   "files": [
+    "i05.pdf"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": 1.2,
+    "blur": 0.7,
+    "shadow": 0.15,
+    "fade": 0.0,
+    "warp": 0.0,
+    "q": 70
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i06",
+   "kind": "scanned_pdf",
+   "source": "r06",
+   "profile": "amazon",
+   "files": [
+    "i06.pdf"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": -1.5,
+    "blur": 0.8,
+    "shadow": 0.1,
+    "fade": 0.0,
+    "warp": 0.0,
+    "q": 70
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i07",
+   "kind": "image",
+   "source": "r07",
+   "profile": "traderjoes",
+   "files": [
+    "i07.jpg"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": 4.0,
+    "blur": 0.9,
+    "shadow": 0.3,
+    "fade": 0.6,
+    "warp": 2.5,
+    "q": 65
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i08",
+   "kind": "image",
+   "source": "r08",
+   "profile": "hmart",
+   "files": [
+    "i08.png"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": -2.5,
+    "blur": 0.7,
+    "shadow": 0.4,
+    "fade": 0.2,
+    "warp": 5.0,
+    "persp": 0.06,
+    "q": 0
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i09",
+   "kind": "image",
+   "source": "r09",
+   "profile": "walmart",
+   "files": [
+    "i09.jpg"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": 7.0,
+    "blur": 1.1,
+    "shadow": 0.3,
+    "fade": 0.15,
+    "warp": 2.0,
+    "q": 35
+   },
+   "expects_mismatch": true
+  },
+  {
+   "id": "i10",
+   "kind": "image",
+   "source": "r10",
+   "profile": "costco",
+   "files": [
+    "i10_1.jpg",
+    "i10_2.jpg",
+    "i10_3.jpg"
+   ],
+   "multi_photo": true,
+   "noise": {
+    "rot": -4.5,
+    "blur": 0.8,
+    "shadow": 0.3,
+    "fade": 0.2,
+    "warp": 3.0,
+    "q": 62
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i11",
+   "kind": "scanned_pdf",
+   "source": "r11",
+   "profile": "shoprite",
+   "files": [
+    "i11.pdf"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": -5.5,
+    "blur": 1.0,
+    "shadow": 0.35,
+    "fade": 0.3,
+    "warp": 3.5,
+    "persp": 0.05,
+    "q": 60
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i12",
+   "kind": "image",
+   "source": "r12",
+   "profile": "instacart",
+   "files": [
+    "i12_1.jpg",
+    "i12_2.jpg"
+   ],
+   "multi_photo": true,
+   "noise": {
+    "rot": 3.0,
+    "blur": 0.7,
+    "shadow": 0.2,
+    "fade": 0.0,
+    "warp": 1.0,
+    "q": 68
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i13",
+   "kind": "image",
+   "source": "r13",
+   "profile": "target",
+   "files": [
+    "i13.jpg"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": -7.0,
+    "blur": 1.5,
+    "shadow": 0.5,
+    "fade": 0.35,
+    "warp": 4.5,
+    "persp": 0.08,
+    "q": 45
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i14",
+   "kind": "image",
+   "source": "r14",
+   "profile": "traderjoes",
+   "files": [
+    "i14.png"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": 5.0,
+    "blur": 1.0,
+    "shadow": 0.25,
+    "fade": 0.5,
+    "warp": 2.0,
+    "q": 0
+   },
+   "expects_mismatch": false
+  },
+  {
+   "id": "i15",
+   "kind": "scanned_pdf",
+   "source": "r15",
+   "profile": "amazon",
+   "files": [
+    "i15.pdf"
+   ],
+   "multi_photo": false,
+   "noise": {
+    "rot": 0.8,
+    "blur": 0.9,
+    "shadow": 0.2,
+    "fade": 0.15,
+    "warp": 1.0,
+    "q": 66
+   },
+   "expects_mismatch": true
+  }
+ ]
+}

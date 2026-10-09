@@ -1,0 +1,1472 @@
+{
+ "id": "i08",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i08.png",
+   "width": 1145,
+   "height": 1935,
+   "preprocess": {
+    "deskew_deg": 2.5,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "H MART",
+     "bbox": [
+      449,
+      156,
+      694,
+      203
+     ],
+     "confidence": 93.7,
+     "words": [
+      {
+       "text": "H",
+       "bbox": [
+        449,
+        160,
+        487,
+        203
+       ],
+       "confidence": 90.9
+      },
+      {
+       "text": "MART",
+       "bbox": [
+        529,
+        156,
+        694,
+        200
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "Edison",
+     "bbox": [
+      513,
+      234,
+      628,
+      260
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "Edison",
+       "bbox": [
+        513,
+        234,
+        628,
+        260
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "1761 Route 27",
+     "bbox": [
+      447,
+      283,
+      695,
+      312
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "1761",
+       "bbox": [
+        447,
+        286,
+        519,
+        312
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Route",
+       "bbox": [
+        543,
+        285,
+        638,
+        308
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "27",
+       "bbox": [
+        660,
+        283,
+        695,
+        307
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "Edison, NJ 08817",
+     "bbox": [
+      416,
+      334,
+      724,
+      364
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "Edison,",
+       "bbox": [
+        416,
+        336,
+        544,
+        364
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "NJ",
+       "bbox": [
+        572,
+        334,
+        610,
+        357
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "08817",
+       "bbox": [
+        632,
+        334,
+        724,
+        358
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "TEL (732) 555-0199",
+     "bbox": [
+      399,
+      383,
+      745,
+      414
+     ],
+     "confidence": 95.3,
+     "words": [
+      {
+       "text": "TEL",
+       "bbox": [
+        399,
+        385,
+        456,
+        411
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "(732)",
+       "bbox": [
+        484,
+        384,
+        564,
+        414
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "555-0199",
+       "bbox": [
+        595,
+        383,
+        745,
+        409
+       ],
+       "confidence": 93
+      }
+     ]
+    },
+    {
+     "text": "2026-09-29 13:10",
+     "bbox": [
+      422,
+      433,
+      727,
+      461
+     ],
+     "confidence": 94.3,
+     "words": [
+      {
+       "text": "2026-09-29",
+       "bbox": [
+        422,
+        433,
+        611,
+        461
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "13:10",
+       "bbox": [
+        635,
+        433,
+        727,
+        458
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "JONGGA MAT KIMCHI NAPA CABBAGE",
+     "bbox": [
+      191,
+      531,
+      764,
+      559
+     ],
+     "confidence": 95.6,
+     "words": [
+      {
+       "text": "JONGGA",
+       "bbox": [
+        191,
+        534,
+        305,
+        557
+       ],
+       "confidence": 91.8
+      },
+      {
+       "text": "MAT",
+       "bbox": [
+        323,
+        531,
+        381,
+        554
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "KIMCHI",
+       "bbox": [
+        401,
+        533,
+        513,
+        559
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "NAPA",
+       "bbox": [
+        536,
+        533,
+        612,
+        556
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "CABBAGE",
+       "bbox": [
+        633,
+        533,
+        764,
+        558
+       ],
+       "confidence": 96.9
+      }
+     ]
+    },
+    {
+     "text": "KIMCHI 32 03                        8.99",
+     "bbox": [
+      187,
+      578,
+      952,
+      605
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "KIMCHI",
+       "bbox": [
+        187,
+        582,
+        300,
+        605
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "32",
+       "bbox": [
+        323,
+        578,
+        357,
+        602
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "03",
+       "bbox": [
+        380,
+        581,
+        415,
+        604
+       ],
+       "confidence": 92.6
+      },
+      {
+       "text": "8.99",
+       "bbox": [
+        880,
+        578,
+        952,
+        603
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "PORK BELLY SLICED                  20.59",
+     "bbox": [
+      188,
+      626,
+      949,
+      655
+     ],
+     "confidence": 96.6,
+     "words": [
+      {
+       "text": "PORK",
+       "bbox": [
+        188,
+        631,
+        263,
+        654
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "BELLY",
+       "bbox": [
+        282,
+        627,
+        376,
+        652
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "SLICED",
+       "bbox": [
+        399,
+        630,
+        511,
+        655
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "20.59",
+       "bbox": [
+        857,
+        626,
+        949,
+        651
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "2.29 1B @ 8.99 /1LB",
+     "bbox": [
+      230,
+      675,
+      571,
+      704
+     ],
+     "confidence": 79.4,
+     "words": [
+      {
+       "text": "2.29",
+       "bbox": [
+        230,
+        677,
+        303,
+        701
+       ],
+       "confidence": 94.9
+      },
+      {
+       "text": "1B",
+       "bbox": [
+        324,
+        675,
+        361,
+        698
+       ],
+       "confidence": 85.2
+      },
+      {
+       "text": "@",
+       "bbox": [
+        383,
+        675,
+        397,
+        699
+       ],
+       "confidence": 85.2
+      },
+      {
+       "text": "8.99",
+       "bbox": [
+        422,
+        678,
+        494,
+        703
+       ],
+       "confidence": 89.6
+      },
+      {
+       "text": "/1LB",
+       "bbox": [
+        518,
+        676,
+        571,
+        704
+       ],
+       "confidence": 42.2
+      }
+     ]
+    },
+    {
+     "text": "MEMBER DISCOUNT                    -1.00",
+     "bbox": [
+      194,
+      723,
+      952,
+      752
+     ],
+     "confidence": 92.9,
+     "words": [
+      {
+       "text": "MEMBER",
+       "bbox": [
+        194,
+        727,
+        309,
+        750
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "DISCOUNT",
+       "bbox": [
+        329,
+        724,
+        478,
+        752
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "-1.00",
+       "bbox": [
+        861,
+        723,
+        952,
+        748
+       ],
+       "confidence": 86.7
+      }
+     ]
+    },
+    {
+     "text": "NONGSHIM SHIN RAMYUN NOODLE SOUP",
+     "bbox": [
+      197,
+      772,
+      802,
+      799
+     ],
+     "confidence": 93.7,
+     "words": [
+      {
+       "text": "NONGSHIM",
+       "bbox": [
+        197,
+        772,
+        348,
+        797
+       ],
+       "confidence": 92.3
+      },
+      {
+       "text": "SHIN",
+       "bbox": [
+        369,
+        772,
+        443,
+        797
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "RAMYUN",
+       "bbox": [
+        462,
+        773,
+        575,
+        799
+       ],
+       "confidence": 91.7
+      },
+      {
+       "text": "NOODLE",
+       "bbox": [
+        595,
+        773,
+        706,
+        796
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "SOUP",
+       "bbox": [
+        729,
+        776,
+        802,
+        799
+       ],
+       "confidence": 95.5
+      }
+     ]
+    },
+    {
+     "text": "SPICY 4 PK                          5.99",
+     "bbox": [
+      198,
+      817,
+      950,
+      844
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "SPICY",
+       "bbox": [
+        198,
+        822,
+        290,
+        844
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "4",
+       "bbox": [
+        312,
+        819,
+        325,
+        842
+       ],
+       "confidence": 94.7
+      },
+      {
+       "text": "PK",
+       "bbox": [
+        349,
+        818,
+        385,
+        841
+       ],
+       "confidence": 94.7
+      },
+      {
+       "text": "5.99",
+       "bbox": [
+        879,
+        817,
+        950,
+        842
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "CJ BIBIGO PORK & VEGETABLE MINT",
+     "bbox": [
+      196,
+      866,
+      777,
+      893
+     ],
+     "confidence": 93.2,
+     "words": [
+      {
+       "text": "CJ",
+       "bbox": [
+        196,
+        870,
+        233,
+        891
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "BIBIGO",
+       "bbox": [
+        253,
+        866,
+        365,
+        892
+       ],
+       "confidence": 92.1
+      },
+      {
+       "text": "PORK",
+       "bbox": [
+        386,
+        867,
+        459,
+        892
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "&",
+       "bbox": [
+        481,
+        873,
+        494,
+        892
+       ],
+       "confidence": 91.2
+      },
+      {
+       "text": "VEGETABLE",
+       "bbox": [
+        516,
+        867,
+        683,
+        890
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "MINT",
+       "bbox": [
+        704,
+        869,
+        777,
+        893
+       ],
+       "confidence": 93.2
+      }
+     ]
+    },
+    {
+     "text": "WONTONS 24 02                       8.99",
+     "bbox": [
+      196,
+      911,
+      945,
+      938
+     ],
+     "confidence": 81.9,
+     "words": [
+      {
+       "text": "WONTONS",
+       "bbox": [
+        196,
+        914,
+        325,
+        938
+       ],
+       "confidence": 92.4
+      },
+      {
+       "text": "24",
+       "bbox": [
+        348,
+        911,
+        381,
+        934
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "02",
+       "bbox": [
+        403,
+        915,
+        438,
+        938
+       ],
+       "confidence": 42.3
+      },
+      {
+       "text": "8.99",
+       "bbox": [
+        875,
+        911,
+        945,
+        935
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "PULMUONE ORGANIC FIRM TOFU 14 0%    2.49",
+     "bbox": [
+      199,
+      959,
+      944,
+      987
+     ],
+     "confidence": 93.8,
+     "words": [
+      {
+       "text": "PULMUONE",
+       "bbox": [
+        199,
+        960,
+        344,
+        985
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "ORGANIC",
+       "bbox": [
+        366,
+        960,
+        495,
+        987
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "FIRM",
+       "bbox": [
+        517,
+        961,
+        590,
+        985
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "TOFU",
+       "bbox": [
+        610,
+        961,
+        683,
+        983
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "14",
+       "bbox": [
+        705,
+        962,
+        736,
+        985
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "0%",
+       "bbox": [
+        759,
+        965,
+        794,
+        987
+       ],
+       "confidence": 82.4
+      },
+      {
+       "text": "2.49",
+       "bbox": [
+        872,
+        959,
+        944,
+        983
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "GOCHUJANG PASTE                      6.99",
+     "bbox": [
+      198,
+      1005,
+      942,
+      1033
+     ],
+     "confidence": 93,
+     "words": [
+      {
+       "text": "GOCHUJANG",
+       "bbox": [
+        198,
+        1006,
+        364,
+        1031
+       ],
+       "confidence": 86.3
+      },
+      {
+       "text": "PASTE",
+       "bbox": [
+        386,
+        1007,
+        476,
+        1033
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "6.99",
+       "bbox": [
+        873,
+        1005,
+        942,
+        1029
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "YELLOW ONIONS                        3.10",
+     "bbox": [
+      201,
+      1050,
+      943,
+      1077
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "YELLOW",
+       "bbox": [
+        201,
+        1054,
+        311,
+        1077
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "ONIONS",
+       "bbox": [
+        331,
+        1051,
+        441,
+        1076
+       ],
+       "confidence": 94.5
+      },
+      {
+       "text": "3.10",
+       "bbox": [
+        874,
+        1050,
+        943,
+        1074
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "2.40 LB @ 1.29 /LB",
+     "bbox": [
+      243,
+      1096,
+      575,
+      1124
+     ],
+     "confidence": 91.6,
+     "words": [
+      {
+       "text": "2.40",
+       "bbox": [
+        243,
+        1098,
+        313,
+        1122
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "LB",
+       "bbox": [
+        334,
+        1097,
+        370,
+        1118
+       ],
+       "confidence": 88.4
+      },
+      {
+       "text": "@",
+       "bbox": [
+        392,
+        1096,
+        405,
+        1120
+       ],
+       "confidence": 88.4
+      },
+      {
+       "text": "1.29",
+       "bbox": [
+        429,
+        1100,
+        499,
+        1123
+       ],
+       "confidence": 92.8
+      },
+      {
+       "text": "/LB",
+       "bbox": [
+        523,
+        1097,
+        575,
+        1124
+       ],
+       "confidence": 92.8
+      }
+     ]
+    },
+    {
+     "text": "GREEN TEA 20CT                     7.98",
+     "bbox": [
+      206,
+      1141,
+      944,
+      1168
+     ],
+     "confidence": 94,
+     "words": [
+      {
+       "text": "GREEN",
+       "bbox": [
+        206,
+        1145,
+        298,
+        1167
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "TEA",
+       "bbox": [
+        318,
+        1142,
+        372,
+        1164
+       ],
+       "confidence": 91.5
+      },
+      {
+       "text": "20CT",
+       "bbox": [
+        392,
+        1143,
+        464,
+        1168
+       ],
+       "confidence": 91.5
+      },
+      {
+       "text": "7.98",
+       "bbox": [
+        876,
+        1141,
+        944,
+        1165
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "2 @ 3.99",
+     "bbox": [
+      241,
+      1187,
+      387,
+      1213
+     ],
+     "confidence": 69.3,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        241,
+        1192,
+        256,
+        1213
+       ],
+       "confidence": 55.5
+      },
+      {
+       "text": "@",
+       "bbox": [
+        280,
+        1190,
+        293,
+        1213
+       ],
+       "confidence": 55.5
+      },
+      {
+       "text": "3.99",
+       "bbox": [
+        316,
+        1187,
+        387,
+        1210
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "CJ HETBAHN COOKED WHITE RICE 12",
+     "bbox": [
+      202,
+      1233,
+      770,
+      1259
+     ],
+     "confidence": 94.8,
+     "words": [
+      {
+       "text": "CJ",
+       "bbox": [
+        202,
+        1237,
+        238,
+        1257
+       ],
+       "confidence": 91.5
+      },
+      {
+       "text": "HETBAHN",
+       "bbox": [
+        257,
+        1233,
+        385,
+        1258
+       ],
+       "confidence": 92
+      },
+      {
+       "text": "COOKED",
+       "bbox": [
+        405,
+        1235,
+        514,
+        1259
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "WHITE",
+       "bbox": [
+        534,
+        1234,
+        624,
+        1256
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "RICE",
+       "bbox": [
+        644,
+        1234,
+        716,
+        1256
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "12",
+       "bbox": [
+        738,
+        1237,
+        770,
+        1259
+       ],
+       "confidence": 97
+      }
+     ]
+    },
+    {
+     "text": "PK                                                                                       15.99",
+     "bbox": [
+      204,
+      1276,
+      935,
+      1302
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "PK",
+       "bbox": [
+        204,
+        1282,
+        240,
+        1302
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "15.99",
+       "bbox": [
+        848,
+        1276,
+        935,
+        1300
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "SPONGES 3PK                        1.99",
+     "bbox": [
+      208,
+      1321,
+      937,
+      1346
+     ],
+     "confidence": 90.9,
+     "words": [
+      {
+       "text": "SPONGES",
+       "bbox": [
+        208,
+        1323,
+        333,
+        1346
+       ],
+       "confidence": 91.7
+      },
+      {
+       "text": "3PK",
+       "bbox": [
+        355,
+        1321,
+        408,
+        1344
+       ],
+       "confidence": 84.3
+      },
+      {
+       "text": "1.99",
+       "bbox": [
+        868,
+        1321,
+        937,
+        1344
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "BAG FEE                                                        0.10",
+     "bbox": [
+      210,
+      1365,
+      938,
+      1390
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "BAG",
+       "bbox": [
+        210,
+        1370,
+        264,
+        1390
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "FEE",
+       "bbox": [
+        284,
+        1367,
+        336,
+        1390
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "0.10",
+       "bbox": [
+        870,
+        1365,
+        938,
+        1388
+       ],
+       "confidence": 95.3
+      }
+     ]
+    },
+    {
+     "text": "SUBTOTAL                                                              82.20",
+     "bbox": [
+      212,
+      1451,
+      935,
+      1485
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "SUBTOTAL",
+       "bbox": [
+        212,
+        1451,
+        355,
+        1485
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "82.20",
+       "bbox": [
+        848,
+        1453,
+        935,
+        1476
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "TAX                                                                                      0.13",
+     "bbox": [
+      211,
+      1496,
+      933,
+      1529
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "TAX",
+       "bbox": [
+        211,
+        1497,
+        266,
+        1529
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "0.13",
+       "bbox": [
+        865,
+        1496,
+        933,
+        1519
+       ],
+       "confidence": 95.3
+      }
+     ]
+    },
+    {
+     "text": "TOTAL                                                                82.33",
+     "bbox": [
+      211,
+      1539,
+      931,
+      1564
+     ],
+     "confidence": 96,
+     "words": [
+      {
+       "text": "TOTAL",
+       "bbox": [
+        211,
+        1544,
+        300,
+        1564
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "82.33",
+       "bbox": [
+        845,
+        1539,
+        931,
+        1562
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "MASTERCARD                                                     82.33",
+     "bbox": [
+      210,
+      1579,
+      929,
+      1614
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "MASTERCARD",
+       "bbox": [
+        210,
+        1579,
+        390,
+        1614
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "82.33",
+       "bbox": [
+        843,
+        1582,
+        929,
+        1605
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "CARD # XXXXXXXXXXXX7731",
+     "bbox": [
+      212,
+      1626,
+      623,
+      1652
+     ],
+     "confidence": 85.8,
+     "words": [
+      {
+       "text": "CARD",
+       "bbox": [
+        212,
+        1630,
+        283,
+        1650
+       ],
+       "confidence": 91
+      },
+      {
+       "text": "#",
+       "bbox": [
+        304,
+        1627,
+        316,
+        1650
+       ],
+       "confidence": 91
+      },
+      {
+       "text": "XXXXXXXXXXXX7731",
+       "bbox": [
+        337,
+        1626,
+        623,
+        1652
+       ],
+       "confidence": 75.3
+      }
+     ]
+    },
+    {
+     "text": "THANK YOU! COME AGAIN",
+     "bbox": [
+      219,
+      1711,
+      593,
+      1736
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "THANK",
+       "bbox": [
+        219,
+        1714,
+        309,
+        1735
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "YOU!",
+       "bbox": [
+        326,
+        1711,
+        391,
+        1732
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "COME",
+       "bbox": [
+        416,
+        1714,
+        486,
+        1736
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "AGAIN",
+       "bbox": [
+        505,
+        1713,
+        593,
+        1735
+       ],
+       "confidence": 96
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

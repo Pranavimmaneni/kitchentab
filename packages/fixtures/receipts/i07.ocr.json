@@ -1,0 +1,1170 @@
+{
+ "id": "i07",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i07.jpg",
+   "width": 1243,
+   "height": 1987,
+   "preprocess": {
+    "deskew_deg": -4,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "TRADER JOE'S",
+     "bbox": [
+      373,
+      169,
+      867,
+      212
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "TRADER",
+       "bbox": [
+        373,
+        170,
+        623,
+        212
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "JOE'S",
+       "bbox": [
+        667,
+        169,
+        867,
+        212
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "1 Hudson Pl",
+     "bbox": [
+      517,
+      241,
+      729,
+      265
+     ],
+     "confidence": 84.6,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        517,
+        241,
+        530,
+        263
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "Hudson",
+       "bbox": [
+        555,
+        242,
+        671,
+        264
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "Pl",
+       "bbox": [
+        694,
+        243,
+        729,
+        265
+       ],
+       "confidence": 63.7
+      }
+     ]
+    },
+    {
+     "text": "Hoboken, NJ 07030",
+     "bbox": [
+      454,
+      287,
+      788,
+      315
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "Hoboken,",
+       "bbox": [
+        454,
+        287,
+        604,
+        315
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "NJ",
+       "bbox": [
+        632,
+        289,
+        671,
+        310
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "07030",
+       "bbox": [
+        694,
+        288,
+        788,
+        310
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "Store #615 - (201) 555-0172",
+     "bbox": [
+      355,
+      332,
+      885,
+      360
+     ],
+     "confidence": 87.5,
+     "words": [
+      {
+       "text": "Store",
+       "bbox": [
+        355,
+        335,
+        450,
+        357
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "#615",
+       "bbox": [
+        475,
+        332,
+        549,
+        357
+       ],
+       "confidence": 93
+      },
+      {
+       "text": "-",
+       "bbox": [
+        573,
+        343,
+        589,
+        348
+       ],
+       "confidence": 72.5
+      },
+      {
+       "text": "(201)",
+       "bbox": [
+        619,
+        334,
+        701,
+        360
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "555-0172",
+       "bbox": [
+        732,
+        333,
+        885,
+        357
+       ],
+       "confidence": 80.2
+      }
+     ]
+    },
+    {
+     "text": "OPEN 8:00AM TO 9:00PM DAILY",
+     "bbox": [
+      354,
+      379,
+      887,
+      404
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "OPEN",
+       "bbox": [
+        354,
+        382,
+        432,
+        404
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "8:00AM",
+       "bbox": [
+        455,
+        379,
+        571,
+        403
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "TO",
+       "bbox": [
+        592,
+        381,
+        630,
+        402
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "9:00PM",
+       "bbox": [
+        654,
+        380,
+        770,
+        403
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "DAILY",
+       "bbox": [
+        791,
+        380,
+        887,
+        402
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "ORG BNNA                            1.74",
+     "bbox": [
+      228,
+      473,
+      1016,
+      497
+     ],
+     "confidence": 92.9,
+     "words": [
+      {
+       "text": "ORG",
+       "bbox": [
+        228,
+        473,
+        286,
+        495
+       ],
+       "confidence": 91.9
+      },
+      {
+       "text": "BNNA",
+       "bbox": [
+        307,
+        473,
+        386,
+        496
+       ],
+       "confidence": 91
+      },
+      {
+       "text": "1.74",
+       "bbox": [
+        943,
+        473,
+        1016,
+        497
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "6 @ 0.29",
+     "bbox": [
+      269,
+      517,
+      423,
+      542
+     ],
+     "confidence": 91.3,
+     "words": [
+      {
+       "text": "6",
+       "bbox": [
+        269,
+        518,
+        284,
+        540
+       ],
+       "confidence": 89.3
+      },
+      {
+       "text": "@",
+       "bbox": [
+        308,
+        517,
+        322,
+        541
+       ],
+       "confidence": 88
+      },
+      {
+       "text": "0.29",
+       "bbox": [
+        348,
+        519,
+        423,
+        542
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "BBY SPINACH                         2.49",
+     "bbox": [
+      226,
+      564,
+      1015,
+      589
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "BBY",
+       "bbox": [
+        226,
+        564,
+        283,
+        587
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "SPINACH",
+       "bbox": [
+        306,
+        565,
+        441,
+        588
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "2.49",
+       "bbox": [
+        939,
+        565,
+        1015,
+        589
+       ],
+       "confidence": 95.4
+      }
+     ]
+    },
+    {
+     "text": "HUMMUS 1002                         2.99",
+     "bbox": [
+      226,
+      610,
+      1015,
+      634
+     ],
+     "confidence": 80.3,
+     "words": [
+      {
+       "text": "HUMMUS",
+       "bbox": [
+        226,
+        610,
+        341,
+        633
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "1002",
+       "bbox": [
+        366,
+        612,
+        440,
+        634
+       ],
+       "confidence": 50.1
+      },
+      {
+       "text": "2.99",
+       "bbox": [
+        939,
+        611,
+        1015,
+        634
+       ],
+       "confidence": 95.4
+      }
+     ]
+    },
+    {
+     "text": "RTN MANDARIN ORANGE CHKN           -4.99",
+     "bbox": [
+      226,
+      656,
+      1016,
+      680
+     ],
+     "confidence": 91,
+     "words": [
+      {
+       "text": "RTN",
+       "bbox": [
+        226,
+        656,
+        284,
+        679
+       ],
+       "confidence": 92.9
+      },
+      {
+       "text": "MANDARIN",
+       "bbox": [
+        305,
+        656,
+        462,
+        680
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "ORANGE",
+       "bbox": [
+        484,
+        657,
+        600,
+        679
+       ],
+       "confidence": 93.2
+      },
+      {
+       "text": "CHKN",
+       "bbox": [
+        622,
+        658,
+        699,
+        679
+       ],
+       "confidence": 91.8
+      },
+      {
+       "text": "-4.99",
+       "bbox": [
+        921,
+        657,
+        1016,
+        680
+       ],
+       "confidence": 81.6
+      }
+     ]
+    },
+    {
+     "text": "CILANTRO                            0.00",
+     "bbox": [
+      228,
+      703,
+      1016,
+      727
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "CILANTRO",
+       "bbox": [
+        228,
+        703,
+        384,
+        727
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "0.00",
+       "bbox": [
+        942,
+        704,
+        1016,
+        727
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "RSTD ALMONDS 160Zz                   5.99",
+     "bbox": [
+      228,
+      749,
+      1017,
+      774
+     ],
+     "confidence": 82.3,
+     "words": [
+      {
+       "text": "RSTD",
+       "bbox": [
+        228,
+        749,
+        306,
+        772
+       ],
+       "confidence": 90.6
+      },
+      {
+       "text": "ALMONDS",
+       "bbox": [
+        326,
+        750,
+        462,
+        773
+       ],
+       "confidence": 92.3
+      },
+      {
+       "text": "160Zz",
+       "bbox": [
+        488,
+        749,
+        561,
+        771
+       ],
+       "confidence": 50
+      },
+      {
+       "text": "5.99",
+       "bbox": [
+        942,
+        750,
+        1017,
+        774
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "OAT MILK 6402                       3.49",
+     "bbox": [
+      226,
+      796,
+      1016,
+      820
+     ],
+     "confidence": 94.8,
+     "words": [
+      {
+       "text": "OAT",
+       "bbox": [
+        226,
+        796,
+        284,
+        818
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "MILK",
+       "bbox": [
+        305,
+        796,
+        384,
+        819
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "6402",
+       "bbox": [
+        407,
+        797,
+        481,
+        819
+       ],
+       "confidence": 90.6
+      },
+      {
+       "text": "3.49",
+       "bbox": [
+        941,
+        796,
+        1016,
+        820
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "LG EGGS 18CT                        4.79",
+     "bbox": [
+      226,
+      842,
+      1015,
+      866
+     ],
+     "confidence": 94,
+     "words": [
+      {
+       "text": "LG",
+       "bbox": [
+        226,
+        843,
+        263,
+        864
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "EGGS",
+       "bbox": [
+        285,
+        842,
+        361,
+        864
+       ],
+       "confidence": 92.7
+      },
+      {
+       "text": "18CT",
+       "bbox": [
+        386,
+        844,
+        461,
+        866
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "4.79",
+       "bbox": [
+        940,
+        842,
+        1015,
+        866
+       ],
+       "confidence": 95.6
+      }
+     ]
+    },
+    {
+     "text": "WHL WHT BREAD                       2.99",
+     "bbox": [
+      225,
+      888,
+      1015,
+      912
+     ],
+     "confidence": 95,
+     "words": [
+      {
+       "text": "WHL",
+       "bbox": [
+        225,
+        888,
+        283,
+        910
+       ],
+       "confidence": 92.6
+      },
+      {
+       "text": "WHT",
+       "bbox": [
+        304,
+        888,
+        362,
+        910
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "BREAD",
+       "bbox": [
+        384,
+        889,
+        482,
+        912
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "2.99",
+       "bbox": [
+        940,
+        888,
+        1015,
+        912
+       ],
+       "confidence": 94.3
+      }
+     ]
+    },
+    {
+     "text": "FRZ PEPPERONI PIZZA                 5.49",
+     "bbox": [
+      228,
+      935,
+      1016,
+      959
+     ],
+     "confidence": 95.4,
+     "words": [
+      {
+       "text": "FRZ",
+       "bbox": [
+        228,
+        935,
+        283,
+        957
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "PEPPERONI",
+       "bbox": [
+        308,
+        935,
+        480,
+        959
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "PIZZA",
+       "bbox": [
+        506,
+        935,
+        603,
+        957
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "5.49",
+       "bbox": [
+        942,
+        936,
+        1016,
+        959
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "CHOC CHIP COOKIES                   7.98",
+     "bbox": [
+      228,
+      981,
+      1017,
+      1005
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "CHOC",
+       "bbox": [
+        228,
+        981,
+        305,
+        1003
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "CHIP",
+       "bbox": [
+        327,
+        982,
+        405,
+        1005
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "COOKIES",
+       "bbox": [
+        426,
+        982,
+        562,
+        1004
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "7.98",
+       "bbox": [
+        943,
+        982,
+        1017,
+        1005
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "2 @ 3.99",
+     "bbox": [
+      267,
+      1025,
+      422,
+      1050
+     ],
+     "confidence": 80.8,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        267,
+        1026,
+        283,
+        1048
+       ],
+       "confidence": 73.2
+      },
+      {
+       "text": "@",
+       "bbox": [
+        308,
+        1025,
+        322,
+        1049
+       ],
+       "confidence": 73.2
+      },
+      {
+       "text": "3.99",
+       "bbox": [
+        347,
+        1028,
+        422,
+        1050
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "SUBTOTAL                          $32.96",
+     "bbox": [
+      226,
+      1118,
+      1015,
+      1143
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "SUBTOTAL",
+       "bbox": [
+        226,
+        1118,
+        382,
+        1142
+       ],
+       "confidence": 94.7
+      },
+      {
+       "text": "$32.96",
+       "bbox": [
+        900,
+        1118,
+        1015,
+        1143
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "Balance to pay                    $32.96",
+     "bbox": [
+      227,
+      1165,
+      1016,
+      1194
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "Balance",
+       "bbox": [
+        227,
+        1165,
+        362,
+        1188
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "to",
+       "bbox": [
+        386,
+        1169,
+        423,
+        1189
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "pay",
+       "bbox": [
+        444,
+        1171,
+        502,
+        1194
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "$32.96",
+       "bbox": [
+        902,
+        1165,
+        1016,
+        1191
+       ],
+       "confidence": 94.6
+      }
+     ]
+    },
+    {
+     "text": "Visa                           $32.96",
+     "bbox": [
+      227,
+      1211,
+      1017,
+      1237
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "Visa",
+       "bbox": [
+        227,
+        1212,
+        304,
+        1234
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "$32.96",
+       "bbox": [
+        903,
+        1211,
+        1017,
+        1237
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "Items in Transaction: 11",
+     "bbox": [
+      229,
+      1304,
+      697,
+      1327
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "Items",
+       "bbox": [
+        229,
+        1305,
+        322,
+        1326
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "in",
+       "bbox": [
+        347,
+        1305,
+        382,
+        1327
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "Transaction:",
+       "bbox": [
+        405,
+        1304,
+        634,
+        1327
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "11",
+       "bbox": [
+        665,
+        1305,
+        697,
+        1327
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "09-27-2026 5:47PM",
+     "bbox": [
+      227,
+      1349,
+      560,
+      1373
+     ],
+     "confidence": 95.4,
+     "words": [
+      {
+       "text": "09-27-2026",
+       "bbox": [
+        227,
+        1349,
+        420,
+        1373
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "5:47PM",
+       "bbox": [
+        444,
+        1350,
+        560,
+        1373
+       ],
+       "confidence": 95.2
+      }
+     ]
+    },
+    {
+     "text": "THANK YOU FOR SHOPPING AT",
+     "bbox": [
+      226,
+      1397,
+      719,
+      1420
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "THANK",
+       "bbox": [
+        226,
+        1397,
+        323,
+        1419
+       ],
+       "confidence": 94.7
+      },
+      {
+       "text": "YOU",
+       "bbox": [
+        345,
+        1398,
+        402,
+        1420
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "FOR",
+       "bbox": [
+        425,
+        1398,
+        482,
+        1420
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "SHOPPING",
+       "bbox": [
+        504,
+        1398,
+        660,
+        1419
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "AT",
+       "bbox": [
+        681,
+        1399,
+        719,
+        1420
+       ],
+       "confidence": 96.9
+      }
+     ]
+    },
+    {
+     "text": "TRADER JOE'S",
+     "bbox": [
+      227,
+      1442,
+      462,
+      1466
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "TRADER",
+       "bbox": [
+        227,
+        1442,
+        345,
+        1464
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "JOE'S",
+       "bbox": [
+        367,
+        1444,
+        462,
+        1466
+       ],
+       "confidence": 95
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1066 @@
+{
+ "id": "i14",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i14.png",
+   "width": 1306,
+   "height": 2020,
+   "preprocess": {
+    "deskew_deg": -5,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "TRADER JOE'S",
+     "bbox": [
+      404,
+      187,
+      897,
+      229
+     ],
+     "confidence": 92.2,
+     "words": [
+      {
+       "text": "TRADER",
+       "bbox": [
+        404,
+        187,
+        653,
+        228
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "JOE'S",
+       "bbox": [
+        697,
+        187,
+        897,
+        229
+       ],
+       "confidence": 87.8
+      }
+     ]
+    },
+    {
+     "text": "1 Hudson Pl",
+     "bbox": [
+      547,
+      258,
+      758,
+      281
+     ],
+     "confidence": 87,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        547,
+        259,
+        560,
+        281
+       ],
+       "confidence": 94.6
+      },
+      {
+       "text": "Hudson",
+       "bbox": [
+        585,
+        258,
+        700,
+        280
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Pl",
+       "bbox": [
+        725,
+        258,
+        758,
+        280
+       ],
+       "confidence": 70.2
+      }
+     ]
+    },
+    {
+     "text": "Hoboken, NJ 07030",
+     "bbox": [
+      487,
+      304,
+      819,
+      330
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "Hoboken,",
+       "bbox": [
+        487,
+        305,
+        636,
+        330
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "NJ",
+       "bbox": [
+        664,
+        304,
+        702,
+        325
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "07030",
+       "bbox": [
+        726,
+        304,
+        819,
+        327
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "Store #615 - (201) 555-0172",
+     "bbox": [
+      390,
+      350,
+      919,
+      375
+     ],
+     "confidence": 91.9,
+     "words": [
+      {
+       "text": "Store",
+       "bbox": [
+        390,
+        352,
+        484,
+        373
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "#615",
+       "bbox": [
+        510,
+        350,
+        583,
+        374
+       ],
+       "confidence": 91.6
+      },
+      {
+       "text": "-",
+       "bbox": [
+        607,
+        360,
+        623,
+        364
+       ],
+       "confidence": 79.6
+      },
+      {
+       "text": "(201)",
+       "bbox": [
+        653,
+        350,
+        735,
+        375
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "555-0172",
+       "bbox": [
+        767,
+        351,
+        919,
+        374
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "OPEN 8:00AM TO 9:00PM DAILY",
+     "bbox": [
+      388,
+      396,
+      921,
+      420
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "OPEN",
+       "bbox": [
+        388,
+        398,
+        465,
+        420
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "8:00AM",
+       "bbox": [
+        489,
+        397,
+        605,
+        419
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "TO",
+       "bbox": [
+        626,
+        396,
+        664,
+        417
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "9:00PM",
+       "bbox": [
+        688,
+        396,
+        803,
+        419
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "DAILY",
+       "bbox": [
+        825,
+        398,
+        921,
+        420
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "TOMATOES ON VINE                    4.13",
+     "bbox": [
+      258,
+      489,
+      1046,
+      513
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "TOMATOES",
+       "bbox": [
+        258,
+        490,
+        412,
+        512
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "ON",
+       "bbox": [
+        435,
+        492,
+        473,
+        513
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "VINE",
+       "bbox": [
+        494,
+        491,
+        571,
+        513
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "4.13",
+       "bbox": [
+        972,
+        489,
+        1046,
+        511
+       ],
+       "confidence": 95
+      }
+     ]
+    },
+    {
+     "text": "1.66 1b @ 2.49 /1b",
+     "bbox": [
+      299,
+      534,
+      651,
+      560
+     ],
+     "confidence": 88.5,
+     "words": [
+      {
+       "text": "1.66",
+       "bbox": [
+        299,
+        535,
+        373,
+        557
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "1b",
+       "bbox": [
+        398,
+        536,
+        433,
+        558
+       ],
+       "confidence": 72.7
+      },
+      {
+       "text": "@",
+       "bbox": [
+        457,
+        536,
+        471,
+        559
+       ],
+       "confidence": 92.3
+      },
+      {
+       "text": "2.49",
+       "bbox": [
+        496,
+        536,
+        571,
+        558
+       ],
+       "confidence": 92.8
+      },
+      {
+       "text": "/1b",
+       "bbox": [
+        596,
+        534,
+        651,
+        560
+       ],
+       "confidence": 88.3
+      }
+     ]
+    },
+    {
+     "text": "CARROTS 2LB                         1.69",
+     "bbox": [
+      257,
+      581,
+      1047,
+      604
+     ],
+     "confidence": 92.9,
+     "words": [
+      {
+       "text": "CARROTS",
+       "bbox": [
+        257,
+        581,
+        393,
+        603
+       ],
+       "confidence": 91.4
+      },
+      {
+       "text": "2LB",
+       "bbox": [
+        417,
+        582,
+        473,
+        604
+       ],
+       "confidence": 91.4
+      },
+      {
+       "text": "1.69",
+       "bbox": [
+        973,
+        581,
+        1047,
+        603
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "HUMMUS 100Z                         3.49",
+     "bbox": [
+      258,
+      626,
+      1047,
+      650
+     ],
+     "confidence": 75.6,
+     "words": [
+      {
+       "text": "HUMMUS",
+       "bbox": [
+        258,
+        627,
+        373,
+        649
+       ],
+       "confidence": 92.3
+      },
+      {
+       "text": "100Z",
+       "bbox": [
+        399,
+        628,
+        472,
+        650
+       ],
+       "confidence": 37.7
+      },
+      {
+       "text": "3.49",
+       "bbox": [
+        973,
+        626,
+        1047,
+        648
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "FRESH MOzZZ 802                      3.99",
+     "bbox": [
+      260,
+      672,
+      1048,
+      696
+     ],
+     "confidence": 74.9,
+     "words": [
+      {
+       "text": "FRESH",
+       "bbox": [
+        260,
+        673,
+        355,
+        695
+       ],
+       "confidence": 92.8
+      },
+      {
+       "text": "MOzZZ",
+       "bbox": [
+        377,
+        674,
+        454,
+        696
+       ],
+       "confidence": 34.3
+      },
+      {
+       "text": "802",
+       "bbox": [
+        478,
+        674,
+        533,
+        696
+       ],
+       "confidence": 75.9
+      },
+      {
+       "text": "3.99",
+       "bbox": [
+        974,
+        672,
+        1048,
+        694
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "SPAGHETTI 1602                      2.97",
+     "bbox": [
+      260,
+      719,
+      1047,
+      743
+     ],
+     "confidence": 95.1,
+     "words": [
+      {
+       "text": "SPAGHETTI",
+       "bbox": [
+        260,
+        720,
+        433,
+        743
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "1602",
+       "bbox": [
+        460,
+        721,
+        534,
+        743
+       ],
+       "confidence": 94.7
+      },
+      {
+       "text": "2.97",
+       "bbox": [
+        974,
+        719,
+        1047,
+        742
+       ],
+       "confidence": 94.2
+      }
+     ]
+    },
+    {
+     "text": "3@ 0.99",
+     "bbox": [
+      301,
+      765,
+      455,
+      789
+     ],
+     "confidence": 69.7,
+     "words": [
+      {
+       "text": "3@",
+       "bbox": [
+        301,
+        765,
+        355,
+        789
+       ],
+       "confidence": 46.1
+      },
+      {
+       "text": "0.99",
+       "bbox": [
+        380,
+        767,
+        455,
+        789
+       ],
+       "confidence": 93.3
+      }
+     ]
+    },
+    {
+     "text": "MARINARA SAUCE 2402                 2.99",
+     "bbox": [
+      257,
+      812,
+      1048,
+      836
+     ],
+     "confidence": 84.7,
+     "words": [
+      {
+       "text": "MARINARA",
+       "bbox": [
+        257,
+        812,
+        416,
+        835
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "SAUCE",
+       "bbox": [
+        437,
+        814,
+        533,
+        836
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "2402",
+       "bbox": [
+        556,
+        813,
+        631,
+        835
+       ],
+       "confidence": 50.7
+      },
+      {
+       "text": "2.99",
+       "bbox": [
+        972,
+        812,
+        1048,
+        834
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "COFFEE BEANS 1202                   8.99",
+     "bbox": [
+      257,
+      858,
+      1046,
+      882
+     ],
+     "confidence": 92.7,
+     "words": [
+      {
+       "text": "COFFEE",
+       "bbox": [
+        257,
+        858,
+        373,
+        880
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "BEANS",
+       "bbox": [
+        395,
+        860,
+        491,
+        882
+       ],
+       "confidence": 94.9
+      },
+      {
+       "text": "1202",
+       "bbox": [
+        517,
+        859,
+        590,
+        881
+       ],
+       "confidence": 83.7
+      },
+      {
+       "text": "8.99",
+       "bbox": [
+        972,
+        858,
+        1046,
+        880
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "COLA 2 LITER                        1.99",
+     "bbox": [
+      257,
+      904,
+      1046,
+      928
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "COLA",
+       "bbox": [
+        257,
+        905,
+        336,
+        926
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "2",
+       "bbox": [
+        357,
+        904,
+        372,
+        927
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "LITER",
+       "bbox": [
+        396,
+        906,
+        493,
+        928
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "1.99",
+       "bbox": [
+        972,
+        904,
+        1046,
+        926
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "SUBTOTAL                          $30.24",
+     "bbox": [
+      259,
+      997,
+      1046,
+      1022
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "SUBTOTAL",
+       "bbox": [
+        259,
+        998,
+        415,
+        1021
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "$30.24",
+       "bbox": [
+        933,
+        997,
+        1046,
+        1022
+       ],
+       "confidence": 95.2
+      }
+     ]
+    },
+    {
+     "text": "TAX                              $0.13",
+     "bbox": [
+      259,
+      1042,
+      1048,
+      1068
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "TAX",
+       "bbox": [
+        259,
+        1044,
+        316,
+        1065
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "$0.13",
+       "bbox": [
+        953,
+        1042,
+        1048,
+        1068
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "Balance to pay                    $30.37",
+     "bbox": [
+      259,
+      1088,
+      1047,
+      1118
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "Balance",
+       "bbox": [
+        259,
+        1089,
+        395,
+        1112
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "to",
+       "bbox": [
+        419,
+        1092,
+        455,
+        1113
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "pay",
+       "bbox": [
+        477,
+        1096,
+        535,
+        1118
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "$30.37",
+       "bbox": [
+        934,
+        1088,
+        1047,
+        1114
+       ],
+       "confidence": 95.5
+      }
+     ]
+    },
+    {
+     "text": "Visa                            $30.37",
+     "bbox": [
+      259,
+      1134,
+      1048,
+      1160
+     ],
+     "confidence": 95.6,
+     "words": [
+      {
+       "text": "Visa",
+       "bbox": [
+        259,
+        1135,
+        336,
+        1157
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "$30.37",
+       "bbox": [
+        934,
+        1134,
+        1048,
+        1160
+       ],
+       "confidence": 95.5
+      }
+     ]
+    },
+    {
+     "text": "Items in Transaction: 8",
+     "bbox": [
+      259,
+      1228,
+      709,
+      1252
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "Items",
+       "bbox": [
+        259,
+        1229,
+        353,
+        1250
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "in",
+       "bbox": [
+        377,
+        1229,
+        413,
+        1251
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "Transaction:",
+       "bbox": [
+        436,
+        1228,
+        665,
+        1252
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "8",
+       "bbox": [
+        694,
+        1228,
+        709,
+        1250
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "10-06-2026 5:47PM",
+     "bbox": [
+      259,
+      1273,
+      592,
+      1298
+     ],
+     "confidence": 94.5,
+     "words": [
+      {
+       "text": "10-06-2026",
+       "bbox": [
+        259,
+        1273,
+        452,
+        1298
+       ],
+       "confidence": 94
+      },
+      {
+       "text": "5:47PM",
+       "bbox": [
+        476,
+        1275,
+        592,
+        1298
+       ],
+       "confidence": 95
+      }
+     ]
+    },
+    {
+     "text": "THANK YOU FOR SHOPPING AT",
+     "bbox": [
+      257,
+      1320,
+      750,
+      1344
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "THANK",
+       "bbox": [
+        257,
+        1321,
+        355,
+        1342
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "YOU",
+       "bbox": [
+        377,
+        1321,
+        434,
+        1344
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "FOR",
+       "bbox": [
+        457,
+        1322,
+        514,
+        1344
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "SHOPPING",
+       "bbox": [
+        536,
+        1320,
+        691,
+        1344
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "AT",
+       "bbox": [
+        712,
+        1321,
+        750,
+        1343
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "TRADER JOE'S",
+     "bbox": [
+      258,
+      1367,
+      493,
+      1390
+     ],
+     "confidence": 95.6,
+     "words": [
+      {
+       "text": "TRADER",
+       "bbox": [
+        258,
+        1367,
+        376,
+        1389
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "JOE'S",
+       "bbox": [
+        397,
+        1368,
+        493,
+        1390
+       ],
+       "confidence": 95.2
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

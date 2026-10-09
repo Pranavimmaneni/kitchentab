@@ -1,0 +1,1788 @@
+{
+ "id": "i11",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i11.pdf",
+   "width": 1262,
+   "height": 2094,
+   "preprocess": {
+    "deskew_deg": 5.5,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "ShopRite",
+     "bbox": [
+      491,
+      182,
+      772,
+      235
+     ],
+     "confidence": 90.4,
+     "words": [
+      {
+       "text": "ShopRite",
+       "bbox": [
+        491,
+        182,
+        772,
+        235
+       ],
+       "confidence": 90.4
+      }
+     ]
+    },
+    {
+     "text": "ShopRite of Hoboken",
+     "bbox": [
+      473,
+      250,
+      793,
+      278
+     ],
+     "confidence": 94.9,
+     "words": [
+      {
+       "text": "ShopRite",
+       "bbox": [
+        473,
+        250,
+        606,
+        278
+       ],
+       "confidence": 92.4
+      },
+      {
+       "text": "of",
+       "bbox": [
+        626,
+        253,
+        657,
+        274
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Hoboken",
+       "bbox": [
+        677,
+        250,
+        793,
+        273
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "900 Madison St",
+     "bbox": [
+      515,
+      294,
+      748,
+      317
+     ],
+     "confidence": 96,
+     "words": [
+      {
+       "text": "900",
+       "bbox": [
+        515,
+        294,
+        561,
+        316
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "Madison",
+       "bbox": [
+        580,
+        297,
+        697,
+        317
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "St",
+       "bbox": [
+        718,
+        294,
+        748,
+        314
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "Hoboken NJ 07030",
+     "bbox": [
+      494,
+      336,
+      763,
+      360
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "Hoboken",
+       "bbox": [
+        494,
+        338,
+        611,
+        360
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "NJ",
+       "bbox": [
+        630,
+        340,
+        663,
+        360
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "07030",
+       "bbox": [
+        682,
+        336,
+        763,
+        358
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "(201) 555-0110",
+     "bbox": [
+      518,
+      379,
+      746,
+      405
+     ],
+     "confidence": 91.1,
+     "words": [
+      {
+       "text": "(201)",
+       "bbox": [
+        518,
+        381,
+        589,
+        405
+       ],
+       "confidence": 87.4
+      },
+      {
+       "text": "555-0110",
+       "bbox": [
+        615,
+        379,
+        746,
+        403
+       ],
+       "confidence": 94.8
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      279,
+      466,
+      395,
+      488
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        279,
+        466,
+        395,
+        488
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "2 @ 2.49",
+     "bbox": [
+      313,
+      507,
+      445,
+      530
+     ],
+     "confidence": 80,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        313,
+        510,
+        326,
+        530
+       ],
+       "confidence": 72.5
+      },
+      {
+       "text": "@",
+       "bbox": [
+        348,
+        508,
+        360,
+        530
+       ],
+       "confidence": 72.5
+      },
+      {
+       "text": "2.49",
+       "bbox": [
+        381,
+        507,
+        445,
+        529
+       ],
+       "confidence": 95.1
+      }
+     ]
+    },
+    {
+     "text": "COLA 2 LITER                        4.98 T",
+     "bbox": [
+      278,
+      550,
+      983,
+      573
+     ],
+     "confidence": 89.4,
+     "words": [
+      {
+       "text": "COLA",
+       "bbox": [
+        278,
+        553,
+        345,
+        573
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "2",
+       "bbox": [
+        364,
+        551,
+        377,
+        571
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "LITER",
+       "bbox": [
+        397,
+        550,
+        479,
+        570
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "4.98",
+       "bbox": [
+        885,
+        552,
+        948,
+        573
+       ],
+       "confidence": 79.1
+      },
+      {
+       "text": "T",
+       "bbox": [
+        968,
+        553,
+        983,
+        573
+       ],
+       "confidence": 79.1
+      }
+     ]
+    },
+    {
+     "text": "BOTTLE DEPOSIT                    0.20",
+     "bbox": [
+      279,
+      592,
+      981,
+      615
+     ],
+     "confidence": 95.6,
+     "words": [
+      {
+       "text": "BOTTLE",
+       "bbox": [
+        279,
+        594,
+        377,
+        614
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "DEPOSIT",
+       "bbox": [
+        397,
+        592,
+        512,
+        613
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "0.20",
+       "bbox": [
+        917,
+        595,
+        981,
+        615
+       ],
+       "confidence": 95.5
+      }
+     ]
+    },
+    {
+     "text": "SPRKLNG WATER 12PK                5.49 T",
+     "bbox": [
+      281,
+      633,
+      982,
+      656
+     ],
+     "confidence": 90.6,
+     "words": [
+      {
+       "text": "SPRKLNG",
+       "bbox": [
+        281,
+        635,
+        395,
+        656
+       ],
+       "confidence": 91.9
+      },
+      {
+       "text": "WATER",
+       "bbox": [
+        413,
+        633,
+        497,
+        654
+       ],
+       "confidence": 92.8
+      },
+      {
+       "text": "12PK",
+       "bbox": [
+        516,
+        635,
+        580,
+        656
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "5.49",
+       "bbox": [
+        884,
+        635,
+        947,
+        656
+       ],
+       "confidence": 88.6
+      },
+      {
+       "text": "T",
+       "bbox": [
+        966,
+        637,
+        982,
+        656
+       ],
+       "confidence": 87.3
+      }
+     ]
+    },
+    {
+     "text": "BOTTLE DEPOSIT                    0.60",
+     "bbox": [
+      281,
+      676,
+      980,
+      699
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "BOTTLE",
+       "bbox": [
+        281,
+        678,
+        379,
+        698
+       ],
+       "confidence": 95
+      },
+      {
+       "text": "DEPOSIT",
+       "bbox": [
+        399,
+        676,
+        513,
+        696
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "0.60",
+       "bbox": [
+        917,
+        678,
+        980,
+        699
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "PRODUCE",
+     "bbox": [
+      283,
+      718,
+      397,
+      740
+     ],
+     "confidence": 95.6,
+     "words": [
+      {
+       "text": "PRODUCE",
+       "bbox": [
+        283,
+        718,
+        397,
+        740
+       ],
+       "confidence": 95.6
+      }
+     ]
+    },
+    {
+     "text": "2.15 1b @ 2.49 /1b",
+     "bbox": [
+      317,
+      757,
+      614,
+      783
+     ],
+     "confidence": 85.7,
+     "words": [
+      {
+       "text": "2.15",
+       "bbox": [
+        317,
+        759,
+        380,
+        780
+       ],
+       "confidence": 94.9
+      },
+      {
+       "text": "1b",
+       "bbox": [
+        401,
+        758,
+        431,
+        778
+       ],
+       "confidence": 91.5
+      },
+      {
+       "text": "@",
+       "bbox": [
+        450,
+        757,
+        463,
+        779
+       ],
+       "confidence": 78.3
+      },
+      {
+       "text": "2.49",
+       "bbox": [
+        484,
+        759,
+        547,
+        780
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "/1b",
+       "bbox": [
+        568,
+        760,
+        614,
+        783
+       ],
+       "confidence": 70.6
+      }
+     ]
+    },
+    {
+     "text": "HONEYCRISP APPLES                 5.35 F",
+     "bbox": [
+      285,
+      799,
+      981,
+      822
+     ],
+     "confidence": 90,
+     "words": [
+      {
+       "text": "HONEYCRISP",
+       "bbox": [
+        285,
+        799,
+        449,
+        822
+       ],
+       "confidence": 91.5
+      },
+      {
+       "text": "APPLES",
+       "bbox": [
+        466,
+        800,
+        564,
+        821
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "5.35",
+       "bbox": [
+        883,
+        801,
+        946,
+        822
+       ],
+       "confidence": 91.4
+      },
+      {
+       "text": "F",
+       "bbox": [
+        966,
+        803,
+        981,
+        822
+       ],
+       "confidence": 81
+      }
+     ]
+    },
+    {
+     "text": "DAIRY",
+     "bbox": [
+      285,
+      843,
+      365,
+      863
+     ],
+     "confidence": 95.3,
+     "words": [
+      {
+       "text": "DAIRY",
+       "bbox": [
+        285,
+        843,
+        365,
+        863
+       ],
+       "confidence": 95.3
+      }
+     ]
+    },
+    {
+     "text": "WHOLE MILK 1 GAL                 4.29 F",
+     "bbox": [
+      283,
+      882,
+      978,
+      905
+     ],
+     "confidence": 93.4,
+     "words": [
+      {
+       "text": "WHOLE",
+       "bbox": [
+        283,
+        885,
+        364,
+        904
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "MILK",
+       "bbox": [
+        382,
+        882,
+        448,
+        903
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "1",
+       "bbox": [
+        468,
+        882,
+        479,
+        902
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "GAL",
+       "bbox": [
+        498,
+        884,
+        547,
+        904
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "4.29",
+       "bbox": [
+        880,
+        884,
+        943,
+        905
+       ],
+       "confidence": 87.4
+      },
+      {
+       "text": "F",
+       "bbox": [
+        963,
+        885,
+        978,
+        904
+       ],
+       "confidence": 87.4
+      }
+     ]
+    },
+    {
+     "text": "PRICE PLUS SAVINGS                0.50-",
+     "bbox": [
+      285,
+      923,
+      974,
+      945
+     ],
+     "confidence": 91.8,
+     "words": [
+      {
+       "text": "PRICE",
+       "bbox": [
+        285,
+        925,
+        364,
+        945
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "PLUS",
+       "bbox": [
+        384,
+        923,
+        446,
+        943
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "SAVINGS",
+       "bbox": [
+        466,
+        924,
+        579,
+        945
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "0.50-",
+       "bbox": [
+        896,
+        925,
+        974,
+        945
+       ],
+       "confidence": 79.8
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      285,
+      965,
+      399,
+      986
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        285,
+        965,
+        399,
+        986
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "RETURN WHL WHT BREAD              3.49- F",
+     "bbox": [
+      288,
+      1004,
+      978,
+      1026
+     ],
+     "confidence": 84.4,
+     "words": [
+      {
+       "text": "RETURN",
+       "bbox": [
+        288,
+        1005,
+        385,
+        1026
+       ],
+       "confidence": 92.6
+      },
+      {
+       "text": "WHL",
+       "bbox": [
+        402,
+        1004,
+        452,
+        1023
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "WHT",
+       "bbox": [
+        468,
+        1004,
+        516,
+        1024
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "BREAD",
+       "bbox": [
+        534,
+        1006,
+        616,
+        1026
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "3.49-",
+       "bbox": [
+        865,
+        1005,
+        943,
+        1026
+       ],
+       "confidence": 64.2
+      },
+      {
+       "text": "F",
+       "bbox": [
+        963,
+        1007,
+        978,
+        1026
+       ],
+       "confidence": 64.2
+      }
+     ]
+    },
+    {
+     "text": "4 @ 0.99",
+     "bbox": [
+      323,
+      1043,
+      451,
+      1066
+     ],
+     "confidence": 74,
+     "words": [
+      {
+       "text": "4",
+       "bbox": [
+        323,
+        1046,
+        335,
+        1066
+       ],
+       "confidence": 63.7
+      },
+      {
+       "text": "@",
+       "bbox": [
+        356,
+        1044,
+        368,
+        1066
+       ],
+       "confidence": 63.7
+      },
+      {
+       "text": "0.99",
+       "bbox": [
+        389,
+        1043,
+        451,
+        1064
+       ],
+       "confidence": 94.6
+      }
+     ]
+    },
+    {
+     "text": "SPAGHETTI 1602                  3.96 F",
+     "bbox": [
+      288,
+      1084,
+      975,
+      1107
+     ],
+     "confidence": 92,
+     "words": [
+      {
+       "text": "SPAGHETTI",
+       "bbox": [
+        288,
+        1085,
+        432,
+        1106
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "1602",
+       "bbox": [
+        453,
+        1084,
+        514,
+        1105
+       ],
+       "confidence": 89.9
+      },
+      {
+       "text": "3.96",
+       "bbox": [
+        878,
+        1087,
+        940,
+        1107
+       ],
+       "confidence": 91.7
+      },
+      {
+       "text": "F",
+       "bbox": [
+        959,
+        1087,
+        975,
+        1106
+       ],
+       "confidence": 90.8
+      }
+     ]
+    },
+    {
+     "text": "MARINARA SAUCE 2402               3.49 F",
+     "bbox": [
+      285,
+      1124,
+      972,
+      1146
+     ],
+     "confidence": 86.6,
+     "words": [
+      {
+       "text": "MARINARA",
+       "bbox": [
+        285,
+        1125,
+        416,
+        1146
+       ],
+       "confidence": 94.3
+      },
+      {
+       "text": "SAUCE",
+       "bbox": [
+        434,
+        1124,
+        513,
+        1144
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "2402",
+       "bbox": [
+        532,
+        1126,
+        594,
+        1146
+       ],
+       "confidence": 74.6
+      },
+      {
+       "text": "3.49",
+       "bbox": [
+        875,
+        1126,
+        938,
+        1146
+       ],
+       "confidence": 83.9
+      },
+      {
+       "text": "F",
+       "bbox": [
+        957,
+        1127,
+        972,
+        1146
+       ],
+       "confidence": 83.9
+      }
+     ]
+    },
+    {
+     "text": "MEAT",
+     "bbox": [
+      287,
+      1166,
+      352,
+      1186
+     ],
+     "confidence": 95.4,
+     "words": [
+      {
+       "text": "MEAT",
+       "bbox": [
+        287,
+        1166,
+        352,
+        1186
+       ],
+       "confidence": 95.4
+      }
+     ]
+    },
+    {
+     "text": "1.36 1b € 5.99 /1b",
+     "bbox": [
+      324,
+      1202,
+      616,
+      1227
+     ],
+     "confidence": 75,
+     "words": [
+      {
+       "text": "1.36",
+       "bbox": [
+        324,
+        1204,
+        387,
+        1225
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "1b",
+       "bbox": [
+        407,
+        1203,
+        436,
+        1222
+       ],
+       "confidence": 87.1
+      },
+      {
+       "text": "€",
+       "bbox": [
+        454,
+        1202,
+        467,
+        1223
+       ],
+       "confidence": 20.7
+      },
+      {
+       "text": "5.99",
+       "bbox": [
+        488,
+        1203,
+        549,
+        1224
+       ],
+       "confidence": 93.2
+      },
+      {
+       "text": "/1b",
+       "bbox": [
+        570,
+        1204,
+        616,
+        1227
+       ],
+       "confidence": 77.7
+      }
+     ]
+    },
+    {
+     "text": "GRND BEEF 80/20                  8.15 F",
+     "bbox": [
+      293,
+      1242,
+      975,
+      1265
+     ],
+     "confidence": 92.3,
+     "words": [
+      {
+       "text": "GRND",
+       "bbox": [
+        293,
+        1245,
+        358,
+        1264
+       ],
+       "confidence": 92.1
+      },
+      {
+       "text": "BEEF",
+       "bbox": [
+        374,
+        1243,
+        438,
+        1263
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "80/20",
+       "bbox": [
+        457,
+        1242,
+        535,
+        1264
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "8.15",
+       "bbox": [
+        879,
+        1245,
+        941,
+        1265
+       ],
+       "confidence": 88.2
+      },
+      {
+       "text": "F",
+       "bbox": [
+        960,
+        1245,
+        975,
+        1264
+       ],
+       "confidence": 88.2
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      292,
+      1284,
+      404,
+      1304
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        292,
+        1284,
+        404,
+        1304
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "TORTILLA CHIPS                     4.29 F",
+     "bbox": [
+      291,
+      1322,
+      970,
+      1344
+     ],
+     "confidence": 93.7,
+     "words": [
+      {
+       "text": "TORTILLA",
+       "bbox": [
+        291,
+        1323,
+        419,
+        1343
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "CHIPS",
+       "bbox": [
+        436,
+        1322,
+        515,
+        1342
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "4.29",
+       "bbox": [
+        874,
+        1324,
+        936,
+        1344
+       ],
+       "confidence": 91.4
+      },
+      {
+       "text": "F",
+       "bbox": [
+        954,
+        1325,
+        970,
+        1343
+       ],
+       "confidence": 91.4
+      }
+     ]
+    },
+    {
+     "text": "HOUSEHOLD",
+     "bbox": [
+      291,
+      1361,
+      435,
+      1382
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "HOUSEHOLD",
+       "bbox": [
+        291,
+        1361,
+        435,
+        1382
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "TRASH BAGS 40CT                  8.99 T",
+     "bbox": [
+      293,
+      1399,
+      969,
+      1422
+     ],
+     "confidence": 87.9,
+     "words": [
+      {
+       "text": "TRASH",
+       "bbox": [
+        293,
+        1402,
+        372,
+        1421
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "BAGS",
+       "bbox": [
+        390,
+        1399,
+        452,
+        1419
+       ],
+       "confidence": 93.2
+      },
+      {
+       "text": "40CT",
+       "bbox": [
+        472,
+        1400,
+        533,
+        1420
+       ],
+       "confidence": 92.4
+      },
+      {
+       "text": "8.99",
+       "bbox": [
+        875,
+        1401,
+        936,
+        1422
+       ],
+       "confidence": 78.9
+      },
+      {
+       "text": "T",
+       "bbox": [
+        954,
+        1402,
+        969,
+        1421
+       ],
+       "confidence": 78.9
+      }
+     ]
+    },
+    {
+     "text": "STORE COUPON $5 OFF ORDER           5.00-",
+     "bbox": [
+      296,
+      1438,
+      969,
+      1460
+     ],
+     "confidence": 91.6,
+     "words": [
+      {
+       "text": "STORE",
+       "bbox": [
+        296,
+        1440,
+        374,
+        1459
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "COUPON",
+       "bbox": [
+        391,
+        1438,
+        487,
+        1457
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "$5",
+       "bbox": [
+        506,
+        1438,
+        535,
+        1460
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "OFF",
+       "bbox": [
+        552,
+        1441,
+        600,
+        1460
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "ORDER",
+       "bbox": [
+        616,
+        1440,
+        697,
+        1460
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "5.00-",
+       "bbox": [
+        892,
+        1440,
+        969,
+        1460
+       ],
+       "confidence": 67.9
+      }
+     ]
+    },
+    {
+     "text": "BAG FEE                            0.20",
+     "bbox": [
+      296,
+      1479,
+      968,
+      1499
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "BAG",
+       "bbox": [
+        296,
+        1480,
+        343,
+        1498
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "FEE",
+       "bbox": [
+        361,
+        1479,
+        406,
+        1498
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "0.20",
+       "bbox": [
+        907,
+        1480,
+        968,
+        1499
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "SUBTOTAL                           46.00",
+     "bbox": [
+      295,
+      1550,
+      964,
+      1584
+     ],
+     "confidence": 96.6,
+     "words": [
+      {
+       "text": "SUBTOTAL",
+       "bbox": [
+        295,
+        1550,
+        422,
+        1584
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "46.00",
+       "bbox": [
+        888,
+        1556,
+        964,
+        1575
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "NJ SALES TAX                       1.29",
+     "bbox": [
+      295,
+      1591,
+      965,
+      1613
+     ],
+     "confidence": 95.1,
+     "words": [
+      {
+       "text": "NJ",
+       "bbox": [
+        295,
+        1594,
+        327,
+        1613
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "SALES",
+       "bbox": [
+        344,
+        1592,
+        421,
+        1612
+       ],
+       "confidence": 95.4
+      },
+      {
+       "text": "TAX",
+       "bbox": [
+        439,
+        1591,
+        486,
+        1610
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "1.29",
+       "bbox": [
+        904,
+        1594,
+        965,
+        1613
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "«+x* BALANCE DUE                 42.29",
+     "bbox": [
+      298,
+      1629,
+      964,
+      1651
+     ],
+     "confidence": 75.3,
+     "words": [
+      {
+       "text": "«+x*",
+       "bbox": [
+        298,
+        1632,
+        357,
+        1643
+       ],
+       "confidence": 13.5
+      },
+      {
+       "text": "BALANCE",
+       "bbox": [
+        377,
+        1629,
+        486,
+        1649
+       ],
+       "confidence": 95.2
+      },
+      {
+       "text": "DUE",
+       "bbox": [
+        505,
+        1631,
+        550,
+        1649
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "42.29",
+       "bbox": [
+        888,
+        1631,
+        964,
+        1651
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "VISA                               42.29",
+     "bbox": [
+      297,
+      1670,
+      964,
+      1689
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "VISA",
+       "bbox": [
+        297,
+        1670,
+        362,
+        1688
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "42.29",
+       "bbox": [
+        888,
+        1670,
+        964,
+        1689
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "CHANGE                               .00",
+     "bbox": [
+      298,
+      1703,
+      963,
+      1736
+     ],
+     "confidence": 92.5,
+     "words": [
+      {
+       "text": "CHANGE",
+       "bbox": [
+        298,
+        1703,
+        392,
+        1736
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": ".00",
+       "bbox": [
+        922,
+        1708,
+        963,
+        1726
+       ],
+       "confidence": 88.6
+      }
+     ]
+    },
+    {
+     "text": "PRICE PLUS CLUB CARD",
+     "bbox": [
+      475,
+      1781,
+      790,
+      1801
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "PRICE",
+       "bbox": [
+        475,
+        1781,
+        551,
+        1800
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "PLUS",
+       "bbox": [
+        570,
+        1783,
+        630,
+        1801
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "CLUB",
+       "bbox": [
+        648,
+        1781,
+        710,
+        1800
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "CARD",
+       "bbox": [
+        726,
+        1781,
+        790,
+        1799
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "TOTAL SAVINGS                       5.50",
+     "bbox": [
+      300,
+      1817,
+      960,
+      1839
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "TOTAL",
+       "bbox": [
+        300,
+        1819,
+        378,
+        1838
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "SAVINGS",
+       "bbox": [
+        395,
+        1817,
+        503,
+        1836
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "5.50",
+       "bbox": [
+        900,
+        1819,
+        960,
+        1839
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "10/04/2026 14:31 0110 05 0042 2231",
+     "bbox": [
+      303,
+      1891,
+      849,
+      1914
+     ],
+     "confidence": 95.3,
+     "words": [
+      {
+       "text": "10/04/2026",
+       "bbox": [
+        303,
+        1891,
+        457,
+        1914
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "14:31",
+       "bbox": [
+        476,
+        1892,
+        550,
+        1912
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "0110",
+       "bbox": [
+        585,
+        1894,
+        645,
+        1913
+       ],
+       "confidence": 93.8
+      },
+      {
+       "text": "05",
+       "bbox": [
+        664,
+        1893,
+        692,
+        1912
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "0042",
+       "bbox": [
+        711,
+        1892,
+        770,
+        1911
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "2231",
+       "bbox": [
+        789,
+        1892,
+        849,
+        1911
+       ],
+       "confidence": 94.8
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,162 @@
+{
+ "store_name": "Whole Foods Market",
+ "purchase_date": "2026-10-07",
+ "currency": "USD",
+ "items": [
+  {
+   "name": "Organic Bananas",
+   "raw_text": "Organic Bananas",
+   "quantity": "1.5",
+   "unit_price_cents": 49,
+   "line_total_cents": 74,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "produce",
+   "icon_key": "banana",
+   "shelf_life_days": 6
+  },
+  {
+   "name": "Atlantic Salmon Fillet",
+   "raw_text": "Atlantic Salmon Fillet",
+   "quantity": "1.12",
+   "unit_price_cents": 1199,
+   "line_total_cents": 1343,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "meat_fish",
+   "icon_key": "fish",
+   "shelf_life_days": 2
+  },
+  {
+   "name": "365 by Whole Foods Market, Whole Milk, 1 Gallon",
+   "raw_text": "365 by Whole Foods Market, Whole Milk, 1 Gallon",
+   "quantity": "1",
+   "unit_price_cents": 429,
+   "line_total_cents": 429,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "dairy",
+   "icon_key": "milk",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "365 by Whole Foods Market, Large Eggs, 18 ct",
+   "raw_text": "365 by Whole Foods Market, Large Eggs, 18 ct",
+   "quantity": "1",
+   "unit_price_cents": 549,
+   "line_total_cents": 549,
+   "discount_cents": 100,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "eggs",
+   "icon_key": "eggs",
+   "shelf_life_days": 28
+  },
+  {
+   "name": "Organic Baby Spinach, 5 oz",
+   "raw_text": "Organic Baby Spinach, 5 oz",
+   "quantity": "1",
+   "unit_price_cents": 399,
+   "line_total_cents": 399,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "produce",
+   "icon_key": "leafy_greens",
+   "shelf_life_days": 5
+  },
+  {
+   "name": "365 by Whole Foods Market, Whole Wheat Sandwich Bread",
+   "raw_text": "365 by Whole Foods Market, Whole Wheat Sandwich Bread",
+   "quantity": "1",
+   "unit_price_cents": 349,
+   "line_total_cents": 349,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "bakery",
+   "icon_key": "bread",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "365 by Whole Foods Market, Extra Virgin Olive Oil, 500 ml",
+   "raw_text": "365 by Whole Foods Market, Extra Virgin Olive Oil, 500 ml",
+   "quantity": "2",
+   "unit_price_cents": 899,
+   "line_total_cents": 1798,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "condiments",
+   "icon_key": "oil",
+   "shelf_life_days": 180
+  },
+  {
+   "name": "Laundry Detergent, 64 loads",
+   "raw_text": "Laundry Detergent, 64 loads",
+   "quantity": "1",
+   "unit_price_cents": 1199,
+   "line_total_cents": 1199,
+   "discount_cents": 0,
+   "taxable": true,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "none",
+   "category": "household",
+   "icon_key": "generic_pantry",
+   "shelf_life_days": null
+  }
+ ],
+ "subtotal_cents": 6040,
+ "tax_cents": 79,
+ "fees": [
+  {
+   "kind": "fee",
+   "label": "Delivery fee",
+   "amount_cents": 995,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "fee",
+   "label": "Service fee",
+   "amount_cents": 300,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "tip",
+   "label": "Driver tip",
+   "amount_cents": 500,
+   "confidence_x1000": 1000
+  }
+ ],
+ "total_cents": 7864,
+ "computed_total_cents": 7914,
+ "mismatch_cents": -50,
+ "field_confidence_x1000": {
+  "store_name": 1000,
+  "purchase_date": 1000,
+  "total": 1000
+ },
+ "warnings": [
+  "total_mismatch: printed 7864 computed 7914 difference -50"
+ ],
+ "status": "done",
+ "source": "pdf_text"
+}

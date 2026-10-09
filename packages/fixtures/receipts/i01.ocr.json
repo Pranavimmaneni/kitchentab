@@ -1,0 +1,1716 @@
+{
+ "id": "i01",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i01.jpg",
+   "width": 1161,
+   "height": 2058,
+   "preprocess": {
+    "deskew_deg": 3.4,
+    "scale": 0.898
+   },
+   "lines": [
+    {
+     "text": "ShopRite",
+     "bbox": [
+      434,
+      147,
+      727,
+      195
+     ],
+     "confidence": 90.4,
+     "words": [
+      {
+       "text": "ShopRite",
+       "bbox": [
+        434,
+        147,
+        727,
+        195
+       ],
+       "confidence": 90.4
+      }
+     ]
+    },
+    {
+     "text": "ShopRite of Hoboken",
+     "bbox": [
+      414,
+      212,
+      749,
+      239
+     ],
+     "confidence": 94.2,
+     "words": [
+      {
+       "text": "ShopRite",
+       "bbox": [
+        414,
+        213,
+        553,
+        239
+       ],
+       "confidence": 89.9
+      },
+      {
+       "text": "of",
+       "bbox": [
+        574,
+        212,
+        607,
+        232
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Hoboken",
+       "bbox": [
+        627,
+        213,
+        749,
+        234
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "900 Madison St",
+     "bbox": [
+      461,
+      253,
+      705,
+      275
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "900",
+       "bbox": [
+        461,
+        254,
+        509,
+        275
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Madison",
+       "bbox": [
+        529,
+        253,
+        653,
+        274
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "St",
+       "bbox": [
+        673,
+        255,
+        705,
+        275
+       ],
+       "confidence": 95.3
+      }
+     ]
+    },
+    {
+     "text": "Hoboken NJ 07030",
+     "bbox": [
+      442,
+      295,
+      724,
+      316
+     ],
+     "confidence": 96,
+     "words": [
+      {
+       "text": "Hoboken",
+       "bbox": [
+        442,
+        296,
+        564,
+        316
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "NJ",
+       "bbox": [
+        583,
+        295,
+        618,
+        314
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "07030",
+       "bbox": [
+        639,
+        295,
+        724,
+        316
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "(201) 555-0110",
+     "bbox": [
+      466,
+      336,
+      705,
+      360
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "(201)",
+       "bbox": [
+        466,
+        337,
+        539,
+        360
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "555-0110",
+       "bbox": [
+        567,
+        336,
+        705,
+        357
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "DAIRY",
+     "bbox": [
+      208,
+      420,
+      295,
+      439
+     ],
+     "confidence": 95.8,
+     "words": [
+      {
+       "text": "DAIRY",
+       "bbox": [
+        208,
+        420,
+        295,
+        439
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "WHOLE MILK 1 GAL                    4.29 F",
+     "bbox": [
+      207,
+      461,
+      954,
+      482
+     ],
+     "confidence": 94.3,
+     "words": [
+      {
+       "text": "WHOLE",
+       "bbox": [
+        207,
+        461,
+        295,
+        480
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "MILK",
+       "bbox": [
+        314,
+        462,
+        385,
+        482
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "1",
+       "bbox": [
+        406,
+        462,
+        418,
+        482
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "GAL",
+       "bbox": [
+        439,
+        463,
+        491,
+        482
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "4.29",
+       "bbox": [
+        850,
+        461,
+        917,
+        482
+       ],
+       "confidence": 91.4
+      },
+      {
+       "text": "F",
+       "bbox": [
+        938,
+        462,
+        954,
+        481
+       ],
+       "confidence": 89.5
+      }
+     ]
+    },
+    {
+     "text": "LG EGGS 18CT                        5.49 F",
+     "bbox": [
+      209,
+      502,
+      954,
+      523
+     ],
+     "confidence": 91.7,
+     "words": [
+      {
+       "text": "LG",
+       "bbox": [
+        209,
+        502,
+        242,
+        522
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "EGGS",
+       "bbox": [
+        261,
+        502,
+        330,
+        522
+       ],
+       "confidence": 92.5
+      },
+      {
+       "text": "18CT",
+       "bbox": [
+        353,
+        503,
+        420,
+        523
+       ],
+       "confidence": 92.5
+      },
+      {
+       "text": "5.49",
+       "bbox": [
+        850,
+        503,
+        918,
+        523
+       ],
+       "confidence": 90.6
+      },
+      {
+       "text": "F",
+       "bbox": [
+        939,
+        503,
+        954,
+        523
+       ],
+       "confidence": 86.1
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      208,
+      544,
+      331,
+      564
+     ],
+     "confidence": 96.6,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        208,
+        544,
+        331,
+        564
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "BASMATI RICE 10LB                  14.99 F",
+     "bbox": [
+      209,
+      585,
+      955,
+      606
+     ],
+     "confidence": 90.1,
+     "words": [
+      {
+       "text": "BASMATI",
+       "bbox": [
+        209,
+        585,
+        330,
+        605
+       ],
+       "confidence": 90.5
+      },
+      {
+       "text": "RICE",
+       "bbox": [
+        351,
+        586,
+        421,
+        606
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "10LB",
+       "bbox": [
+        443,
+        586,
+        510,
+        606
+       ],
+       "confidence": 91.6
+      },
+      {
+       "text": "14.99",
+       "bbox": [
+        834,
+        585,
+        919,
+        606
+       ],
+       "confidence": 87.6
+      },
+      {
+       "text": "F",
+       "bbox": [
+        940,
+        586,
+        955,
+        605
+       ],
+       "confidence": 87.6
+      }
+     ]
+    },
+    {
+     "text": "DAIRY",
+     "bbox": [
+      211,
+      627,
+      297,
+      646
+     ],
+     "confidence": 96.8,
+     "words": [
+      {
+       "text": "DAIRY",
+       "bbox": [
+        211,
+        627,
+        297,
+        646
+       ],
+       "confidence": 96.8
+      }
+     ]
+    },
+    {
+     "text": "GRK YGRT PLN 3202                   6.79 F",
+     "bbox": [
+      209,
+      668,
+      955,
+      690
+     ],
+     "confidence": 88.5,
+     "words": [
+      {
+       "text": "GRK",
+       "bbox": [
+        209,
+        668,
+        261,
+        687
+       ],
+       "confidence": 88.9
+      },
+      {
+       "text": "YGRT",
+       "bbox": [
+        281,
+        669,
+        349,
+        689
+       ],
+       "confidence": 91.7
+      },
+      {
+       "text": "PLN",
+       "bbox": [
+        370,
+        670,
+        421,
+        690
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "3202",
+       "bbox": [
+        442,
+        669,
+        508,
+        689
+       ],
+       "confidence": 82.3
+      },
+      {
+       "text": "6.79",
+       "bbox": [
+        852,
+        669,
+        918,
+        689
+       ],
+       "confidence": 81.8
+      },
+      {
+       "text": "F",
+       "bbox": [
+        939,
+        670,
+        955,
+        689
+       ],
+       "confidence": 89.9
+      }
+     ]
+    },
+    {
+     "text": "PRICE PLUS SAVINGS                   1.00-",
+     "bbox": [
+      209,
+      710,
+      952,
+      731
+     ],
+     "confidence": 92,
+     "words": [
+      {
+       "text": "PRICE",
+       "bbox": [
+        209,
+        710,
+        294,
+        729
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "PLUS",
+       "bbox": [
+        316,
+        711,
+        383,
+        731
+       ],
+       "confidence": 95.2
+      },
+      {
+       "text": "SAVINGS",
+       "bbox": [
+        404,
+        711,
+        525,
+        731
+       ],
+       "confidence": 95.2
+      },
+      {
+       "text": "1.00-",
+       "bbox": [
+        868,
+        710,
+        952,
+        731
+       ],
+       "confidence": 80.9
+      }
+     ]
+    },
+    {
+     "text": "PRODUCE",
+     "bbox": [
+      208,
+      751,
+      329,
+      771
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "PRODUCE",
+       "bbox": [
+        208,
+        751,
+        329,
+        771
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "2.10 1b @ .63 /1b",
+     "bbox": [
+      244,
+      791,
+      544,
+      815
+     ],
+     "confidence": 84.6,
+     "words": [
+      {
+       "text": "2.10",
+       "bbox": [
+        244,
+        791,
+        311,
+        812
+       ],
+       "confidence": 94.8
+      },
+      {
+       "text": "1b",
+       "bbox": [
+        334,
+        793,
+        366,
+        813
+       ],
+       "confidence": 92.2
+      },
+      {
+       "text": "@",
+       "bbox": [
+        387,
+        792,
+        400,
+        814
+       ],
+       "confidence": 89.2
+      },
+      {
+       "text": ".63",
+       "bbox": [
+        426,
+        793,
+        472,
+        813
+       ],
+       "confidence": 92
+      },
+      {
+       "text": "/1b",
+       "bbox": [
+        494,
+        792,
+        544,
+        815
+       ],
+       "confidence": 54.9
+      }
+     ]
+    },
+    {
+     "text": "ORG BNNA                            1.32 F",
+     "bbox": [
+      208,
+      835,
+      954,
+      856
+     ],
+     "confidence": 91.5,
+     "words": [
+      {
+       "text": "ORG",
+       "bbox": [
+        208,
+        835,
+        260,
+        854
+       ],
+       "confidence": 92.8
+      },
+      {
+       "text": "BNNA",
+       "bbox": [
+        279,
+        835,
+        350,
+        855
+       ],
+       "confidence": 90.5
+      },
+      {
+       "text": "1.32",
+       "bbox": [
+        850,
+        835,
+        916,
+        856
+       ],
+       "confidence": 91.3
+      },
+      {
+       "text": "F",
+       "bbox": [
+        938,
+        836,
+        954,
+        855
+       ],
+       "confidence": 91.3
+      }
+     ]
+    },
+    {
+     "text": "HOUSEHOLD",
+     "bbox": [
+      209,
+      876,
+      368,
+      896
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "HOUSEHOLD",
+       "bbox": [
+        209,
+        876,
+        368,
+        896
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "PAPER TOWELS 6PK                    9.99 T",
+     "bbox": [
+      210,
+      917,
+      954,
+      938
+     ],
+     "confidence": 89.9,
+     "words": [
+      {
+       "text": "PAPER",
+       "bbox": [
+        210,
+        917,
+        297,
+        936
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "TOWELS",
+       "bbox": [
+        316,
+        918,
+        420,
+        938
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "6PK",
+       "bbox": [
+        442,
+        918,
+        493,
+        938
+       ],
+       "confidence": 92
+      },
+      {
+       "text": "9.99",
+       "bbox": [
+        851,
+        918,
+        918,
+        938
+       ],
+       "confidence": 82.7
+      },
+      {
+       "text": "T",
+       "bbox": [
+        938,
+        918,
+        954,
+        937
+       ],
+       "confidence": 84.9
+      }
+     ]
+    },
+    {
+     "text": "DISH SOAP                           3.49 T",
+     "bbox": [
+      210,
+      958,
+      955,
+      979
+     ],
+     "confidence": 81.7,
+     "words": [
+      {
+       "text": "DISH",
+       "bbox": [
+        210,
+        958,
+        278,
+        978
+       ],
+       "confidence": 94.9
+      },
+      {
+       "text": "SOAP",
+       "bbox": [
+        299,
+        959,
+        368,
+        979
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "3.49",
+       "bbox": [
+        851,
+        959,
+        919,
+        979
+       ],
+       "confidence": 67.8
+      },
+      {
+       "text": "T",
+       "bbox": [
+        939,
+        959,
+        955,
+        979
+       ],
+       "confidence": 67.8
+      }
+     ]
+    },
+    {
+     "text": "MEAT",
+     "bbox": [
+      207,
+      999,
+      278,
+      1019
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "MEAT",
+       "bbox": [
+        207,
+        999,
+        278,
+        1019
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "3.00 1b @ 3.79 /1b",
+     "bbox": [
+      243,
+      1041,
+      561,
+      1064
+     ],
+     "confidence": 91.7,
+     "words": [
+      {
+       "text": "3.00",
+       "bbox": [
+        243,
+        1041,
+        311,
+        1061
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "1b",
+       "bbox": [
+        333,
+        1042,
+        366,
+        1062
+       ],
+       "confidence": 92.1
+      },
+      {
+       "text": "@",
+       "bbox": [
+        386,
+        1042,
+        399,
+        1064
+       ],
+       "confidence": 86.7
+      },
+      {
+       "text": "3.79",
+       "bbox": [
+        422,
+        1043,
+        489,
+        1063
+       ],
+       "confidence": 93.3
+      },
+      {
+       "text": "/1b",
+       "bbox": [
+        511,
+        1041,
+        561,
+        1064
+       ],
+       "confidence": 90.6
+      }
+     ]
+    },
+    {
+     "text": "BNLS CHKN THIGHS                   11.37 F",
+     "bbox": [
+      206,
+      1083,
+      952,
+      1105
+     ],
+     "confidence": 92,
+     "words": [
+      {
+       "text": "BNLS",
+       "bbox": [
+        206,
+        1083,
+        275,
+        1102
+       ],
+       "confidence": 89.3
+      },
+      {
+       "text": "CHKN",
+       "bbox": [
+        295,
+        1084,
+        365,
+        1104
+       ],
+       "confidence": 91.9
+      },
+      {
+       "text": "THIGHS",
+       "bbox": [
+        384,
+        1085,
+        488,
+        1104
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "11.37",
+       "bbox": [
+        831,
+        1083,
+        914,
+        1105
+       ],
+       "confidence": 92.5
+      },
+      {
+       "text": "F",
+       "bbox": [
+        936,
+        1084,
+        952,
+        1104
+       ],
+       "confidence": 90
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      207,
+      1124,
+      330,
+      1145
+     ],
+     "confidence": 96.7,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        207,
+        1124,
+        330,
+        1145
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "OAT MILK 6402                       4.59 F",
+     "bbox": [
+      207,
+      1165,
+      954,
+      1187
+     ],
+     "confidence": 92.4,
+     "words": [
+      {
+       "text": "OAT",
+       "bbox": [
+        207,
+        1165,
+        259,
+        1185
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "MILK",
+       "bbox": [
+        278,
+        1166,
+        349,
+        1186
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "6402",
+       "bbox": [
+        370,
+        1167,
+        437,
+        1187
+       ],
+       "confidence": 89.2
+      },
+      {
+       "text": "4.59",
+       "bbox": [
+        850,
+        1166,
+        917,
+        1187
+       ],
+       "confidence": 90.9
+      },
+      {
+       "text": "F",
+       "bbox": [
+        938,
+        1167,
+        954,
+        1186
+       ],
+       "confidence": 90.3
+      }
+     ]
+    },
+    {
+     "text": "PRODUCE",
+     "bbox": [
+      209,
+      1207,
+      331,
+      1227
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "PRODUCE",
+       "bbox": [
+        209,
+        1207,
+        331,
+        1227
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "BBY SPINACH                         3.99 F",
+     "bbox": [
+      208,
+      1249,
+      954,
+      1270
+     ],
+     "confidence": 84.5,
+     "words": [
+      {
+       "text": "BBY",
+       "bbox": [
+        208,
+        1249,
+        260,
+        1268
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "SPINACH",
+       "bbox": [
+        280,
+        1249,
+        402,
+        1270
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "3.99",
+       "bbox": [
+        850,
+        1250,
+        918,
+        1270
+       ],
+       "confidence": 72.4
+      },
+      {
+       "text": "F",
+       "bbox": [
+        939,
+        1250,
+        954,
+        1270
+       ],
+       "confidence": 72.4
+      }
+     ]
+    },
+    {
+     "text": "GROCERY",
+     "bbox": [
+      208,
+      1290,
+      331,
+      1311
+     ],
+     "confidence": 96.9,
+     "words": [
+      {
+       "text": "GROCERY",
+       "bbox": [
+        208,
+        1290,
+        331,
+        1311
+       ],
+       "confidence": 96.9
+      }
+     ]
+    },
+    {
+     "text": "PROTEIN BARS 12CT                  17.99 F",
+     "bbox": [
+      208,
+      1332,
+      954,
+      1353
+     ],
+     "confidence": 91.3,
+     "words": [
+      {
+       "text": "PROTEIN",
+       "bbox": [
+        208,
+        1332,
+        330,
+        1352
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "BARS",
+       "bbox": [
+        349,
+        1333,
+        418,
+        1353
+       ],
+       "confidence": 93.1
+      },
+      {
+       "text": "12CT",
+       "bbox": [
+        440,
+        1333,
+        508,
+        1353
+       ],
+       "confidence": 91.1
+      },
+      {
+       "text": "17.99",
+       "bbox": [
+        832,
+        1332,
+        917,
+        1353
+       ],
+       "confidence": 88.1
+      },
+      {
+       "text": "F",
+       "bbox": [
+        938,
+        1333,
+        954,
+        1352
+       ],
+       "confidence": 88.1
+      }
+     ]
+    },
+    {
+     "text": "COFFEE BEANS 1202                   9.99 F",
+     "bbox": [
+      206,
+      1373,
+      953,
+      1394
+     ],
+     "confidence": 92.7,
+     "words": [
+      {
+       "text": "COFFEE",
+       "bbox": [
+        206,
+        1373,
+        310,
+        1393
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "BEANS",
+       "bbox": [
+        330,
+        1374,
+        417,
+        1394
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "1202",
+       "bbox": [
+        439,
+        1374,
+        506,
+        1394
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "9.99",
+       "bbox": [
+        849,
+        1373,
+        915,
+        1394
+       ],
+       "confidence": 86.9
+      },
+      {
+       "text": "F",
+       "bbox": [
+        936,
+        1374,
+        953,
+        1394
+       ],
+       "confidence": 86.9
+      }
+     ]
+    },
+    {
+     "text": "BAG FEE                               0.10",
+     "bbox": [
+      205,
+      1414,
+      950,
+      1435
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "BAG",
+       "bbox": [
+        205,
+        1414,
+        257,
+        1434
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "FEE",
+       "bbox": [
+        278,
+        1414,
+        328,
+        1434
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "0.10",
+       "bbox": [
+        883,
+        1415,
+        950,
+        1435
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "SUBTOTAL                             93.39",
+     "bbox": [
+      208,
+      1498,
+      953,
+      1518
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "SUBTOTAL",
+       "bbox": [
+        208,
+        1498,
+        349,
+        1518
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "93.39",
+       "bbox": [
+        868,
+        1498,
+        953,
+        1518
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "NJ SALES TAX                          0.89",
+     "bbox": [
+      207,
+      1539,
+      953,
+      1560
+     ],
+     "confidence": 95.5,
+     "words": [
+      {
+       "text": "NJ",
+       "bbox": [
+        207,
+        1539,
+        243,
+        1558
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "SALES",
+       "bbox": [
+        262,
+        1539,
+        347,
+        1560
+       ],
+       "confidence": 94.4
+      },
+      {
+       "text": "TAX",
+       "bbox": [
+        368,
+        1541,
+        420,
+        1560
+       ],
+       "confidence": 94.4
+      },
+      {
+       "text": "0.89",
+       "bbox": [
+        885,
+        1539,
+        953,
+        1560
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "**#** BALANCE DUE                     94.28",
+     "bbox": [
+      209,
+      1580,
+      951,
+      1602
+     ],
+     "confidence": 76,
+     "words": [
+      {
+       "text": "**#**",
+       "bbox": [
+        209,
+        1580,
+        275,
+        1592
+       ],
+       "confidence": 13.9
+      },
+      {
+       "text": "BALANCE",
+       "bbox": [
+        296,
+        1581,
+        419,
+        1602
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "DUE",
+       "bbox": [
+        440,
+        1582,
+        490,
+        1601
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "94.28",
+       "bbox": [
+        868,
+        1581,
+        951,
+        1601
+       ],
+       "confidence": 96.3
+      }
+     ]
+    },
+    {
+     "text": "VISA                                 94.28",
+     "bbox": [
+      206,
+      1621,
+      951,
+      1642
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "VISA",
+       "bbox": [
+        206,
+        1621,
+        278,
+        1641
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "94.28",
+       "bbox": [
+        868,
+        1622,
+        951,
+        1642
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "CHANGE                               .00",
+     "bbox": [
+      206,
+      1664,
+      951,
+      1684
+     ],
+     "confidence": 90,
+     "words": [
+      {
+       "text": "CHANGE",
+       "bbox": [
+        206,
+        1664,
+        311,
+        1684
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": ".00",
+       "bbox": [
+        905,
+        1664,
+        951,
+        1684
+       ],
+       "confidence": 83.2
+      }
+     ]
+    },
+    {
+     "text": "PRICE PLUS CLUB CARD",
+     "bbox": [
+      402,
+      1747,
+      756,
+      1768
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "PRICE",
+       "bbox": [
+        402,
+        1748,
+        488,
+        1768
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "PLUS",
+       "bbox": [
+        509,
+        1747,
+        576,
+        1767
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "CLUB",
+       "bbox": [
+        597,
+        1747,
+        666,
+        1767
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "CARD",
+       "bbox": [
+        686,
+        1748,
+        756,
+        1768
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "TOTAL SAVINGS                         1.00",
+     "bbox": [
+      206,
+      1788,
+      951,
+      1809
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "TOTAL",
+       "bbox": [
+        206,
+        1788,
+        294,
+        1807
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "SAVINGS",
+       "bbox": [
+        314,
+        1789,
+        435,
+        1809
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "1.00",
+       "bbox": [
+        884,
+        1788,
+        951,
+        1808
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "10/02/2026 14:31 0110 05 0042 2231",
+     "bbox": [
+      209,
+      1869,
+      826,
+      1894
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "10/02/2026",
+       "bbox": [
+        209,
+        1869,
+        383,
+        1893
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "14:31",
+       "bbox": [
+        405,
+        1872,
+        488,
+        1893
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "0110",
+       "bbox": [
+        529,
+        1871,
+        596,
+        1891
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "05",
+       "bbox": [
+        618,
+        1871,
+        649,
+        1892
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "0042",
+       "bbox": [
+        671,
+        1872,
+        738,
+        1893
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "2231",
+       "bbox": [
+        759,
+        1873,
+        826,
+        1894
+       ],
+       "confidence": 96.2
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

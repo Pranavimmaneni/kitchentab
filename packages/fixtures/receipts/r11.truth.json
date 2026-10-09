@@ -1,0 +1,192 @@
+{
+ "store_name": "ShopRite",
+ "purchase_date": "2026-10-04",
+ "currency": "USD",
+ "items": [
+  {
+   "name": "Cola 2 liter",
+   "raw_text": "COLA 2 LITER",
+   "quantity": "2",
+   "unit_price_cents": 249,
+   "line_total_cents": 498,
+   "discount_cents": 0,
+   "taxable": true,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "drinks",
+   "icon_key": "soda",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "Sparkling water 12 pk",
+   "raw_text": "SPRKLNG WATER 12PK",
+   "quantity": "1",
+   "unit_price_cents": 549,
+   "line_total_cents": 549,
+   "discount_cents": 0,
+   "taxable": true,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "drinks",
+   "icon_key": "water",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "Honeycrisp apples",
+   "raw_text": "HONEYCRISP APPLES",
+   "quantity": "2.15",
+   "unit_price_cents": 249,
+   "line_total_cents": 535,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "produce",
+   "icon_key": "apple",
+   "shelf_life_days": 6
+  },
+  {
+   "name": "Whole milk 1 gal",
+   "raw_text": "WHOLE MILK 1 GAL",
+   "quantity": "1",
+   "unit_price_cents": 429,
+   "line_total_cents": 429,
+   "discount_cents": 50,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "dairy",
+   "icon_key": "milk",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "Whole wheat bread",
+   "raw_text": "WHL WHT BREAD",
+   "quantity": "1",
+   "unit_price_cents": 349,
+   "line_total_cents": -349,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "bakery",
+   "icon_key": "bread",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "Spaghetti 16 oz",
+   "raw_text": "SPAGHETTI 16OZ",
+   "quantity": "4",
+   "unit_price_cents": 99,
+   "line_total_cents": 396,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "grains",
+   "icon_key": "pasta",
+   "shelf_life_days": 365
+  },
+  {
+   "name": "Marinara sauce 24 oz",
+   "raw_text": "MARINARA SAUCE 24OZ",
+   "quantity": "1",
+   "unit_price_cents": 349,
+   "line_total_cents": 349,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "condiments",
+   "icon_key": "sauce_jar",
+   "shelf_life_days": 180
+  },
+  {
+   "name": "Ground beef 80/20",
+   "raw_text": "GRND BEEF 80/20",
+   "quantity": "1.36",
+   "unit_price_cents": 599,
+   "line_total_cents": 815,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "meat_fish",
+   "icon_key": "beef",
+   "shelf_life_days": 2
+  },
+  {
+   "name": "Tortilla chips",
+   "raw_text": "TORTILLA CHIPS",
+   "quantity": "1",
+   "unit_price_cents": 429,
+   "line_total_cents": 429,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "snacks",
+   "icon_key": "chips",
+   "shelf_life_days": 180
+  },
+  {
+   "name": "Trash bags 40 ct",
+   "raw_text": "TRASH BAGS 40CT",
+   "quantity": "1",
+   "unit_price_cents": 899,
+   "line_total_cents": 899,
+   "discount_cents": 0,
+   "taxable": true,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "none",
+   "category": "household",
+   "icon_key": "generic_pantry",
+   "shelf_life_days": null
+  }
+ ],
+ "subtotal_cents": 4600,
+ "tax_cents": 129,
+ "fees": [
+  {
+   "kind": "fee",
+   "label": "Bottle deposit",
+   "amount_cents": 80,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "fee",
+   "label": "Bag fee",
+   "amount_cents": 20,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "order_discount",
+   "label": "STORE COUPON $5 OFF ORDER",
+   "amount_cents": 500,
+   "confidence_x1000": 1000
+  }
+ ],
+ "total_cents": 4229,
+ "computed_total_cents": 4229,
+ "mismatch_cents": null,
+ "field_confidence_x1000": {
+  "store_name": 1000,
+  "purchase_date": 1000,
+  "total": 1000
+ },
+ "warnings": [
+  "subtotal_mismatch: printed 4600 computed 4500"
+ ],
+ "status": "done",
+ "source": "pdf_text"
+}

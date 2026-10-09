@@ -1,0 +1,1668 @@
+{
+ "id": "i15",
+ "engine": "tesseract.js 5.1.1 eng 4.0.0_best_int psm6",
+ "preprocess": "grayscale, contrast 1-99%, deskew, Bradley threshold t=0.15, max 2000 px",
+ "multi_photo": false,
+ "pages": [
+  {
+   "page": 1,
+   "file": "i15.pdf",
+   "width": 1885,
+   "height": 2029,
+   "preprocess": {
+    "deskew_deg": -0.9,
+    "scale": 1
+   },
+   "lines": [
+    {
+     "text": "CT —",
+     "bbox": [
+      137,
+      0,
+      1883,
+      56
+     ],
+     "confidence": 0,
+     "words": [
+      {
+       "text": "CT",
+       "bbox": [
+        137,
+        0,
+        184,
+        56
+       ],
+       "confidence": 0
+      },
+      {
+       "text": "—",
+       "bbox": [
+        1019,
+        2,
+        1883,
+        52
+       ],
+       "confidence": 0
+      }
+     ]
+    },
+    {
+     "text": "amazon",
+     "bbox": [
+      212,
+      198,
+      460,
+      238
+     ],
+     "confidence": 95.3,
+     "words": [
+      {
+       "text": "amazon",
+       "bbox": [
+        212,
+        198,
+        460,
+        238
+       ],
+       "confidence": 95.3
+      }
+     ]
+    },
+    {
+     "text": "Whole Foods Market order",
+     "bbox": [
+      210,
+      281,
+      613,
+      309
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "Whole",
+       "bbox": [
+        210,
+        281,
+        306,
+        308
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        318,
+        281,
+        409,
+        308
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Market",
+       "bbox": [
+        421,
+        281,
+        523,
+        308
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "order",
+       "bbox": [
+        533,
+        282,
+        613,
+        309
+       ],
+       "confidence": 95.8
+      }
+     ]
+    },
+    {
+     "text": "Order placed: October 7, 2026",
+     "bbox": [
+      211,
+      329,
+      667,
+      362
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "Order",
+       "bbox": [
+        211,
+        329,
+        297,
+        355
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "placed:",
+       "bbox": [
+        307,
+        329,
+        413,
+        362
+       ],
+       "confidence": 95.3
+      },
+      {
+       "text": "October",
+       "bbox": [
+        426,
+        329,
+        547,
+        355
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "7,",
+       "bbox": [
+        556,
+        329,
+        581,
+        360
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "2026",
+       "bbox": [
+        593,
+        329,
+        667,
+        356
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "Order # 112-4471932-5518206",
+     "bbox": [
+      211,
+      376,
+      675,
+      404
+     ],
+     "confidence": 92.3,
+     "words": [
+      {
+       "text": "Order",
+       "bbox": [
+        211,
+        376,
+        297,
+        403
+       ],
+       "confidence": 93.2
+      },
+      {
+       "text": "#",
+       "bbox": [
+        306,
+        376,
+        325,
+        402
+       ],
+       "confidence": 92
+      },
+      {
+       "text": "112-4471932-5518206",
+       "bbox": [
+        337,
+        376,
+        675,
+        404
+       ],
+       "confidence": 91.8
+      }
+     ]
+    },
+    {
+     "text": "Qty          Item                                                                                                         Price",
+     "bbox": [
+      211,
+      448,
+      1677,
+      490
+     ],
+     "confidence": 95.7,
+     "words": [
+      {
+       "text": "Qty",
+       "bbox": [
+        211,
+        448,
+        267,
+        490
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Item",
+       "bbox": [
+        375,
+        451,
+        442,
+        478
+       ],
+       "confidence": 94.4
+      },
+      {
+       "text": "Price",
+       "bbox": [
+        1596,
+        453,
+        1677,
+        480
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "1.50lb Organic Bananas                                                                                       $0.74",
+     "bbox": [
+      214,
+      510,
+      1677,
+      543
+     ],
+     "confidence": 65.1,
+     "words": [
+      {
+       "text": "1.50lb",
+       "bbox": [
+        214,
+        510,
+        312,
+        537
+       ],
+       "confidence": 17.5
+      },
+      {
+       "text": "Organic",
+       "bbox": [
+        374,
+        510,
+        493,
+        543
+       ],
+       "confidence": 50.4
+      },
+      {
+       "text": "Bananas",
+       "bbox": [
+        504,
+        511,
+        636,
+        538
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "$0.74",
+       "bbox": [
+        1593,
+        512,
+        1677,
+        541
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "$0.49/b",
+     "bbox": [
+      374,
+      556,
+      482,
+      584
+     ],
+     "confidence": 67.6,
+     "words": [
+      {
+       "text": "$0.49/b",
+       "bbox": [
+        374,
+        556,
+        482,
+        584
+       ],
+       "confidence": 67.6
+      }
+     ]
+    },
+    {
+     "text": "1.121b Atlantic Salmon Fillet                                                                 $13.43",
+     "bbox": [
+      213,
+      604,
+      1676,
+      635
+     ],
+     "confidence": 68.2,
+     "words": [
+      {
+       "text": "1.121b",
+       "bbox": [
+        213,
+        604,
+        311,
+        631
+       ],
+       "confidence": 37.2
+      },
+      {
+       "text": "Atlantic",
+       "bbox": [
+        372,
+        604,
+        484,
+        631
+       ],
+       "confidence": 40
+      },
+      {
+       "text": "Salmon",
+       "bbox": [
+        494,
+        605,
+        607,
+        631
+       ],
+       "confidence": 76
+      },
+      {
+       "text": "Fillet",
+       "bbox": [
+        620,
+        605,
+        690,
+        632
+       ],
+       "confidence": 92.5
+      },
+      {
+       "text": "$13.43",
+       "bbox": [
+        1573,
+        605,
+        1676,
+        635
+       ],
+       "confidence": 95.4
+      }
+     ]
+    },
+    {
+     "text": "$11.99/b",
+     "bbox": [
+      373,
+      651,
+      496,
+      678
+     ],
+     "confidence": 57.7,
+     "words": [
+      {
+       "text": "$11.99/b",
+       "bbox": [
+        373,
+        651,
+        496,
+        678
+       ],
+       "confidence": 57.7
+      }
+     ]
+    },
+    {
+     "text": "1            365 by Whole Foods Market, Whole Milk, 1 Gallon                                     $4.29",
+     "bbox": [
+      212,
+      700,
+      1675,
+      734
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        212,
+        700,
+        223,
+        727
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "365",
+       "bbox": [
+        373,
+        700,
+        428,
+        726
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "by",
+       "bbox": [
+        440,
+        700,
+        474,
+        734
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        484,
+        700,
+        579,
+        727
+       ],
+       "confidence": 95.1
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        591,
+        700,
+        683,
+        728
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        695,
+        701,
+        804,
+        732
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        816,
+        701,
+        911,
+        728
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Milk,",
+       "bbox": [
+        923,
+        701,
+        989,
+        732
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "1",
+       "bbox": [
+        1003,
+        701,
+        1014,
+        728
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Gallon",
+       "bbox": [
+        1030,
+        701,
+        1126,
+        728
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "$4.29",
+       "bbox": [
+        1592,
+        701,
+        1675,
+        731
+       ],
+       "confidence": 96.9
+      }
+     ]
+    },
+    {
+     "text": "1             365 by Whole Foods Market, Large Eggs, 18 ct                                            $5.49",
+     "bbox": [
+      211,
+      747,
+      1675,
+      782
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        211,
+        748,
+        223,
+        774
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "365",
+       "bbox": [
+        373,
+        747,
+        428,
+        774
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "by",
+       "bbox": [
+        439,
+        748,
+        474,
+        781
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        483,
+        748,
+        579,
+        775
+       ],
+       "confidence": 95.2
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        591,
+        748,
+        683,
+        775
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        694,
+        749,
+        804,
+        780
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "Large",
+       "bbox": [
+        817,
+        748,
+        902,
+        782
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Eggs,",
+       "bbox": [
+        914,
+        748,
+        997,
+        782
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "18",
+       "bbox": [
+        1011,
+        749,
+        1045,
+        775
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "ct",
+       "bbox": [
+        1056,
+        750,
+        1082,
+        775
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "$5.49",
+       "bbox": [
+        1592,
+        749,
+        1675,
+        778
+       ],
+       "confidence": 96
+      }
+     ]
+    },
+    {
+     "text": "Prime member savings                                                                                                     -$1.00",
+     "bbox": [
+      374,
+      795,
+      1676,
+      826
+     ],
+     "confidence": 95,
+     "words": [
+      {
+       "text": "Prime",
+       "bbox": [
+        374,
+        795,
+        452,
+        819
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "member",
+       "bbox": [
+        462,
+        796,
+        574,
+        820
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "savings",
+       "bbox": [
+        582,
+        796,
+        685,
+        826
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "-$1.00",
+       "bbox": [
+        1590,
+        797,
+        1676,
+        823
+       ],
+       "confidence": 91.4
+      }
+     ]
+    },
+    {
+     "text": "1             Organic Baby Spinach, 5 oz                                                                       $3.99",
+     "bbox": [
+      213,
+      842,
+      1676,
+      876
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        213,
+        842,
+        224,
+        869
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Organic",
+       "bbox": [
+        374,
+        842,
+        492,
+        876
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "Baby",
+       "bbox": [
+        503,
+        842,
+        578,
+        876
+       ],
+       "confidence": 95.9
+      },
+      {
+       "text": "Spinach,",
+       "bbox": [
+        589,
+        843,
+        718,
+        876
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "5",
+       "bbox": [
+        731,
+        843,
+        748,
+        870
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "oz",
+       "bbox": [
+        758,
+        850,
+        794,
+        870
+       ],
+       "confidence": 94.9
+      },
+      {
+       "text": "$3.99",
+       "bbox": [
+        1593,
+        844,
+        1676,
+        873
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "1            365 by Whole Foods Market, Whole Wheat Sandwich",
+     "bbox": [
+      213,
+      889,
+      1176,
+      924
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        213,
+        890,
+        225,
+        917
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "365",
+       "bbox": [
+        374,
+        889,
+        429,
+        916
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "by",
+       "bbox": [
+        441,
+        890,
+        475,
+        924
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        485,
+        890,
+        580,
+        917
+       ],
+       "confidence": 92.7
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        592,
+        890,
+        684,
+        917
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        696,
+        891,
+        805,
+        922
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        817,
+        891,
+        912,
+        918
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Wheat",
+       "bbox": [
+        922,
+        890,
+        1020,
+        917
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Sandwich",
+       "bbox": [
+        1031,
+        891,
+        1176,
+        918
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "Bread                                                                                                       $3.49",
+     "bbox": [
+      374,
+      938,
+      1676,
+      969
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "Bread",
+       "bbox": [
+        374,
+        938,
+        462,
+        965
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "$3.49",
+       "bbox": [
+        1592,
+        939,
+        1676,
+        969
+       ],
+       "confidence": 96.6
+      }
+     ]
+    },
+    {
+     "text": "2            365 by Whole Foods Market, Extra Virgin Olive Oil,",
+     "bbox": [
+      209,
+      985,
+      1136,
+      1020
+     ],
+     "confidence": 96.3,
+     "words": [
+      {
+       "text": "2",
+       "bbox": [
+        209,
+        985,
+        227,
+        1013
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "365",
+       "bbox": [
+        373,
+        985,
+        428,
+        1012
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "by",
+       "bbox": [
+        439,
+        986,
+        474,
+        1019
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "Whole",
+       "bbox": [
+        484,
+        986,
+        579,
+        1013
+       ],
+       "confidence": 95.2
+      },
+      {
+       "text": "Foods",
+       "bbox": [
+        591,
+        986,
+        683,
+        1013
+       ],
+       "confidence": 95.7
+      },
+      {
+       "text": "Market,",
+       "bbox": [
+        695,
+        987,
+        804,
+        1018
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "Extra",
+       "bbox": [
+        817,
+        987,
+        894,
+        1013
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Virgin",
+       "bbox": [
+        904,
+        986,
+        989,
+        1020
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "Olive",
+       "bbox": [
+        1001,
+        986,
+        1076,
+        1013
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Oil,",
+       "bbox": [
+        1087,
+        987,
+        1136,
+        1018
+       ],
+       "confidence": 95.3
+      }
+     ]
+    },
+    {
+     "text": "500 mi                                                                                                    $17.98",
+     "bbox": [
+      373,
+      1033,
+      1675,
+      1064
+     ],
+     "confidence": 95.9,
+     "words": [
+      {
+       "text": "500",
+       "bbox": [
+        373,
+        1033,
+        428,
+        1059
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "mi",
+       "bbox": [
+        439,
+        1033,
+        472,
+        1059
+       ],
+       "confidence": 94.3
+      },
+      {
+       "text": "$17.98",
+       "bbox": [
+        1572,
+        1034,
+        1675,
+        1064
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "$8.99 each",
+     "bbox": [
+      372,
+      1079,
+      522,
+      1106
+     ],
+     "confidence": 96.1,
+     "words": [
+      {
+       "text": "$8.99",
+       "bbox": [
+        372,
+        1079,
+        448,
+        1106
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "each",
+       "bbox": [
+        457,
+        1080,
+        522,
+        1104
+       ],
+       "confidence": 96.1
+      }
+     ]
+    },
+    {
+     "text": "1              Laundry Detergent, 64 loads                                                                      $11.99",
+     "bbox": [
+      211,
+      1127,
+      1675,
+      1161
+     ],
+     "confidence": 96.2,
+     "words": [
+      {
+       "text": "1",
+       "bbox": [
+        211,
+        1127,
+        222,
+        1154
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "Laundry",
+       "bbox": [
+        372,
+        1127,
+        494,
+        1161
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "Detergent,",
+       "bbox": [
+        505,
+        1127,
+        660,
+        1161
+       ],
+       "confidence": 96.3
+      },
+      {
+       "text": "64",
+       "bbox": [
+        672,
+        1128,
+        708,
+        1155
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "loads",
+       "bbox": [
+        720,
+        1129,
+        799,
+        1155
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "$11.99",
+       "bbox": [
+        1574,
+        1128,
+        1675,
+        1158
+       ],
+       "confidence": 94.5
+      }
+     ]
+    },
+    {
+     "text": "Item(s) Subtotal:                                     $60.40",
+     "bbox": [
+      958,
+      1224,
+      1676,
+      1257
+     ],
+     "confidence": 91.1,
+     "words": [
+      {
+       "text": "Item(s)",
+       "bbox": [
+        958,
+        1224,
+        1062,
+        1257
+       ],
+       "confidence": 81.4
+      },
+      {
+       "text": "Subtotal:",
+       "bbox": [
+        1072,
+        1224,
+        1203,
+        1251
+       ],
+       "confidence": 95.6
+      },
+      {
+       "text": "$60.40",
+       "bbox": [
+        1573,
+        1224,
+        1676,
+        1254
+       ],
+       "confidence": 96.2
+      }
+     ]
+    },
+    {
+     "text": "Delivery fee:                                                  $9.95",
+     "bbox": [
+      958,
+      1271,
+      1676,
+      1305
+     ],
+     "confidence": 94.6,
+     "words": [
+      {
+       "text": "Delivery",
+       "bbox": [
+        958,
+        1271,
+        1079,
+        1305
+       ],
+       "confidence": 95.5
+      },
+      {
+       "text": "fee:",
+       "bbox": [
+        1088,
+        1272,
+        1143,
+        1298
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "$9.95",
+       "bbox": [
+        1592,
+        1272,
+        1676,
+        1301
+       ],
+       "confidence": 91.4
+      }
+     ]
+    },
+    {
+     "text": "Service fee:                                              $3.00",
+     "bbox": [
+      957,
+      1318,
+      1675,
+      1348
+     ],
+     "confidence": 92.8,
+     "words": [
+      {
+       "text": "Service",
+       "bbox": [
+        957,
+        1318,
+        1069,
+        1345
+       ],
+       "confidence": 92.1
+      },
+      {
+       "text": "fee:",
+       "bbox": [
+        1079,
+        1319,
+        1134,
+        1346
+       ],
+       "confidence": 90.4
+      },
+      {
+       "text": "$3.00",
+       "bbox": [
+        1591,
+        1319,
+        1675,
+        1348
+       ],
+       "confidence": 95.9
+      }
+     ]
+    },
+    {
+     "text": "Driver tip:                                                              $5.00",
+     "bbox": [
+      957,
+      1366,
+      1675,
+      1400
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "Driver",
+       "bbox": [
+        957,
+        1366,
+        1047,
+        1393
+       ],
+       "confidence": 96.5
+      },
+      {
+       "text": "tip:",
+       "bbox": [
+        1055,
+        1367,
+        1099,
+        1400
+       ],
+       "confidence": 96.1
+      },
+      {
+       "text": "$5.00",
+       "bbox": [
+        1591,
+        1366,
+        1675,
+        1396
+       ],
+       "confidence": 96.5
+      }
+     ]
+    },
+    {
+     "text": "Estimated tax to be collected:                  $0.79",
+     "bbox": [
+      957,
+      1414,
+      1674,
+      1444
+     ],
+     "confidence": 96.5,
+     "words": [
+      {
+       "text": "Estimated",
+       "bbox": [
+        957,
+        1414,
+        1105,
+        1441
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "tax",
+       "bbox": [
+        1116,
+        1416,
+        1160,
+        1441
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "to",
+       "bbox": [
+        1170,
+        1416,
+        1198,
+        1441
+       ],
+       "confidence": 95.8
+      },
+      {
+       "text": "be",
+       "bbox": [
+        1209,
+        1415,
+        1245,
+        1441
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "collected:",
+       "bbox": [
+        1256,
+        1416,
+        1396,
+        1442
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "$0.79",
+       "bbox": [
+        1591,
+        1415,
+        1674,
+        1444
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "Grand Total:                           $78.64",
+     "bbox": [
+      956,
+      1480,
+      1674,
+      1514
+     ],
+     "confidence": 85,
+     "words": [
+      {
+       "text": "Grand",
+       "bbox": [
+        956,
+        1481,
+        1066,
+        1511
+       ],
+       "confidence": 96.2
+      },
+      {
+       "text": "Total:",
+       "bbox": [
+        1080,
+        1482,
+        1178,
+        1511
+       ],
+       "confidence": 62.1
+      },
+      {
+       "text": "$78.64",
+       "bbox": [
+        1558,
+        1480,
+        1674,
+        1514
+       ],
+       "confidence": 96.7
+      }
+     ]
+    },
+    {
+     "text": "Payment method: Visa ending in 4412",
+     "bbox": [
+      210,
+      1577,
+      781,
+      1612
+     ],
+     "confidence": 96.4,
+     "words": [
+      {
+       "text": "Payment",
+       "bbox": [
+        210,
+        1577,
+        343,
+        1611
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "method:",
+       "bbox": [
+        353,
+        1578,
+        473,
+        1604
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "Visa",
+       "bbox": [
+        483,
+        1578,
+        548,
+        1604
+       ],
+       "confidence": 96.7
+      },
+      {
+       "text": "ending",
+       "bbox": [
+        559,
+        1578,
+        659,
+        1612
+       ],
+       "confidence": 96
+      },
+      {
+       "text": "in",
+       "bbox": [
+        671,
+        1579,
+        695,
+        1605
+       ],
+       "confidence": 96.4
+      },
+      {
+       "text": "4412",
+       "bbox": [
+        706,
+        1579,
+        781,
+        1606
+       ],
+       "confidence": 96.4
+      }
+     ]
+    },
+    {
+     "text": "Thank you for shopping with us.",
+     "bbox": [
+      209,
+      1625,
+      687,
+      1659
+     ],
+     "confidence": 96.7,
+     "words": [
+      {
+       "text": "Thank",
+       "bbox": [
+        209,
+        1625,
+        303,
+        1652
+       ],
+       "confidence": 96.9
+      },
+      {
+       "text": "you",
+       "bbox": [
+        313,
+        1631,
+        366,
+        1658
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "for",
+       "bbox": [
+        377,
+        1625,
+        417,
+        1651
+       ],
+       "confidence": 97
+      },
+      {
+       "text": "shopping",
+       "bbox": [
+        427,
+        1625,
+        563,
+        1659
+       ],
+       "confidence": 96.6
+      },
+      {
+       "text": "with",
+       "bbox": [
+        573,
+        1626,
+        632,
+        1652
+       ],
+       "confidence": 96.8
+      },
+      {
+       "text": "us.",
+       "bbox": [
+        644,
+        1632,
+        687,
+        1653
+       ],
+       "confidence": 95.7
+      }
+     ]
+    },
+    {
+     "text": "EEE ————,——,—_—_—,— EEE.",
+     "bbox": [
+      0,
+      1973,
+      1750,
+      2029
+     ],
+     "confidence": 20,
+     "words": [
+      {
+       "text": "EEE",
+       "bbox": [
+        0,
+        1973,
+        224,
+        2029
+       ],
+       "confidence": 41.1
+      },
+      {
+       "text": "————,——,—_—_—,—",
+       "bbox": [
+        508,
+        1973,
+        938,
+        2029
+       ],
+       "confidence": 0
+      },
+      {
+       "text": "EEE.",
+       "bbox": [
+        1120,
+        1973,
+        1750,
+        2029
+       ],
+       "confidence": 37.2
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

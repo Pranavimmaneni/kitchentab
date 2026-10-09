@@ -1,0 +1,202 @@
+{
+ "store_name": "Instacart",
+ "purchase_date": "2026-10-01",
+ "currency": "USD",
+ "items": [
+  {
+   "name": "Organic Bananas",
+   "raw_text": "Organic Bananas",
+   "quantity": "1.67",
+   "unit_price_cents": 63,
+   "line_total_cents": 105,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "produce",
+   "icon_key": "banana",
+   "shelf_life_days": 6
+  },
+  {
+   "name": "Greek Yogurt Plain, 32 oz",
+   "raw_text": "Greek Yogurt Plain, 32 oz",
+   "quantity": "1",
+   "unit_price_cents": 679,
+   "line_total_cents": 679,
+   "discount_cents": 100,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "dairy",
+   "icon_key": "yogurt",
+   "shelf_life_days": 14
+  },
+  {
+   "name": "Sparkling Water Lime, 12 pk",
+   "raw_text": "Sparkling Water Lime, 12 pk",
+   "quantity": "2",
+   "unit_price_cents": 549,
+   "line_total_cents": 1098,
+   "discount_cents": 0,
+   "taxable": true,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "drinks",
+   "icon_key": "water",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "Organic Baby Spinach, 5 oz",
+   "raw_text": "Organic Baby Spinach, 5 oz",
+   "quantity": "1",
+   "unit_price_cents": 399,
+   "line_total_cents": 399,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "produce",
+   "icon_key": "leafy_greens",
+   "shelf_life_days": 5
+  },
+  {
+   "name": "Boneless Skinless Chicken Thighs",
+   "raw_text": "Boneless Skinless Chicken Thighs",
+   "quantity": "2.53",
+   "unit_price_cents": 379,
+   "line_total_cents": 959,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "meat_fish",
+   "icon_key": "chicken",
+   "shelf_life_days": 2
+  },
+  {
+   "name": "Spaghetti Pasta, 16 oz",
+   "raw_text": "Spaghetti Pasta, 16 oz",
+   "quantity": "3",
+   "unit_price_cents": 149,
+   "line_total_cents": 447,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "grains",
+   "icon_key": "pasta",
+   "shelf_life_days": 365
+  },
+  {
+   "name": "Marinara Sauce, 24 oz",
+   "raw_text": "Marinara Sauce, 24 oz",
+   "quantity": "1",
+   "unit_price_cents": 349,
+   "line_total_cents": 349,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "condiments",
+   "icon_key": "sauce_jar",
+   "shelf_life_days": 180
+  },
+  {
+   "name": "Laundry Detergent, 64 loads",
+   "raw_text": "Laundry Detergent, 64 loads",
+   "quantity": "1",
+   "unit_price_cents": 1199,
+   "line_total_cents": 1199,
+   "discount_cents": 0,
+   "taxable": true,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "none",
+   "category": "household",
+   "icon_key": "generic_pantry",
+   "shelf_life_days": null
+  },
+  {
+   "name": "Shredded Cheddar Cheese, 8 oz",
+   "raw_text": "Shredded Cheddar Cheese, 8 oz",
+   "quantity": "1",
+   "unit_price_cents": 349,
+   "line_total_cents": 349,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "fridge",
+   "category": "dairy",
+   "icon_key": "cheese",
+   "shelf_life_days": 7
+  },
+  {
+   "name": "Stumptown Hair Bender Whole Bean Coffee, Medium Roast, Small Batch, 12 oz Bag",
+   "raw_text": "Stumptown Hair Bender Whole Bean Coffee, Medium Roast, Small Batch, 12 oz Bag",
+   "quantity": "1",
+   "unit_price_cents": 999,
+   "line_total_cents": 999,
+   "discount_cents": 0,
+   "taxable": false,
+   "confidence_x1000": 1000,
+   "flagged": false,
+   "storage": "pantry",
+   "category": "coffee_tea",
+   "icon_key": "coffee",
+   "shelf_life_days": 180
+  }
+ ],
+ "subtotal_cents": 6483,
+ "tax_cents": 152,
+ "fees": [
+  {
+   "kind": "fee",
+   "label": "Bottle deposit",
+   "amount_cents": 120,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "fee",
+   "label": "Checkout bag fee",
+   "amount_cents": 30,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "fee",
+   "label": "Delivery fee",
+   "amount_cents": 399,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "fee",
+   "label": "Service fee",
+   "amount_cents": 215,
+   "confidence_x1000": 1000
+  },
+  {
+   "kind": "tip",
+   "label": "Shopper tip",
+   "amount_cents": 600,
+   "confidence_x1000": 1000
+  }
+ ],
+ "total_cents": 7999,
+ "computed_total_cents": 7999,
+ "mismatch_cents": null,
+ "field_confidence_x1000": {
+  "store_name": 1000,
+  "purchase_date": 1000,
+  "total": 1000
+ },
+ "warnings": [],
+ "status": "done",
+ "source": "pdf_text"
+}

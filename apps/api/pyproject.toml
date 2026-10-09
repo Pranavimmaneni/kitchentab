@@ -22,6 +22,9 @@ dependencies = [
   "cryptography>=43",
   "pyyaml>=6.0",
   "tzdata>=2024.1",  # zoneinfo data on Windows dev machines (house and user time zones)
+  "pdfplumber>=0.11",
+  "pypdf>=5.0",
+  "vercel-queue[devserver]>=0.9.1",
 ]
 
 [dependency-groups]
@@ -35,6 +38,7 @@ dev = [
   "mypy>=1.11",
   "types-pyyaml",
   "pre-commit>=3.8",
+  "pillow>=11.0",
 ]
 
 [tool.uv]
@@ -79,3 +83,6 @@ markers = [
 ]
 addopts = "-ra --strict-markers"
 filterwarnings = ["ignore::DeprecationWarning:testcontainers.*"]
+
+[[tool.vercel.subscribers]]  # ADR-0013: outbox drain
+entrypoint = "app.queues.outbox"
