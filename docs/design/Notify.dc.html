@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Turn on notifications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 904px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 6px 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Kitchen.dc.html" aria-label="Close" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+    <span style="flex: 1; font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">KITCHENTAB · NOTIFICATIONS</span>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="flex: 1; padding: 6px 20px 20px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 24px; line-height: 1.2; font-weight: 700">Don't miss an ask.</h1>
+      <span style="font-size: 15px; color: {{c.muted}}; line-height: 1.45">Get a ping when someone wants your stuff, your share changes, or food needs eating.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{pings}}" as="n" hint-placeholder-count="3">
+        <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; border-radius: 16px; padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start; box-shadow: {{n.shadow}}; transform: rotate({{n.tilt}})">
+          <span style="width: 34px; height: 34px; flex: none; border-radius: 9px; background: #C6F432; border: 2px solid #121210; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2"></rect><path d="M6 9.5h12M9 5.5v2M9 12.5v4"></path></svg>
+          </span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}"><span>KITCHENTAB</span><span>{{n.when}}</span></div>
+            <span style="font-size: 14px; font-weight: 700; line-height: 1.3">{{n.title}}</span>
+            <span style="font-size: 13px; line-height: 1.35; color: {{c.muted}}">{{n.body}}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div role="tablist" aria-label="Your phone" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 2px solid {{c.line}}; border-radius: 999px; padding: 3px; background: {{c.paper}}">
+      <button type="button" role="tab" aria-selected="{{iosSel}}" onClick="{{pickIos}}" style="min-height: 40px; border: none; border-radius: 999px; background: {{iosBg}}; color: {{iosFg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer">ON IPHONE</button>
+      <button type="button" role="tab" aria-selected="{{andSel}}" onClick="{{pickAndroid}}" style="min-height: 40px; border: none; border-radius: 999px; background: {{andBg}}; color: {{andFg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer">ANDROID · DESKTOP</button>
+    </div>
+
+    <sc-if value="{{isIos}}" hint-placeholder-val="{{ true }}">
+      <div style="border: 2px dashed {{c.faint}}; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">IPHONE NEEDS ONE EXTRA STEP</span>
+        <sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <span style="width: 26px; height: 26px; flex: none; border-radius: 50%; background: {{c.ink}}; color: {{c.bg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700">{{s.n}}</span>
+            <span style="font-size: 14px; line-height: 1.35">{{s.text}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{isAndroid}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 13px; color: {{c.muted}}; line-height: 1.45; text-align: center">Your browser will ask once. You can change any of this later in Settings.</span>
+    </sc-if>
+  </div>
+
+  <div style="padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; flex-direction: column; gap: 6px">
+    <button type="button" style="min-height: 56px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; box-shadow: 4px 4px 0 {{c.shadow}}; cursor: pointer">{{cta}}</button>
+    <a href="Kitchen.dc.html" style="min-height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">Not now</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":904}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null, platform: 'ios' }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF' };
+    const ios = this.state.platform === 'ios';
+    const pings = [
+      { title: 'Kabir asked for your chicken thighs', body: 'A bit, for tonight’s curry. Tap to answer.', when: 'NOW', tilt: '-1deg', shadow: '4px 4px 0 ' + c.shadow },
+      { title: 'Your ShopRite share changed', body: 'Meera joined the coffee beans. You’re now at $21.82 (−$1.69).', when: '2M AGO', tilt: '0.6deg', shadow: 'none' },
+      { title: 'Spinach needs eating', body: 'Yours and Meera’s. About a day left.', when: '9:00 AM', tilt: '-0.4deg', shadow: 'none' }
+    ];
+    const steps = [
+      { n: '1', text: 'Tap Share in Safari’s toolbar.' },
+      { n: '2', text: 'Choose “Add to Home Screen”.' },
+      { n: '3', text: 'Open KitchenTab from your Home Screen and turn on notifications.' }
+    ];
+    return {
+      c, pings, steps, isIos: ios, isAndroid: !ios,
+      cta: ios ? 'Show me where Share is' : 'Turn on notifications',
+      iosSel: ios ? 'true' : 'false', andSel: ios ? 'false' : 'true',
+      iosBg: ios ? c.ink : 'transparent', iosFg: ios ? c.bg : c.ink,
+      andBg: ios ? 'transparent' : c.ink, andFg: ios ? c.ink : c.bg,
+      pickIos: () => this.setState({ platform: 'ios' }), pickAndroid: () => this.setState({ platform: 'android' }),
+      isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notification settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 1124px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 8px 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Kitchen.dc.html" aria-label="Back to settings" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">SETTINGS</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">Notifications</h1>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="flex: 1; padding: 6px 20px 28px; display: flex; flex-direction: column; gap: 18px">
+    <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 14px 16px; display: flex; align-items: center; gap: 12px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+        <span style="align-self: flex-start; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; padding: 2px 8px; background: {{c.accent}}; color: #121210; border: 2px solid #121210; transform: rotate(-2deg)">PUSH IS ON</span>
+        <span style="font-size: 14px; line-height: 1.4">For this iPhone, from the Home Screen app.</span>
+      </div>
+      <button type="button" style="min-height: 44px; padding: 0 14px; border: 2px solid {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap">Send a test</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: flex-end; padding: 0 2px">
+        <span style="flex: 1; font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">PING ME ABOUT</span>
+        <span style="width: 64px; text-align: center; font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">PUSH</span>
+        <span style="width: 64px; text-align: center; font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">EMAIL</span>
+      </div>
+      <div style="background: {{c.paper}}; border: 2px solid {{c.line}}">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+          <div style="display: flex; align-items: center; gap: 4px; padding: 6px 4px 6px 14px; border-top: {{r.bt}}">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+              <span style="font-size: 14px; font-weight: 700">{{r.label}}</span>
+              <span style="font-size: 12px; color: {{c.muted}}">{{r.hint}}</span>
+            </div>
+            <button type="button" aria-pressed="{{r.pushOn}}" aria-label="{{r.pushAria}}" onClick="{{r.togglePush}}" style="width: 60px; min-height: 44px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer">
+              <span style="width: 40px; height: 24px; border-radius: 999px; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{r.pushBg}}; position: relative; display: block"><span style="position: absolute; top: 2px; left: {{r.pushX}}; width: 16px; height: 16px; border-radius: 50%; background: {{c.line}}"></span></span>
+            </button>
+            <button type="button" aria-pressed="{{r.mailOn}}" aria-label="{{r.mailAria}}" onClick="{{r.toggleMail}}" style="width: 60px; min-height: 44px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer">
+              <span style="width: 40px; height: 24px; border-radius: 999px; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{r.mailBg}}; position: relative; display: block"><span style="position: absolute; top: 2px; left: {{r.mailX}}; width: 16px; height: 16px; border-radius: 50%; background: {{c.line}}"></span></span>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background: {{c.paper}}; border: 2px solid {{c.line}}">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 14px; font-weight: 700">Quiet hours · 10 PM – 8 AM</span>
+          <span style="font-size: 12px; color: {{c.muted}}; line-height: 1.4">Anything that comes in overnight waits until morning.</span>
+        </div>
+        <button type="button" role="switch" aria-checked="{{quietStr}}" aria-label="Quiet hours" onClick="{{toggleQuiet}}" style="width: 56px; height: 32px; flex: none; border: 2px solid {{c.line}}; border-radius: 999px; background: {{quietBg}}; position: relative; cursor: pointer; padding: 0"><span style="position: absolute; top: 3px; left: {{quietX}}; width: 22px; height: 22px; border-radius: 50%; background: {{c.line}}"></span></button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px dashed {{c.faint}}">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 14px; font-weight: 700">Private on the lock screen</span>
+          <span style="font-size: 12px; color: {{c.muted}}; line-height: 1.4">Hide names, items and amounts until you open the app.</span>
+        </div>
+        <button type="button" role="switch" aria-checked="{{privStr}}" aria-label="Private on the lock screen" onClick="{{togglePriv}}" style="width: 56px; height: 32px; flex: none; border: 2px solid {{c.line}}; border-radius: 999px; background: {{privBg}}; position: relative; cursor: pointer; padding: 0"><span style="position: absolute; top: 3px; left: {{privX}}; width: 22px; height: 22px; border-radius: 50%; background: {{c.line}}"></span></button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">DEVICES GETTING PUSH</span>
+      <div style="background: {{c.paper}}; border: 2px solid {{c.line}}">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px">
+          <div style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">This iPhone</span><span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">HOME SCREEN APP · SINCE OCT 9</span></div>
+          <span style="font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; padding: 2px 6px; border: 2px solid {{c.line}}">YOU'RE HERE</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px; border-top: 1px dashed {{c.faint}}">
+          <div style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">Chrome on MacBook</span><span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">BROWSER · SINCE OCT 3</span></div>
+          <button type="button" style="min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; cursor: pointer">REMOVE</button>
+        </div>
+      </div>
+    </div>
+
+    <span style="font-size: 12px; color: {{c.muted}}; text-align: center; line-height: 1.5">Sign-in codes always come by text or email.<br>Everything you turn off still shows in the app.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":1124}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dark: null, quiet: true, priv: false,
+      push: { asks: true, answers: true, share: true, tab: true, pay: true, remind: true, soon: true, settled: false },
+      mail: { asks: false, answers: false, share: true, tab: true, pay: true, remind: false, soon: false, settled: true } };
+  }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF' };
+    const st = this.state;
+    const TYPES = [
+      ['asks', 'Someone asks for your stuff', 'Answer from the notification'],
+      ['answers', 'Answers to your asks', 'Yes, no, or added to the split'],
+      ['share', 'Your share changed', 'Only when it moves 50¢ or more'],
+      ['tab', 'A new tab includes you', 'With your share'],
+      ['pay', 'Payments', 'Recorded, confirmed or rejected'],
+      ['remind', 'Reminders to pay', 'Once every 2 days, max'],
+      ['soon', 'Food to use soon', 'One round-up at 9 AM'],
+      ['settled', 'Tabs settled or reopened', '']
+    ];
+    const sw = (on) => ({ bg: on ? c.accent : c.faint, x: on ? '18px' : '2px' });
+    const rows = TYPES.map(([k, label, hint], i) => {
+      const p = sw(st.push[k]); const m = sw(st.mail[k]);
+      return {
+        label, hint, bt: i ? '1px dashed ' + c.faint : 'none',
+        pushOn: st.push[k] ? 'true' : 'false', mailOn: st.mail[k] ? 'true' : 'false',
+        pushAria: 'Push for ' + label.toLowerCase(), mailAria: 'Email for ' + label.toLowerCase(),
+        pushBg: p.bg, pushX: p.x, mailBg: m.bg, mailX: m.x,
+        togglePush: () => this.setState({ push: Object.assign({}, st.push, { [k]: !st.push[k] }) }),
+        toggleMail: () => this.setState({ mail: Object.assign({}, st.mail, { [k]: !st.mail[k] }) })
+      };
+    });
+    return {
+      c, rows,
+      quietStr: st.quiet ? 'true' : 'false', quietBg: st.quiet ? c.accent : c.faint, quietX: st.quiet ? '26px' : '3px',
+      privStr: st.priv ? 'true' : 'false', privBg: st.priv ? c.accent : c.faint, privX: st.priv ? '26px' : '3px',
+      toggleQuiet: () => this.setState({ quiet: !st.quiet }), togglePriv: () => this.setState({ priv: !st.priv }),
+      isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

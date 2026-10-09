@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review and send</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 964px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 10px 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Split.dc.html" aria-label="Back to split" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">STEP 3/3</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">Here's the damage</h1>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="flex: 1; padding: 6px 20px 28px; display: flex; flex-direction: column; gap: 14px">
+    <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 16px; font-family: 'Space Mono', monospace; display: flex; flex-direction: column; gap: 4px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 18px; font-weight: 700">SHOPRITE</span>
+        <span style="font-size: 18px; font-weight: 700">$95.18</span>
+      </div>
+      <span style="font-size: 12px; color: {{c.muted}}">10/02/2026 · PAID BY YOU · 12 ITEMS</span>
+    </div>
+
+    <sc-for list="{{people}}" as="p" hint-placeholder-count="4">
+      <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span style="width: 36px; height: 36px; border: 2px solid {{c.line}}; box-sizing: border-box; border-radius: 50%; background: {{p.bg}}; color: {{p.fg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">{{p.initial}}</span>
+          <div style="flex: 1; display: flex; flex-direction: column">
+            <span style="font-weight: 700; font-size: 16px">{{p.name}}</span>
+            <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{p.count}}</span>
+          </div>
+          <span style="font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700">{{p.amount}}</span>
+        </div>
+        <div style="border-top: 1px dashed {{c.faint}}"></div>
+        <span style="font-size: 13px; color: {{c.muted}}; line-height: 1.45">{{p.items}}</span>
+      </div>
+    </sc-for>
+
+    <div style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}; line-height: 1.6; text-align: center; padding: 4px 8px">THIS TAB STAYS OPEN TILL YOU SETTLE IT.<br>ANYONE IN APT 4B CAN HOP ON OR OFF AN ITEM.</div>
+  </div>
+
+  <div style="padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 13px"><span style="color: {{c.muted}}">COMING BACK TO YOU</span><span style="font-weight: 700; background: {{c.accent}}; color: #121210; padding: 0 6px">$71.67</span></div>
+    <a href="Share.dc.html" style="text-decoration: none; background: {{c.accent2}}; color: {{c.onAccent2}}; border: 2px solid {{c.line}}; border-radius: 999px; min-height: 56px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; box-shadow: 4px 4px 0 {{c.shadow}}">Send it to the house ↗</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":964}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', warn: '#FF7A5C' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', warn: '#C23A1E' };
+    const people = [
+      { initial: 'P', name: 'You', bg: '#C6F432', fg: '#121210', amount: '$23.51', count: '9 ITEMS',
+        items: 'Milk, eggs, rice, bananas, paper towels, dish soap, chicken, spinach, coffee' },
+      { initial: 'A', name: 'Arjun', bg: '#7B61FF', fg: '#FFFFFF', amount: '$33.91', count: '7 ITEMS',
+        items: 'Milk, eggs, rice, paper towels, dish soap, chicken, protein bars' },
+      { initial: 'M', name: 'Meera', bg: '#FF8A65', fg: '#121210', amount: '$18.87', count: '7 ITEMS',
+        items: 'Milk, eggs, rice, Greek yogurt, paper towels, dish soap, spinach' },
+      { initial: 'K', name: 'Kabir', bg: '#7FD3F7', fg: '#121210', amount: '$18.89', count: '7 ITEMS',
+        items: 'Eggs, rice, bananas, paper towels, dish soap, oat milk, coffee' }
+    ];
+    return {
+      c, people, isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

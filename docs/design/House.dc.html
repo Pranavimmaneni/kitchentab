@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Set up your house</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 6px 24px; display: flex; align-items: center; gap: 4px">
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">SETUP · 1 MINUTE</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700">Who lives here?</h1>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="flex: 1; padding: 12px 24px 24px; display: flex; flex-direction: column; gap: 20px">
+    <label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">HOUSE NAME
+      <input type="text" value="Apt 4B" style="height: 52px; border: 2px solid {{c.line}}; border-radius: 12px; padding: 0 14px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 18px; background: {{c.paper}}; color: {{c.ink}}">
+    </label>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">ROOMMATES · JUST FIRST NAMES</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="min-height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px 0 6px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.paper}}; font-weight: 700; font-size: 14px">
+          <span style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: #C6F432; color: #121210; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 12px">P</span>You
+        </span>
+        <sc-for list="{{mates}}" as="m" hint-placeholder-count="3">
+          <span style="min-height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 2px 0 6px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.paper}}; font-weight: 700; font-size: 14px">
+            <span style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{m.bg}}; color: {{m.fg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 12px">{{m.initial}}</span>{{m.name}}
+            <button type="button" aria-label="Remove {{m.name}}" style="width: 36px; height: 36px; border: none; background: transparent; color: {{c.muted}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+          </span>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <label style="flex: 1; display: flex">
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Add a roommate</span>
+          <input type="text" placeholder="Add a name…" style="flex: 1; min-width: 0; height: 48px; border: 2px dashed {{c.faint}}; border-radius: 999px; padding: 0 16px; font-family: 'Work Sans', sans-serif; font-size: 15px; background: transparent; color: {{c.ink}}">
+        </label>
+        <button type="button" aria-label="Add roommate" style="width: 48px; height: 48px; border: 2px solid {{c.line}}; border-radius: 50%; background: {{c.accent}}; color: #121210; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+      </div>
+      <span style="font-size: 13px; color: {{c.muted}}; line-height: 1.45">You can split with them right away. They claim their name when they open the link.</span>
+    </div>
+
+    <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">YOUR HOUSE INVITE LINK</span>
+      <div style="display: flex; align-items: center; gap: 8px; border: 2px dashed {{c.faint}}; padding: 4px 4px 4px 12px">
+        <span style="flex: 1; font-family: 'Space Mono', monospace; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">kitchentab.app/h/k7Q2xR9p</span>
+        <button type="button" style="min-height: 40px; padding: 0 12px; border: 2px solid {{c.line}}; background: {{c.bg}}; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer">COPY</button>
+      </div>
+      <button type="button" style="min-height: 50px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px; cursor: pointer">Drop it in the group chat ↗</button>
+    </div>
+  </div>
+
+  <div style="padding: 12px 24px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}">
+    <a href="Scan.dc.html" style="text-decoration: none; background: {{c.ink}}; color: {{c.bg}}; border: 2px solid {{c.line}}; border-radius: 999px; min-height: 56px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px">Snap your first receipt →</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF' };
+    const mates = [
+      { initial: 'A', name: 'Arjun', bg: '#7B61FF', fg: '#FFFFFF' },
+      { initial: 'M', name: 'Meera', bg: '#FF8A65', fg: '#121210' },
+      { initial: 'K', name: 'Kabir', bg: '#7FD3F7', fg: '#121210' }
+    ];
+    return {
+      c, mates, isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

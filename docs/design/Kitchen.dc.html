@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The kitchen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}
+.ht-bob{transform-box:fill-box;transform-origin:center}
+.ht-door{transform-box:fill-box;transform-origin:left center;transition:transform 260ms cubic-bezier(.2,1.4,.4,1)}
+.ht-tile:active .ht-door{transform:perspective(300px) rotateY(-28deg)}
+@media (prefers-reduced-motion: no-preference){
+@keyframes htbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.ht-bob{animation:htbob 2.6s ease-in-out infinite}
+}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <div style="flex: 1; min-height: 0; padding: 54px 20px 18px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: {{c.muted}}; letter-spacing: 0.08em">KITCHENTAB ** APT 4B</span>
+        <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700">The kitchen</h1>
+      </div>
+      <a href="Scan.dc.html" aria-label="Snap a receipt" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.accent2}}; color: {{c.onAccent2}}; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 {{c.shadow}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"></path><path d="M8 12h8"></path></svg>
+      </a>
+      <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+        <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+      </button>
+    </div>
+
+    <div style="display: flex; gap: 8px">
+      <a href="Main.dc.html" style="flex: 1; text-decoration: none; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; white-space: nowrap">
+        <span style="background: {{c.accent}}; color: #121210; padding: 0 4px">+$40.37</span> OWED →
+      </a>
+      <a href="Requests.dc.html" style="flex: 1; text-decoration: none; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; white-space: nowrap">
+        <span style="background: {{c.accent2}}; color: {{c.onAccent2}}; padding: 0 5px">2</span> ASKS FOR YOU →
+      </a>
+    </div>
+
+    <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px">
+      <a href="Fridge.dc.html" class="ht-tile" aria-label="Open the fridge: 10 items, 2 to use soon" style="flex: 1; min-height: 0; text-decoration: none; color: {{c.ink}}; background: {{c.paper}}; border: 2px solid {{c.line}}; border-radius: 8px; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 12px 14px 12px 8px; display: flex; align-items: center; gap: 10px">
+        <svg viewBox="0 0 160 212" width="168" height="223" aria-hidden="true" style="flex: none" fill="none" stroke="{{c.line}}" stroke-width="2" stroke-linejoin="round">
+          <ellipse cx="80" cy="205" rx="62" ry="5" fill="{{c.faint}}" stroke="none"></ellipse>
+          <path d="M118 24 L140 12 L140 190 L118 202 Z" fill="{{c.side}}"></path>
+          <path d="M20 24 L42 12 L140 12 L118 24 Z" fill="{{c.top}}"></path>
+          <rect x="20" y="24" width="98" height="178" rx="5" fill="{{c.cold}}"></rect>
+          <g class="ht-door">
+            <rect x="20" y="24" width="98" height="54" rx="5" fill="{{c.paper}}"></rect>
+            <rect x="20" y="78" width="98" height="124" rx="5" fill="{{c.paper}}"></rect>
+            <rect x="104" y="36" width="6" height="30" rx="3" fill="{{c.line}}"></rect>
+            <rect x="104" y="90" width="6" height="50" rx="3" fill="{{c.line}}"></rect>
+            <path d="M58 41 v14 M51 48 h14 M53 43 l10 10 M63 43 l-10 10" stroke="{{c.muted}}" stroke-width="1.6" stroke-linecap="round"></path>
+            <g transform="rotate(-6 56 112)">
+              <rect x="36" y="96" width="40" height="32" fill="#FFF0C2" stroke="#121210"></rect>
+              <path d="M42 106 H70 M42 113 H66 M42 120 H60" stroke="#121210" stroke-width="1.5" stroke-linecap="round"></path>
+            </g>
+            <rect x="80" y="150" width="15" height="15" rx="3" fill="#7B61FF" stroke="#121210" class="ht-bob"></rect>
+          </g>
+          <circle cx="36" cy="42" r="7" fill="#C6F432" stroke="#121210" class="ht-bob"></circle>
+          <rect x="28" y="202" width="10" height="5" fill="{{c.line}}"></rect>
+          <rect x="100" y="202" width="10" height="5" fill="{{c.line}}"></rect>
+        </svg>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px; font-family: 'Space Mono', monospace">
+            <span style="font-size: 20px; font-weight: 700">FRIDGE</span>
+            <span style="font-size: 11px; color: {{c.muted}}">10 ITEMS →</span>
+          </div>
+          <span style="align-self: flex-start; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; padding: 2px 6px; background: #FF8A65; color: #121210; border: 2px solid #121210; transform: rotate(-2deg)">USE SOON · 2</span>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{fridgeSoon}}" as="it" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="width: 30px; height: 30px; flex: none; border-radius: 50%; background: {{it.bg}}; border: 2px dashed #FF8A65; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{it.d1}}" fill="{{it.f1}}"></path><path d="{{it.d2}}" fill="{{it.f2}}"></path><path d="{{it.d3}}" fill="{{it.f3}}"></path></svg>
+                </span>
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+                  <span style="font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.name}}</span>
+                  <span style="display: flex; align-items: center; gap: 6px; margin-top: 2px"><span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}; white-space: nowrap">{{it.left}}</span><span style="display: flex"><sc-for list="{{it.owners}}" as="o" hint-placeholder-count="2"><span style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid {{c.line}}; box-sizing: border-box; background: {{o.bg}}; color: {{o.fg}}; font-family: 'Space Mono', monospace; font-size: 7px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-left: {{o.ml}}">{{o.initial}}</span></sc-for></span></span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </a>
+
+      <a href="Pantry.dc.html" class="ht-tile" aria-label="Open the pantry: 5 items, 1 to use soon" style="flex: 1; min-height: 0; text-decoration: none; color: {{c.ink}}; background: {{c.paper}}; border: 2px solid {{c.line}}; border-radius: 8px; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 12px 14px 12px 8px; display: flex; align-items: center; gap: 10px">
+        <svg viewBox="0 0 160 212" width="168" height="223" aria-hidden="true" style="flex: none" fill="none" stroke="{{c.line}}" stroke-width="2" stroke-linejoin="round">
+          <ellipse cx="80" cy="205" rx="64" ry="5" fill="{{c.faint}}" stroke="none"></ellipse>
+          <path d="M126 30 L146 18 L146 192 L126 204 Z" fill="{{c.side}}"></path>
+          <path d="M14 30 L34 18 L146 18 L126 30 Z" fill="{{c.top}}"></path>
+          <rect x="14" y="30" width="112" height="174" fill="{{c.wall}}"></rect>
+          <rect x="22" y="52" width="18" height="26" rx="3" fill="#FF6B4A"></rect>
+          <rect x="20" y="45" width="22" height="7" fill="#7B61FF"></rect>
+          <rect x="48" y="40" width="26" height="38" fill="#F7A44A"></rect>
+          <path d="M52 50 l3 -3 l3 3 l3 -3 l3 3 l3 -3 l3 3" stroke-width="1.5"></path>
+          <rect x="82" y="56" width="16" height="22" fill="#7FD3F7"></rect>
+          <rect x="102" y="56" width="16" height="22" fill="#C6F432"></rect>
+          <path d="M14 78 L24 71 L136 71 L126 78 Z" fill="{{c.woodTop}}"></path>
+          <rect x="14" y="78" width="112" height="7" fill="{{c.wood}}"></rect>
+          <path d="M24 132 L22 104 C22 98 42 98 42 104 L40 132 Z" fill="#FFFFFF"></path>
+          <rect x="26" y="112" width="12" height="9" fill="#FF6FB5" stroke-width="1.5"></rect>
+          <rect x="50" y="100" width="30" height="32" fill="#B0A6FF"></rect>
+          <path d="M50 110 H80" stroke-width="1.5"></path>
+          <path d="M88 132 L90 106 L106 106 L108 132 Z" fill="#A8743F"></path>
+          <path d="M90 106 L93 100 H103 L106 106" fill="#C99560"></path>
+          <path d="M14 132 L24 125 L136 125 L126 132 Z" fill="{{c.woodTop}}"></path>
+          <rect x="14" y="132" width="112" height="7" fill="{{c.wood}}"></rect>
+          <g class="ht-bob">
+            <path d="M24 176 C30 188 48 188 56 174 C53 173 51 174 49 175 C44 181 33 180 29 168 Z" fill="#F7D046"></path>
+            <path d="M29 168 L28 164 L31 164" stroke-width="1.5"></path>
+          </g>
+          <rect x="66" y="164" width="26" height="22" fill="#F7A44A"></rect>
+          <rect x="94" y="160" width="26" height="26" fill="#FF8A65"></rect>
+          <path d="M14 186 L24 179 L136 179 L126 186 Z" fill="{{c.woodTop}}"></path>
+          <rect x="14" y="186" width="112" height="8" fill="{{c.wood}}"></rect>
+        </svg>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px; font-family: 'Space Mono', monospace">
+            <span style="font-size: 20px; font-weight: 700">PANTRY</span>
+            <span style="font-size: 11px; color: {{c.muted}}">5 ITEMS →</span>
+          </div>
+          <span style="align-self: flex-start; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; padding: 2px 6px; background: #FF8A65; color: #121210; border: 2px solid #121210; transform: rotate(2deg)">USE SOON · 1</span>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{pantrySoon}}" as="it" hint-placeholder-count="1">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="width: 30px; height: 30px; flex: none; border-radius: 50%; background: {{it.bg}}; border: 2px dashed #FF8A65; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{it.d1}}" fill="{{it.f1}}"></path><path d="{{it.d2}}" fill="{{it.f2}}"></path><path d="{{it.d3}}" fill="{{it.f3}}"></path></svg>
+                </span>
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+                  <span style="font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.name}}</span>
+                  <span style="display: flex; align-items: center; gap: 6px; margin-top: 2px"><span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}; white-space: nowrap">{{it.left}}</span><span style="display: flex"><sc-for list="{{it.owners}}" as="o" hint-placeholder-count="2"><span style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid {{c.line}}; box-sizing: border-box; background: {{o.bg}}; color: {{o.fg}}; font-family: 'Space Mono', monospace; font-size: 7px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-left: {{o.ml}}">{{o.initial}}</span></sc-for></span></span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <nav aria-label="Main" style="background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; padding: 6px 8px 26px; font-family: 'Space Mono', monospace">
+    <a href="Kitchen.dc.html" aria-current="page" style="flex: 1; min-height: 50px; text-decoration: none; color: {{c.ink}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 700">
+      <span style="background: {{c.accent}}; color: #121210; padding: 2px 10px; border-radius: 999px; display: flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2"></rect><path d="M6 9.5h12M9 5.5v2M9 12.5v4"></path></svg></span>
+      KITCHEN
+    </a>
+    <a href="Main.dc.html" style="flex: 1; min-height: 50px; text-decoration: none; color: {{c.muted}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 700">
+      <span style="padding: 2px 10px; display: flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg></span>
+      TABS
+    </a>
+    <a href="Main.dc.html" style="flex: 1; min-height: 50px; text-decoration: none; color: {{c.muted}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 700">
+      <span style="padding: 2px 10px; display: flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"></path></svg></span>
+      BALANCES
+    </a>
+    <a href="House.dc.html" style="flex: 1; min-height: 50px; text-decoration: none; color: {{c.muted}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 700">
+      <span style="padding: 2px 10px; display: flex"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg></span>
+      HOUSE
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', side: '#2C2B26', top: '#3A3933', cold: '#14201F', wall: '#24221D', wood: '#6B5536', woodTop: '#8A6F48' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', side: '#D9D5C8', top: '#EDEAE0', cold: '#E3F1F3', wall: '#F1EADB', wood: '#D9B98A', woodTop: '#E8D2A6' };
+    const ICONS = {
+      spinach: { bg: '#E7F3B5', p: [['M5 19.5 C5 10.5 11 4.5 19.5 4.5 C20 13 14 19.5 5 19.5 Z', '#7BC86C'], ['M5 19.5 L15 9.5', 'none'], ['M0 0', 'none']] },
+      tofu: { bg: '#D6F0FB', p: [['M4 9.5 L12 5.5 L20 9.5 L12 13.5 Z', '#FFFFFF'], ['M4 9.5 V15.5 L12 19.5 V13.5 Z', '#EDEAE0'], ['M20 9.5 V15.5 L12 19.5 V13.5 Z', '#D9D5C8']] },
+      bananas: { bg: '#FFF0C2', p: [['M4.5 7.5 C5.5 16 12.5 20.5 20 15 C19 14 17.8 14 17 14.6 C12 17.5 8 14 6.3 7.5 Z', '#F7D046'], ['M4.5 7.5 L4 5.5 L6 5.3 L6.3 7.5', '#5A5850'], ['M0 0', 'none']] }
+    };
+    const PEOPLE = { P: ['#C6F432', '#121210'], A: ['#7B61FF', '#FFFFFF'], M: ['#FF8A65', '#121210'], K: ['#7FD3F7', '#121210'] };
+    const row = (k, name, left, who) => {
+      const ic = ICONS[k];
+      return { name, left, owners: who.map((o, i) => ({ initial: o, bg: PEOPLE[o][0], fg: PEOPLE[o][1], ml: i ? '-4px' : '0px' })), bg: ic.bg, d1: ic.p[0][0], f1: ic.p[0][1], d2: ic.p[1][0], f2: ic.p[1][1], d3: ic.p[2][0], f3: ic.p[2][1] };
+    };
+    return {
+      c,
+      fridgeSoon: [row('spinach', 'Spinach', '1 DAY LEFT', ['P', 'M']), row('tofu', 'Tofu', 'USE TODAY', ['M'])],
+      pantrySoon: [row('bananas', 'Bananas', '2 DAYS LEFT', ['P', 'K'])],
+      isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

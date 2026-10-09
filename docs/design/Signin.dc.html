@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Start a house</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <div style="flex: 1; padding: 54px 24px 28px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.08em">KITCHENTAB</span>
+      <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+        <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+      </button>
+    </div>
+
+    <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 22px 18px 18px; display: flex; flex-direction: column; gap: 10px; transform: rotate(-1deg); margin-top: 6px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">*** RECEIPT NO. 0001 ***</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 24px; line-height: 1.3; font-weight: 700">Split the groceries.<br><span style="background: {{c.accent}}; color: #121210; padding: 0 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone">Keep the roommates.</span></h1>
+      <span style="font-size: 14px; color: {{c.muted}}; line-height: 1.45">Snap a receipt, tick who uses what, send one link. No app to download.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <button type="button" style="min-height: 54px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.paper}}; color: {{c.ink}}; font-family: 'Work Sans', sans-serif; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 3px 3px 0 {{c.shadow}}">
+        <span style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid {{c.ink}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700">G</span>
+        Continue with Google
+      </button>
+
+      <div style="display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">
+        <span style="flex: 1; border-top: 2px dashed {{c.faint}}"></span>OR GET A CODE<span style="flex: 1; border-top: 2px dashed {{c.faint}}"></span>
+      </div>
+
+      <div role="tablist" aria-label="Code method" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 2px solid {{c.line}}; border-radius: 999px; padding: 3px; background: {{c.paper}}">
+        <button type="button" role="tab" aria-selected="{{emailSel}}" onClick="{{pickEmail}}" style="min-height: 40px; border: none; border-radius: 999px; background: {{emailBg}}; color: {{emailFg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">EMAIL</button>
+        <button type="button" role="tab" aria-selected="{{phoneSel}}" onClick="{{pickPhone}}" style="min-height: 40px; border: none; border-radius: 999px; background: {{phoneBg}}; color: {{phoneFg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">PHONE</button>
+      </div>
+
+      <label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{fieldLabel}}
+        <input type="text" placeholder="{{fieldPlaceholder}}" style="height: 52px; border: 2px solid {{c.line}}; border-radius: 12px; padding: 0 14px; font-family: 'Work Sans', sans-serif; font-size: 16px; background: {{c.paper}}; color: {{c.ink}}">
+      </label>
+
+      <a href="Verify.dc.html" style="text-decoration: none; background: {{c.accent2}}; color: {{c.onAccent2}}; border: 2px solid {{c.line}}; border-radius: 999px; min-height: 56px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; box-shadow: 4px 4px 0 {{c.shadow}}">Send me a code →</a>
+    </div>
+
+    <span style="font-size: 12px; color: {{c.muted}}; text-align: center; line-height: 1.5">Got an invite link from a roommate? Just open it, you'll join their house.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null, method: 'email' }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF' };
+    const email = this.state.method === 'email';
+    return {
+      c, isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark }),
+      emailSel: email ? 'true' : 'false', phoneSel: email ? 'false' : 'true',
+      emailBg: email ? c.ink : 'transparent', emailFg: email ? c.bg : c.ink,
+      phoneBg: email ? 'transparent' : c.ink, phoneFg: email ? c.ink : c.bg,
+      fieldLabel: email ? 'YOUR EMAIL' : 'YOUR PHONE NUMBER',
+      fieldPlaceholder: email ? 'you@email.com' : '(555) 000-0000',
+      pickEmail: () => this.setState({ method: 'email' }),
+      pickPhone: () => this.setState({ method: 'phone' })
+    };
+  }
+}
+</script>
+</body>
+</html>

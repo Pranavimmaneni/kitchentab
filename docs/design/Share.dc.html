@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Share the tab</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <div style="flex: 1; padding: 54px 24px 24px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="align-self: flex-start; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; padding: 3px 8px; background: {{c.accent}}; color: #121210; border: 2px solid {{c.line}}; transform: rotate(-3deg)">SENT!</span>
+        <h1 style="margin: 6px 0 0; font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700">Now tell the house.</h1>
+      </div>
+      <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+        <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+      </button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">GROUP CHAT PREVIEW</span>
+      <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; border-radius: 18px 18px 18px 4px; overflow: hidden; box-shadow: 5px 5px 0 {{c.shadow}}">
+        <div style="background: {{c.accent}}; color: #121210; padding: 14px 16px; font-family: 'Space Mono', monospace; display: flex; flex-direction: column; gap: 2px; border-bottom: 2px solid {{c.line}}">
+          <span style="font-size: 11px">KITCHENTAB · APT 4B</span>
+          <span style="font-size: 18px; font-weight: 700">SHOPRITE · $95.18</span>
+          <span style="font-size: 11px">SPLIT 4 WAYS · TAP FOR YOUR SHARE</span>
+        </div>
+        <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 14px; line-height: 1.45">Groceries are in. Tick anything I got wrong.</span>
+          <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: {{c.muted}}">kitchentab.app/b/Zp4mQ81c</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <button type="button" style="min-height: 52px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 3px 3px 0 {{c.shadow}}">Share ↗</button>
+      <button type="button" style="min-height: 52px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.paper}}; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">Copy link</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">OR NUDGE ONE BY ONE</span>
+      <div style="background: {{c.paper}}; border: 2px solid {{c.line}}">
+        <sc-for list="{{mates}}" as="m" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-top: {{m.bt}}">
+            <span style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{m.bg}}; color: {{m.fg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px">{{m.initial}}</span>
+            <div style="flex: 1; display: flex; flex-direction: column">
+              <span style="font-weight: 700; font-size: 15px">{{m.name}}</span>
+              <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{m.via}}</span>
+            </div>
+            <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">{{m.amount}}</span>
+            <button type="button" aria-label="Send {{m.name}} their link" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 50%; background: transparent; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4z"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <label style="display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 14px; cursor: pointer">
+      <input type="checkbox" checked style="width: 22px; height: 22px; accent-color: {{c.accent2}}; margin: 0">
+      Email everyone a copy, plus a heads-up if their share changes
+    </label>
+  </div>
+
+  <div style="padding: 12px 24px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}">
+    <a href="Bill.dc.html" style="text-decoration: none; background: {{c.ink}}; color: {{c.bg}}; border-radius: 999px; min-height: 54px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px">Done → see the tab</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF' };
+    const mates = [
+      { initial: 'A', name: 'Arjun', bg: '#7B61FF', fg: '#FFFFFF', amount: '$33.91', via: 'SIGNED IN · GOOGLE' },
+      { initial: 'M', name: 'Meera', bg: '#FF8A65', fg: '#121210', amount: '$18.87', via: 'SIGNED IN · PHONE' },
+      { initial: 'K', name: 'Kabir', bg: '#7FD3F7', fg: '#121210', amount: '$18.89', via: 'HASN’T JOINED YET' }
+    ];
+    mates.forEach((m, i) => { m.bt = i ? '1px dashed ' + c.faint : 'none'; });
+    return {
+      c, mates, isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

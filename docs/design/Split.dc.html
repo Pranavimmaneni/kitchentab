@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Split items</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 1140px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 10px 8px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 4px">
+      <a href="Scan.dc.html" aria-label="Back to receipt" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </a>
+      <div style="flex: 1; display: flex; flex-direction: column">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">STEP 2/3 · SHOPRITE · 10/02</span>
+        <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">Who's eating what?</h1>
+      </div>
+      <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+        <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+      </button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 0 0 12px; font-family: 'Space Mono', monospace">
+      <div style="flex: 1; height: 14px; border: 2px solid {{c.line}}; background: {{c.paper}}; box-sizing: border-box; overflow: hidden">
+        <div style="height: 100%; background: {{c.accent}}; width: {{progressPct}}"></div>
+      </div>
+      <span style="font-size: 13px; font-weight: 700">{{progressLabel}}</span>
+    </div>
+    <sc-if value="{{hasUnassigned}}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{fillRest}}" style="margin-left: 12px; min-height: 44px; border: 2px dashed {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">✦ Split the rest with everyone</button>
+    </sc-if>
+  </header>
+
+  <div style="display: flex; align-items: flex-end; padding: 8px 16px 8px 20px; border-top: 2px solid {{c.line}}; border-bottom: 2px dashed {{c.faint}}; background: {{c.paper}}">
+    <span style="flex: 1; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: {{c.muted}}">ITEM</span>
+    <sc-for list="{{members}}" as="m" hint-placeholder-count="4">
+      <div style="width: 44px; display: flex; flex-direction: column; align-items: center; gap: 3px">
+        <span style="width: 26px; height: 26px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{m.bg}}; color: {{m.fg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px">{{m.initial}}</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">{{m.tag}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex: 1; background: {{c.paper}}">
+    <sc-for list="{{rows}}" as="row" hint-placeholder-count="12">
+      <div style="display: flex; align-items: center; padding: 6px 16px 6px 20px; border-bottom: 1px dashed {{c.faint}}">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-right: 6px">
+          <span style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{row.name}}</span>
+          <sc-if value="{{row.unassigned}}" hint-placeholder-val="{{ false }}">
+            <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{row.price}} · <span style="background: {{c.accent}}; color: #121210; padding: 0 4px; font-weight: 700">NOBODY YET</span></span>
+          </sc-if>
+          <sc-if value="{{row.assigned}}" hint-placeholder-val="{{ true }}">
+            <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{row.price}} · {{row.share}}</span>
+          </sc-if>
+        </div>
+        <sc-for list="{{row.cells}}" as="cell" hint-placeholder-count="4">
+          <button type="button" aria-label="{{cell.label}}" aria-pressed="{{cell.pressed}}" onClick="{{cell.toggle}}" style="width: 44px; height: 44px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer">
+            <sc-if value="{{cell.on}}" hint-placeholder-val="{{ false }}">
+              <span style="width: 30px; height: 30px; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{cell.bg}}; color: {{cell.fg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px; box-shadow: 2px 2px 0 {{c.shadow}}; transform: rotate({{cell.tilt}})">{{cell.initial}}</span>
+            </sc-if>
+            <sc-if value="{{cell.off}}" hint-placeholder-val="{{ true }}">
+              <span style="width: 30px; height: 30px; border: 2px solid {{c.faint}}; box-sizing: border-box"></span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div style="padding: 14px 20px 18px; font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}; text-align: center">TAX $0.89 · SPLIT BY EACH PERSON'S SHARE</div>
+  </div>
+
+  <div style="background: #121210; color: #F1EFE7; border-top: 2px solid {{c.line}}; padding: 14px 16px 30px; display: flex; flex-direction: column; gap: 12px; font-family: 'Space Mono', monospace">
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{totals}}" as="t" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+          <span style="font-size: 10px; opacity: 0.75">{{t.name}}</span>
+          <span style="font-size: 16px; font-weight: 700">{{t.amount}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{hasUnassigned}}" hint-placeholder-val="{{ true }}">
+      <div style="min-height: 52px; border-radius: 999px; border: 2px dashed #F1EFE7; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; opacity: 0.8">{{remainingLabel}}</div>
+    </sc-if>
+    <sc-if value="{{allAssigned}}" hint-placeholder-val="{{ false }}">
+      <a href="Summary.dc.html" style="text-decoration: none; min-height: 52px; border-radius: 999px; background: {{c.accent}}; color: #121210; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">All sorted → review</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":1140}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.items = [
+      { id: 'milk', name: 'Whole milk', price: 4.29, who: [1,1,1,0] },
+      { id: 'eggs', name: 'Eggs, 18 ct', price: 5.49, who: [1,1,1,1] },
+      { id: 'rice', name: 'Basmati rice', price: 14.99, who: [1,1,1,1] },
+      { id: 'yog', name: 'Greek yogurt', price: 6.79, who: [0,0,1,0] },
+      { id: 'ban', name: 'Bananas', price: 1.32, who: [1,0,0,1] },
+      { id: 'tow', name: 'Paper towels', price: 9.99, who: [1,1,1,1] },
+      { id: 'soap', name: 'Dish soap', price: 3.49, who: [1,1,1,1] },
+      { id: 'chk', name: 'Chicken thighs', price: 11.37, who: [1,1,0,0] },
+      { id: 'oat', name: 'Oat milk', price: 4.59, who: [0,0,0,1] },
+      { id: 'spin', name: 'Baby spinach', price: 3.99, who: [0,0,0,0] },
+      { id: 'bars', name: 'Protein bars', price: 17.99, who: [0,0,0,0] },
+      { id: 'cof', name: 'Coffee beans', price: 9.99, who: [0,0,0,0] }
+    ];
+    const assign = {};
+    this.items.forEach((it) => { assign[it.id] = it.who.slice(); });
+    this.state = { assign, dark: null };
+  }
+  toggle(id, i) {
+    const assign = Object.assign({}, this.state.assign);
+    const next = assign[id].slice();
+    next[i] = next[i] ? 0 : 1;
+    assign[id] = next;
+    this.setState({ assign });
+  }
+  fillRest() {
+    const assign = Object.assign({}, this.state.assign);
+    Object.keys(assign).forEach((k) => { if (!assign[k].some(Boolean)) assign[k] = [1,1,1,1]; });
+    this.setState({ assign });
+  }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', warn: '#FF7A5C' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', warn: '#C23A1E' };
+    const fmt = (n) => '$' + n.toFixed(2);
+    const fmtc = (v) => '$' + (v / 100).toFixed(2);
+    const lr = (amount, weights) => { const W = weights.reduce((x, y) => x + y, 0); const base = weights.map((w) => Math.floor(amount * w / W)); const left = amount - base.reduce((x, y) => x + y, 0); const order = weights.map((w, i) => i).filter((i) => weights[i] > 0).sort((p, q) => ((amount * weights[q]) % W) - ((amount * weights[p]) % W) || p - q); for (let k = 0; k < left; k++) base[order[k]] += 1; return base; };
+    const members = [
+      { initial: 'P', tag: 'YOU', name: 'You', bg: '#C6F432', fg: '#121210' },
+      { initial: 'A', tag: 'ARJ', name: 'Arjun', bg: '#7B61FF', fg: '#FFFFFF' },
+      { initial: 'M', tag: 'MEE', name: 'Meera', bg: '#FF8A65', fg: '#121210' },
+      { initial: 'K', tag: 'KAB', name: 'Kabir', bg: '#7FD3F7', fg: '#121210' }
+    ];
+    const tilts = ['-4deg', '3deg', '-2deg', '4deg'];
+    const a = this.state.assign;
+    const sub = [0,0,0,0];
+    let done = 0;
+    const rows = this.items.map((it, r) => {
+      const who = a[it.id];
+      const n = who.filter(Boolean).length;
+      if (n) { done++; lr(Math.round(it.price * 100), who).forEach((v, i) => { sub[i] += v; }); }
+      return {
+        name: it.name,
+        price: fmt(it.price),
+        unassigned: n === 0,
+        assigned: n > 0,
+        share: n === 1 ? 'JUST ' + members[who.indexOf(1)].tag.replace('ARJ', 'ARJUN').replace('MEE', 'MEERA').replace('KAB', 'KABIR') : fmt(it.price / n) + ' × ' + n,
+        cells: members.map((m, i) => ({
+          on: !!who[i], off: !who[i], pressed: who[i] ? 'true' : 'false',
+          initial: m.initial, bg: m.bg, fg: m.fg, tilt: tilts[(i + r) % 4],
+          label: m.name + ' uses ' + it.name,
+          toggle: () => this.toggle(it.id, i)
+        }))
+      };
+    });
+    const subtotal = sub.reduce((x, y) => x + y, 0);
+    const taxPart = subtotal ? lr(89, sub) : [0, 0, 0, 0];
+    const totals = members.map((m, i) => ({ name: m.tag, amount: fmtc(sub[i] + taxPart[i]) }));
+    const left = this.items.length - done;
+    return {
+      c, members, rows, totals, isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark }),
+      progressPct: Math.round(done / this.items.length * 100) + '%',
+      progressLabel: done + '/' + this.items.length,
+      hasUnassigned: left > 0,
+      allAssigned: left === 0,
+      remainingLabel: left + (left === 1 ? ' ITEM' : ' ITEMS') + ' LOOKING FOR A HOME',
+      fillRest: () => this.fillRest()
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Share requests</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 1168px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 8px 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Kitchen.dc.html" aria-label="Back to the kitchen" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">SHARING · APT 4B</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">Can I have some?</h1>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="padding: 4px 20px 12px">
+    <div role="tablist" aria-label="Requests" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 2px solid {{c.line}}; border-radius: 999px; padding: 3px; background: {{c.paper}}">
+      <button type="button" role="tab" aria-selected="{{inSel}}" onClick="{{showIn}}" style="min-height: 40px; border: none; border-radius: 999px; background: {{inBg}}; color: {{inFg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer">{{inLabel}}</button>
+      <button type="button" role="tab" aria-selected="{{outSel}}" onClick="{{showOut}}" style="min-height: 40px; border: none; border-radius: 999px; background: {{outBg}}; color: {{outFg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer">YOU ASKED · 2</button>
+    </div>
+  </div>
+
+  <div style="flex: 1; padding: 6px 20px 28px; display: flex; flex-direction: column; gap: 16px">
+    <sc-if value="{{isIn}}" hint-placeholder-val="{{ true }}">
+      <sc-for list="{{incoming}}" as="r" hint-placeholder-count="2">
+        <article style="background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 4px 4px 0 {{c.shadow}}; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; gap: 12px; align-items: flex-start">
+            <span style="width: 36px; height: 36px; flex: none; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{r.avBg}}; color: {{r.avFg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">{{r.initial}}</span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+              <span style="font-size: 15px; line-height: 1.35"><b>{{r.who}}</b> wants {{r.amountWords}} your <b>{{r.item}}</b></span>
+              <span style="font-size: 13px; font-style: italic; color: {{c.muted}}">{{r.quote}}</span>
+              <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">{{r.ago}}</span>
+            </div>
+            <span style="width: 44px; height: 44px; flex: none; border-radius: 50%; background: {{r.bg}}; border: 2px solid {{c.line}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{r.d1}}" fill="{{r.f1}}"></path><path d="{{r.d2}}" fill="{{r.f2}}"></path><path d="{{r.d3}}" fill="{{r.f3}}"></path></svg>
+            </span>
+          </div>
+          <span style="font-size: 12px; color: {{c.muted}}">{{r.coOwners}}</span>
+
+          <sc-if value="{{r.pending}}" hint-placeholder-val="{{ true }}">
+            <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">HOW SHOULD IT WORK?</span>
+            <div role="radiogroup" aria-label="How should it work" style="display: flex; flex-direction: column; gap: 8px">
+              <button type="button" role="radio" aria-checked="{{r.freeChecked}}" onClick="{{r.pickFree}}" style="text-align: left; min-height: 60px; border: 2px solid {{c.line}}; border-radius: 12px; padding: 12px 14px; background: {{r.freeBg}}; color: {{r.freeFg}}; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; font-family: 'Work Sans', sans-serif">
+                <span style="width: 20px; height: 20px; flex: none; border-radius: 50%; border: 2px solid currentColor; box-sizing: border-box; display: flex; align-items: center; justify-content: center; margin-top: 1px"><sc-if value="{{r.isFree}}" hint-placeholder-val="{{ true }}"><span style="width: 10px; height: 10px; border-radius: 50%; background: currentColor"></span></sc-if></span>
+                <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 15px">On the house</span><span style="font-size: 12px; line-height: 1.4">Free. Nobody's bill changes.</span></span>
+              </button>
+              <button type="button" role="radio" aria-checked="{{r.splitChecked}}" onClick="{{r.pickSplit}}" style="text-align: left; min-height: 60px; border: 2px solid {{c.line}}; border-radius: 12px; padding: 12px 14px; background: {{r.splitBg}}; color: {{r.splitFg}}; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; font-family: 'Work Sans', sans-serif">
+                <span style="width: 20px; height: 20px; flex: none; border-radius: 50%; border: 2px solid currentColor; box-sizing: border-box; display: flex; align-items: center; justify-content: center; margin-top: 1px"><sc-if value="{{r.isSplit}}" hint-placeholder-val="{{ false }}"><span style="width: 10px; height: 10px; border-radius: 50%; background: currentColor"></span></sc-if></span>
+                <span style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; font-size: 15px">Add them to the split</span><span style="font-size: 12px; line-height: 1.4">{{r.splitWhy}}</span><span style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px"><sc-for list="{{r.deltas}}" as="d" hint-placeholder-count="3"><span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; padding: 1px 6px; border: 1.5px solid currentColor; white-space: nowrap">{{d}}</span></sc-for></span></span>
+              </button>
+            </div>
+            <div style="display: flex; gap: 10px">
+              <button type="button" onClick="{{r.decline}}" style="flex: 1; min-height: 52px; border: 2px solid {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">Not this time</button>
+              <button type="button" onClick="{{r.approve}}" style="flex: 1.3; min-height: 52px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; box-shadow: 3px 3px 0 {{c.shadow}}; cursor: pointer">Say yes</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{r.done}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; align-items: center; gap: 12px; border-top: 2px dashed {{c.faint}}; padding-top: 12px">
+              <span style="font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; padding: 4px 10px; background: {{r.stampBg}}; color: {{r.stampFg}}; border: 2px solid {{c.line}}; transform: rotate(-3deg); white-space: nowrap">{{r.stampText}}</span>
+              <span style="flex: 1; font-size: 13px; color: {{c.muted}}; line-height: 1.4">{{r.doneNote}}</span>
+              <button type="button" onClick="{{r.reset}}" style="min-height: 44px; padding: 0 10px; border: none; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; text-decoration: underline; cursor: pointer">UNDO</button>
+            </div>
+          </sc-if>
+        </article>
+      </sc-for>
+    </sc-if>
+
+    <sc-if value="{{isOut}}" hint-placeholder-val="{{ false }}">
+      <sc-for list="{{outgoing}}" as="r" hint-placeholder-count="2">
+        <article style="background: {{c.paper}}; border: 2px solid {{c.line}}; padding: 14px; display: flex; gap: 12px; align-items: center">
+          <span style="width: 44px; height: 44px; flex: none; border-radius: 50%; background: {{r.bg}}; border: 2px solid {{c.line}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{r.d1}}" fill="{{r.f1}}"></path><path d="{{r.d2}}" fill="{{r.f2}}"></path><path d="{{r.d3}}" fill="{{r.f3}}"></path></svg>
+          </span>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0">
+            <span style="font-size: 14px; line-height: 1.35">{{r.text}}</span>
+            <span style="align-self: flex-start; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; padding: 2px 8px; background: {{r.stampBg}}; color: {{r.stampFg}}; border: 2px solid {{c.line}}; transform: rotate(-2deg)">{{r.stampText}}</span>
+          </div>
+          <sc-if value="{{r.canCancel}}" hint-placeholder-val="{{ false }}">
+            <button type="button" style="min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; cursor: pointer">CANCEL</button>
+          </sc-if>
+        </article>
+      </sc-for>
+    </sc-if>
+
+    <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}; text-align: center; line-height: 1.6; padding-top: 4px">ASKS EXPIRE AFTER 48 HOURS IF NOBODY ANSWERS.<br>SAYING NO IS FINE. NOBODY SEES WHY.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":1168}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dark: null, tab: 'in', choice: { r1: 'free', r2: 'split' }, status: { r1: 'pending', r2: 'pending' } };
+  }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF' };
+    const ICONS = {
+      chicken: { bg: '#FFE0D4', p: [['M13 4 C18 3 21.5 7.5 19.5 11.5 C18 14.5 14.5 15.5 12 14.5 L9.5 12 C8.5 9 9.5 4.8 13 4 Z', '#E9A15A'], ['M10.5 13.5 L6.8 17.2', 'none'], ['M4.2 17.6 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0', '#FFFFFF']] },
+      bananas: { bg: '#FFF0C2', p: [['M4.5 7.5 C5.5 16 12.5 20.5 20 15 C19 14 17.8 14 17 14.6 C12 17.5 8 14 6.3 7.5 Z', '#F7D046'], ['M4.5 7.5 L4 5.5 L6 5.3 L6.3 7.5', '#5A5850'], ['M0 0', 'none']] },
+      bars: { bg: '#E3DDFF', p: [['M3 9 H21 V17 H3 Z', '#B0A6FF'], ['M3 12.2 H21', 'none'], ['M8 14.6 H16', 'none']] },
+      yogurt: { bg: '#E3DDFF', p: [['M6.5 8.5 L8.2 20 H15.8 L17.5 8.5 Z', '#FFFFFF'], ['M5.5 6 H18.5 V8.5 H5.5 Z', '#C6F432'], ['M7.3 12 H16.7 L16.2 15.5 H7.8 Z', '#FF8A65']] }
+    };
+    const paths = (ic) => ({ bg: ic.bg, d1: ic.p[0][0], f1: ic.p[0][1], d2: ic.p[1][0], f2: ic.p[1][1], d3: ic.p[2][0], f3: ic.p[2][1] });
+    const st = this.state;
+    const REQ = [
+      { id: 'r1', initial: 'K', who: 'Kabir', avBg: '#7FD3F7', avFg: '#121210', item: 'chicken thighs', icon: 'chicken', amountWords: 'a bit of', quote: '“For tonight’s curry”', ago: '12 MIN AGO', coOwners: 'You and Arjun own this. Either of you can answer.', splitWhy: 'Kabir joins this item on the open ShopRite tab.', deltas: ['KABIR +$3.83', 'YOU −$1.92', 'ARJUN −$1.91'] },
+      { id: 'r2', initial: 'M', who: 'Meera', avBg: '#FF8A65', avFg: '#121210', item: 'bananas', icon: 'bananas', amountWords: 'all of', quote: '“Banana bread for the house”', ago: '1 HOUR AGO', coOwners: 'You and Kabir own this. Either of you can answer.', splitWhy: 'Meera joins this item on the open ShopRite tab.', deltas: ['MEERA +$0.44', 'YOU −$0.22', 'KABIR −$0.22'] }
+    ];
+    const set = (key, id, val) => this.setState({ [key]: Object.assign({}, st[key], { [id]: val }) });
+    const incoming = REQ.map((r) => {
+      const ch = st.choice[r.id];
+      const s = st.status[r.id];
+      const free = ch === 'free';
+      return Object.assign(paths(ICONS[r.icon]), r, {
+        pending: s === 'pending', done: s !== 'pending',
+        isFree: free, isSplit: !free, freeChecked: free ? 'true' : 'false', splitChecked: free ? 'false' : 'true',
+        freeBg: free ? c.accent : 'transparent', freeFg: free ? '#121210' : c.ink,
+        splitBg: free ? 'transparent' : c.accent, splitFg: free ? c.ink : '#121210',
+        pickFree: () => set('choice', r.id, 'free'), pickSplit: () => set('choice', r.id, 'split'),
+        approve: () => set('status', r.id, 'approved'), decline: () => set('status', r.id, 'declined'), reset: () => set('status', r.id, 'pending'),
+        stampText: s === 'declined' ? 'NOT THIS TIME' : (free ? 'YES · ON THE HOUSE' : 'YES · ADDED TO SPLIT'),
+        stampBg: s === 'declined' ? c.paper : c.accent, stampFg: s === 'declined' ? c.ink : '#121210',
+        doneNote: s === 'declined' ? r.who + ' gets a polite no.' : (free ? r.who + ' can help themselves.' : r.who + '’s share on the ShopRite tab went up. Everyone was notified.')
+      });
+    });
+    const pendingCount = REQ.filter((r) => st.status[r.id] === 'pending').length;
+    const outgoing = [
+      Object.assign(paths(ICONS.bars), { text: 'You asked Arjun for half his protein bars.', stampText: 'WAITING · 5 MIN', stampBg: c.paper, stampFg: c.ink, canCancel: true }),
+      Object.assign(paths(ICONS.yogurt), { text: 'Meera said yes to her Greek yogurt.', stampText: 'YES · ON THE HOUSE', stampBg: c.accent, stampFg: '#121210', canCancel: false })
+    ];
+    const isIn = st.tab === 'in';
+    return {
+      c, incoming, outgoing, isIn, isOut: !isIn,
+      inLabel: 'FOR YOU · ' + pendingCount,
+      inSel: isIn ? 'true' : 'false', outSel: isIn ? 'false' : 'true',
+      inBg: isIn ? c.ink : 'transparent', inFg: isIn ? c.bg : c.ink,
+      outBg: isIn ? 'transparent' : c.ink, outFg: isIn ? c.ink : c.bg,
+      showIn: () => this.setState({ tab: 'in' }), showOut: () => this.setState({ tab: 'out' }),
+      isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

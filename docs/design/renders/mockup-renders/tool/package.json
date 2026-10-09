@@ -1,0 +1,2 @@
+{ "name": "kitchentab-mockup-render", "private": true,
+  "dependencies": { "@fontsource/space-mono": "^5.0.0", "@fontsource/work-sans": "^5.0.0" } }

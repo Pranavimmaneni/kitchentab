@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review scanned receipt</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 1120px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 10px 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Main.dc.html" aria-label="Back to tabs" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">STEP 1/3</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">Did we read it right?</h1>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="flex: 1; padding: 6px 20px 28px">
+    <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 18px 16px 8px; font-family: 'Space Mono', monospace; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center">
+        <label style="display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: {{c.muted}}">STORE
+          <input type="text" value="SHOPRITE" style="font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; text-align: center; border: none; border-bottom: 2px dotted {{c.faint}}; background: transparent; color: {{c.ink}}; width: 220px; height: 36px; padding: 0">
+        </label>
+        <div style="display: flex; gap: 16px; margin-top: 6px">
+          <label style="display: flex; flex-direction: column; align-items: center; font-size: 10px; color: {{c.muted}}">DATE
+            <input type="text" value="10/02/2026" style="font-family: 'Space Mono', monospace; font-size: 14px; text-align: center; border: none; border-bottom: 2px dotted {{c.faint}}; background: transparent; color: {{c.ink}}; width: 120px; height: 32px; padding: 0">
+          </label>
+          <label style="display: flex; flex-direction: column; align-items: center; font-size: 10px; color: {{c.muted}}">PAID BY
+            <input type="text" value="YOU" style="font-family: 'Space Mono', monospace; font-size: 14px; text-align: center; border: none; border-bottom: 2px dotted {{c.faint}}; background: transparent; color: {{c.ink}}; width: 90px; height: 32px; padding: 0">
+          </label>
+        </div>
+      </div>
+      <div style="border-top: 2px dashed {{c.faint}}"></div>
+      <span style="font-size: 10px; color: {{c.muted}}; text-align: center">TAGS SAY WHERE IT GOES · TAP ONE TO CHANGE IT</span>
+      <div style="display: flex; flex-direction: column">
+        <sc-for list="{{items}}" as="item" hint-placeholder-count="12">
+          <div style="display: flex; align-items: center; gap: 6px; min-height: 40px">
+            <span style="flex: 1; font-size: 13px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{item.name}}</span>
+            <sc-if value="{{item.flag}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 10px; font-weight: 700; padding: 2px 5px; background: {{c.accent}}; color: #121210; border: 2px solid {{c.line}}; transform: rotate(-3deg)">CHECK?</span>
+            </sc-if>
+            <button type="button" aria-label="{{item.placeLabel}}" onClick="{{item.cycle}}" style="height: 40px; min-width: 58px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer">
+              <span style="font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; padding: 2px 5px; border: 1.5px solid {{item.tagBorder}}; color: {{item.tagFg}}; background: {{item.tagBg}}; white-space: nowrap">{{item.place}}</span>
+            </button>
+            <span style="font-size: 13px; width: 56px; text-align: right">{{item.price}}</span>
+            <button type="button" aria-label="Edit {{item.name}}" style="width: 40px; height: 40px; border: none; background: transparent; color: {{c.muted}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+      <button type="button" style="min-height: 44px; border: 2px dashed {{c.faint}}; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">+ ADD A MISSED ITEM</button>
+      <div style="border-top: 2px dashed {{c.faint}}"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px">
+        <div style="display: flex; justify-content: space-between; color: {{c.muted}}"><span>SUBTOTAL</span><span>$94.29</span></div>
+        <div style="display: flex; justify-content: space-between; color: {{c.muted}}"><span>TAX</span><span>$0.89</span></div>
+        <div style="display: flex; justify-content: space-between; font-size: 17px; font-weight: 700; margin-top: 4px"><span>TOTAL</span><span>$95.18</span></div>
+      </div>
+      <div style="text-align: center; font-size: 11px; color: {{c.muted}}; padding: 6px 0 4px">*** MATHS CHECKS OUT ***</div>
+    </div>
+  </div>
+
+  <div style="padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}">
+    <a href="Split.dc.html" style="text-decoration: none; background: {{c.accent2}}; color: {{c.onAccent2}}; border: 2px solid {{c.line}}; border-radius: 999px; min-height: 56px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; box-shadow: 4px 4px 0 {{c.shadow}}">Looks good → split it</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null, places: {} }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', warn: '#FF7A5C' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', warn: '#C23A1E' };
+    const ORDER = ['FRIDGE', 'FREEZER', 'PANTRY', 'NOT FOOD'];
+    const TAG = {
+      'FRIDGE': { bg: '#7FD3F7', fg: '#121210', border: '#121210' },
+      'FREEZER': { bg: '#E3DDFF', fg: '#121210', border: '#121210' },
+      'PANTRY': { bg: '#E8D2A6', fg: '#121210', border: '#121210' },
+      'NOT FOOD': { bg: 'transparent', fg: c.muted, border: c.faint }
+    };
+    const items = [
+      ['Whole milk 1 gal', '$4.29', 'FRIDGE'], ['Eggs 18 ct', '$5.49', 'FRIDGE'], ['Basmati rice 10 lb', '$14.99', 'PANTRY'],
+      ['Greek yogurt 32 oz', '$6.79', 'FRIDGE'], ['Bananas 2.1 lb', '$1.32', 'PANTRY', true], ['Paper towels 6 pk', '$9.99', 'NOT FOOD'],
+      ['Dish soap', '$3.49', 'NOT FOOD'], ['Chicken thighs 3 lb', '$11.37', 'FRIDGE'], ['Oat milk', '$4.59', 'FRIDGE'],
+      ['Baby spinach', '$3.99', 'FRIDGE'], ['Protein bars 12 ct', '$17.99', 'PANTRY'], ['Coffee beans 12 oz', '$9.99', 'PANTRY']
+    ].map(([name, price, def, flag], i) => {
+      const place = this.state.places[i] || def;
+      const t = TAG[place];
+      return {
+        name, price, flag: !!flag, place,
+        tagBg: t.bg, tagFg: t.fg, tagBorder: t.border,
+        placeLabel: name + ' goes in: ' + place.toLowerCase() + '. Tap to change.',
+        cycle: () => this.setState({ places: Object.assign({}, this.state.places, { [i]: ORDER[(ORDER.indexOf(place) + 1) % ORDER.length] }) })
+      };
+    });
+    return {
+      c, items, isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Join from a link</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <div style="flex: 1; padding: 54px 24px 28px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">OPENED IN YOUR BROWSER · NO APP</span>
+      <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+        <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+      </button>
+    </div>
+
+    <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 24px; line-height: 1.2; font-weight: 700">Pranav split a ShopRite run with you.</h1>
+
+    <div style="background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 14px 16px; font-family: 'Space Mono', monospace; display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 16px"><span>SHOPRITE</span><span>$95.18</span></div>
+      <span style="font-size: 11px; color: {{c.muted}}">10/02 · 12 ITEMS · APT 4B</span>
+      <div style="border-top: 2px dashed {{c.faint}}; margin: 4px 0"></div>
+      <span style="font-size: 12px; color: {{c.muted}}">Peek is free. Sign in to tick your items.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700">WHICH ONE ARE YOU?</span>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{mates}}" as="m" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{m.pressed}}" onClick="{{m.pick}}" style="min-height: 84px; border: 2px solid {{c.line}}; background: {{m.cardBg}}; color: {{m.cardFg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-family: 'Work Sans', sans-serif; font-weight: 700; font-size: 14px; box-shadow: {{m.shadow}}; transform: {{m.tilt}}">
+            <span style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{m.bg}}; color: {{m.fg}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 13px">{{m.initial}}</span>
+            {{m.name}}
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{hasPick}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 14px; color: {{c.muted}}">Hi {{pickedName}}, quick check it's you:</span>
+        <button type="button" style="min-height: 52px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.paper}}; color: {{c.ink}}; font-family: 'Work Sans', sans-serif; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 3px 3px 0 {{c.shadow}}">
+          <span style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid {{c.ink}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700">G</span>
+          Continue with Google
+        </button>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <a href="Verify.dc.html" style="text-decoration: none; min-height: 48px; border: 2px solid {{c.line}}; border-radius: 999px; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">Email code</a>
+          <a href="Verify.dc.html" style="text-decoration: none; min-height: 48px; border: 2px solid {{c.line}}; border-radius: 999px; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">Phone code</a>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{noPick}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 13px; color: {{c.muted}}; text-align: center">Not on the list? Ask Pranav to add you.</span>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null, picked: 1 }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF' };
+    const base = [
+      { initial: 'A', name: 'Arjun', bg: '#7B61FF', fg: '#FFFFFF' },
+      { initial: 'M', name: 'Meera', bg: '#FF8A65', fg: '#121210' },
+      { initial: 'K', name: 'Kabir', bg: '#7FD3F7', fg: '#121210' }
+    ];
+    const p = this.state.picked;
+    const mates = base.map((m, i) => Object.assign({}, m, {
+      pressed: p === i ? 'true' : 'false',
+      cardBg: p === i ? c.accent : c.paper,
+      cardFg: p === i ? '#121210' : c.ink,
+      shadow: p === i ? '4px 4px 0 ' + c.shadow : 'none',
+      tilt: p === i ? 'rotate(-2deg)' : 'none',
+      pick: () => this.setState({ picked: i })
+    }));
+    return {
+      c, mates, isDark: dark, isLight: !dark,
+      hasPick: p !== null, noPick: p === null,
+      pickedName: p !== null ? base[p].name : '',
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

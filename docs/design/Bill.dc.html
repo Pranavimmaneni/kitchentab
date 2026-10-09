@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Open bill</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 52px 16px 10px 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Main.dc.html" aria-label="Back to tabs" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">ShopRite</h1>
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">10/02 · YOU PAID · $95.18</span>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="flex: 1; padding: 6px 20px 28px; display: flex; flex-direction: column; gap: 18px">
+    <div style="position: relative; background: {{c.paper}}; border: 2px solid {{c.line}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 16px 16px 8px; font-family: 'Space Mono', monospace">
+      <span style="position: absolute; top: -12px; right: 14px; font-size: 11px; font-weight: 700; padding: 3px 8px; background: {{c.accent}}; color: #121210; border: 2px solid {{c.line}}; transform: rotate(3deg)">STILL OPEN · DAY 2</span>
+      <div style="font-size: 11px; color: {{c.muted}}; margin-bottom: 6px">WHO OWES WHAT</div>
+      <sc-for list="{{people}}" as="p" hint-placeholder-count="4">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: {{p.bt}}">
+          <span style="width: 30px; height: 30px; flex: none; border: 2px solid {{c.line}}; box-sizing: border-box; border-radius: 50%; background: {{p.bg}}; color: {{p.fg}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px">{{p.initial}}</span>
+          <div style="flex: 1; display: flex; flex-direction: column; min-width: 0">
+            <span style="font-size: 14px; font-weight: 700">{{p.name}}</span>
+            <span style="font-size: 10px; color: {{p.noteColor}}">{{p.note}}</span>
+          </div>
+          <span style="font-size: 15px; font-weight: 700">{{p.amount}}</span>
+          <sc-if value="{{p.remind}}" hint-placeholder-val="{{ false }}">
+            <button type="button" aria-label="Nudge {{p.name}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 50%; background: transparent; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+            </button>
+          </sc-if>
+          <sc-if value="{{p.noRemind}}" hint-placeholder-val="{{ true }}">
+            <span style="width: 44px"></span>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700">THE STORY SO FAR</h2>
+      <div style="display: flex; flex-direction: column">
+        <sc-for list="{{activity}}" as="e" hint-placeholder-count="5">
+          <div style="display: flex; gap: 12px">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 14px">
+              <span style="width: 12px; height: 12px; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{e.dot}}; margin-top: 4px"></span>
+              <span style="flex: 1; width: 0; border-left: 2px dotted {{c.faint}}"></span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; padding-bottom: 14px">
+              <span style="font-size: 14px; line-height: 1.4">{{e.text}}</span>
+              <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">{{e.when}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; gap: 10px; font-family: 'Space Mono', monospace">
+    <a href="Split.dc.html" style="flex: 1; text-decoration: none; min-height: 54px; border: 2px solid {{c.line}}; border-radius: 999px; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">Edit splits</a>
+    <button type="button" style="flex: 1.3; min-height: 54px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px; box-shadow: 4px 4px 0 {{c.shadow}}; cursor: pointer">Stamp it settled</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', warn: '#FF7A5C', good: '#C6F432' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', warn: '#C23A1E', good: '#3E6B00' };
+    const people = [
+      { initial: 'P', name: 'You', bg: '#C6F432', fg: '#121210', amount: '$21.82', note: 'PAID THE STORE', noteColor: c.muted, remind: false, noRemind: true },
+      { initial: 'A', name: 'Arjun', bg: '#7B61FF', fg: '#FFFFFF', amount: '$33.91', note: 'NOT PAID YET', noteColor: c.warn, remind: true, noRemind: false },
+      { initial: 'M', name: 'Meera', bg: '#FF8A65', fg: '#121210', amount: '$22.24', note: 'NOT PAID · UP $3.37', noteColor: c.warn, remind: true, noRemind: false },
+      { initial: 'K', name: 'Kabir', bg: '#7FD3F7', fg: '#121210', amount: '$17.21', note: 'OVERPAID $1.68', noteColor: c.good, remind: false, noRemind: true }
+    ];
+    people.forEach((p, i) => { p.bt = i ? '1px dashed ' + c.faint : 'none'; });
+    const activity = [
+      { text: 'Meera hopped on the coffee beans. Your share fell $1.69, Kabir\u2019s fell $1.68.', when: 'SUN 10/04 · 9:12 PM', dot: '#FF8A65' },
+      { text: 'Kabir paid $18.89.', when: 'SAT 10/03 · 6:40 PM', dot: '#C6F432' },
+      { text: 'Meera confirmed her items.', when: 'SAT 10/03 · 10:05 AM', dot: c.paper },
+      { text: 'You sent the tab to the house.', when: 'FRI 10/02 · 7:31 PM', dot: c.paper },
+      { text: 'You scanned a ShopRite receipt, 12 items.', when: 'FRI 10/02 · 7:24 PM', dot: c.paper }
+    ];
+    return {
+      c, people, activity, isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

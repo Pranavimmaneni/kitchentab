@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The pantry</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: no-preference){
+@keyframes htpop{0%{transform:scale(.3)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes htup{from{transform:translateY(60px)}to{transform:translateY(0)}}
+.ht-pop{animation:htpop 460ms cubic-bezier(.2,1.4,.4,1) both}
+.ht-up{animation:htup 260ms cubic-bezier(.2,1.2,.4,1) both}
+}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; display: flex; flex-direction: column; overflow: hidden; position: relative">
+  <header style="padding: 52px 16px 8px 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Kitchen.dc.html" aria-label="Back to the kitchen" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{step}}</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">{{title}}</h1>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div role="toolbar" aria-label="Filter items" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 20px 12px">
+    <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+      <button type="button" aria-pressed="{{f.pressed}}" onClick="{{f.pick}}" style="min-height: 44px; padding: 0 11px; flex: none; border: 2px solid {{c.line}}; border-radius: 999px; background: {{f.bg}}; color: {{f.fg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap">{{f.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="flex: 1; padding: 4px 20px 20px">
+    <div style="background: {{appBg}}; border: 2px solid {{c.line}}; border-radius: {{appRadius}}; box-shadow: 5px 5px 0 {{c.shadow}}; padding: 10px; display: flex; flex-direction: column; gap: 10px">
+      <sc-for list="{{sections}}" as="s" hint-placeholder-count="4">
+        <div style="background: {{s.bg}}; border: {{s.border}}; border-radius: {{s.radius}}; padding: 8px 8px 0; display: flex; flex-direction: column; gap: 6px">
+          <sc-if value="{{s.hasLabel}}" hint-placeholder-val="{{ true }}"><span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: {{c.muted}}">{{s.label}}</span></sc-if>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px 6px; min-height: {{s.minH}}; margin: 0 -8px; padding: 0 8px 10px; background-image: {{s.rows}}">
+            <sc-for list="{{s.items}}" as="it" hint-placeholder-count="3">
+              <button type="button" aria-label="{{it.aria}}" onClick="{{it.openSheet}}" style="width: 56px; height: 74px; border: none; background: transparent; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; opacity: {{it.opacity}}; color: {{c.ink}}">
+                <span class="ht-pop" style="position: relative; width: 40px; height: 40px; flex: none; border-radius: 50%; background: {{it.bg}}; border: 2px {{it.ringStyle}} {{it.ring}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 {{c.shadow}}; animation-delay: {{it.delay}}">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{it.d1}}" fill="{{it.f1}}"></path><path d="{{it.d2}}" fill="{{it.f2}}"></path><path d="{{it.d3}}" fill="{{it.f3}}"></path></svg>
+                  <span style="position: absolute; top: -4px; right: -6px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{it.badgeBg}}; display: flex; align-items: center; justify-content: center">
+                    <sc-if value="{{it.isOpen}}" hint-placeholder-val="{{ true }}"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg></sc-if>
+                    <sc-if value="{{it.isAsk}}" hint-placeholder-val="{{ false }}"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3"></path><rect x="5" y="11" width="14" height="10" rx="2"></rect></svg></sc-if>
+                  </span>
+                  <sc-if value="{{it.soon}}" hint-placeholder-val="{{ false }}">
+                    <span style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); font-family: 'Space Mono', monospace; font-size: 7px; font-weight: 700; padding: 0 4px; background: #FF8A65; color: #121210; border: 1.5px solid #121210; white-space: nowrap">SOON</span>
+                  </sc-if>
+                </span>
+                <span style="width: 56px; font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px">{{it.short}}</span>
+                <span style="display: flex">
+                  <sc-for list="{{it.owners}}" as="o" hint-placeholder-count="2">
+                    <span style="width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid {{c.line}}; box-sizing: border-box; background: {{o.bg}}; color: {{o.fg}}; font-family: 'Space Mono', monospace; font-size: 7px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-left: {{o.ml}}">{{o.initial}}</span>
+                  </sc-for>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="height: {{s.lipH}}; margin: 0 -8px; background: {{s.lipBg}}; border-top: {{s.lipBorder}}"></div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; padding: 16px 2px 0; font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{c.accent}}; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"></path></svg></span>OPEN TO SHARE</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{c.paper}}; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V8a5 5 0 0 1 10 0v3"></path><rect x="5" y="11" width="14" height="10" rx="2"></rect></svg></span>ASK FIRST</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 18px; border-radius: 50%; border: 2px dashed #FF8A65; box-sizing: border-box"></span>USE SOON</span>
+    </div>
+  </div>
+
+  <div style="padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; gap: 10px">
+    <button type="button" style="flex: 1; min-height: 52px; border: 2px dashed {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">{{addLabel}}</button>
+    <a href="Requests.dc.html" style="text-decoration: none; min-height: 52px; padding: 0 18px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; display: flex; align-items: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; box-shadow: 3px 3px 0 {{c.shadow}}">Asks · 2</a>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 20px; right: 20px; bottom: 104px; min-height: 48px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 8px 0 18px; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700">
+      <span>{{toast}}</span>
+      <sc-if value="{{canUndo}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{undo}}" style="min-height: 40px; padding: 0 14px; border: none; border-radius: 999px; background: {{c.accent}}; color: #121210; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer">UNDO</button></sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasSel}}" hint-placeholder-val="{{ false }}">
+    <button type="button" aria-label="Close" onClick="{{closeSheet}}" style="position: absolute; inset: 0; border: none; background: rgba(13,13,11,0.5); cursor: pointer; padding: 0"></button>
+    <div role="dialog" aria-label="{{sel.name}}" class="ht-up" style="position: absolute; left: 0; right: 0; bottom: 0; background: {{c.paper}}; border-top: 2px solid {{c.line}}; border-radius: 18px 18px 0 0; padding: 10px 20px 34px; display: flex; flex-direction: column; gap: 14px">
+      <span style="align-self: center; width: 44px; height: 5px; border-radius: 3px; background: {{c.faint}}"></span>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span style="width: 64px; height: 64px; flex: none; border-radius: 50%; background: {{sel.bg}}; border: 2px solid {{c.line}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 {{c.shadow}}">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{sel.d1}}" fill="{{sel.f1}}"></path><path d="{{sel.d2}}" fill="{{sel.f2}}"></path><path d="{{sel.d3}}" fill="{{sel.f3}}"></path></svg>
+        </span>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <span style="font-size: 19px; font-weight: 700">{{sel.name}}</span>
+          <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{sel.src}}</span>
+        </div>
+        <button type="button" aria-label="Close" onClick="{{closeSheet}}" style="width: 44px; height: 44px; flex: none; border: 2px solid {{c.line}}; border-radius: 50%; background: transparent; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">WHO OWNS IT</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{sel.owners}}" as="o" hint-placeholder-count="2">
+            <span style="min-height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 12px 0 4px; border: 2px solid {{c.line}}; border-radius: 999px; font-weight: 700; font-size: 13px">
+              <span style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{o.bg}}; color: {{o.fg}}; font-family: 'Space Mono', monospace; font-size: 11px; display: flex; align-items: center; justify-content: center">{{o.initial}}</span>{{o.label}}
+            </span>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{sel.ownerView}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 60px; border: 2px solid {{c.line}}; border-radius: 12px; padding: 8px 12px 8px 14px">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-weight: 700; font-size: 15px">I'm open to sharing</span>
+            <span style="font-size: 12px; color: {{c.muted}}; line-height: 1.4">{{sel.coNote}}</span>
+          </div>
+          <button type="button" role="switch" aria-checked="{{sel.myOpenStr}}" aria-label="I'm open to sharing" onClick="{{sel.toggleMine}}" style="width: 56px; height: 32px; flex: none; border: 2px solid {{c.line}}; border-radius: 999px; background: {{sel.swBg}}; position: relative; cursor: pointer; padding: 0">
+            <span style="position: absolute; top: 3px; left: {{sel.knobX}}; width: 22px; height: 22px; border-radius: 50%; background: {{c.line}}; transition: left 160ms"></span>
+          </button>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button type="button" onClick="{{sel.usedUp}}" style="flex: 1; min-height: 50px; border: 2px solid {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">Used up</button>
+          <sc-if value="{{sel.soon}}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{sel.stillGood}}" style="flex: 1; min-height: 50px; border: 2px solid #121210; border-radius: 999px; background: #FF8A65; color: #121210; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">Still good</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{sel.helpView}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 12px; border: 2px dashed {{c.faint}}; padding: 14px">
+          <span style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; padding: 4px 10px; background: {{c.accent}}; color: #121210; border: 2px solid {{c.line}}; transform: rotate(-3deg); white-space: nowrap">HELP YOURSELF</span>
+          <span style="font-size: 14px; line-height: 1.4">{{sel.helpNote}}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{sel.askView}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 14px; line-height: 1.45">{{sel.askNote}}</span>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">HOW MUCH?</span>
+          <div role="radiogroup" aria-label="How much" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{amounts}}" as="a" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{a.pressed}}" onClick="{{a.pick}}" style="min-height: 44px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{a.bg}}; color: {{a.fg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; cursor: pointer">{{a.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">NOTE (OPTIONAL)
+          <input type="text" placeholder="What's it for?" style="height: 48px; border: 2px solid {{c.line}}; border-radius: 12px; padding: 0 14px; font-family: 'Work Sans', sans-serif; font-size: 15px; background: {{c.bg}}; color: {{c.ink}}">
+        </label>
+        <button type="button" onClick="{{sel.ask}}" style="min-height: 56px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; box-shadow: 4px 4px 0 {{c.shadow}}; cursor: pointer">{{sel.askLabel}}</button>
+      </sc-if>
+
+      <sc-if value="{{sel.sentView}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px; border: 2px dashed {{c.faint}}; padding: 14px">
+          <span style="font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; padding: 4px 10px; background: {{c.accent2}}; color: {{c.onAccent2}}; border: 2px solid {{c.line}}; transform: rotate(-2deg)">{{sel.sentLabel}}</span>
+          <span style="font-size: 13px; color: {{c.muted}}; line-height: 1.45">We'll ping you when they answer. They can say yes for free, or add you to that item's split.</span>
+        </div>
+        <button type="button" onClick="{{sel.cancel}}" style="min-height: 50px; border: 2px solid {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; cursor: pointer">Cancel request</button>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { dark: null, filter: 'all', sel: null, requested: {}, mine: {}, gone: {}, fresh: {}, amount: 'A BIT', toast: '', lastGone: null };
+  }
+  flash(msg, extra) {
+    this.setState(Object.assign({ toast: msg }, extra || {}));
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => this.setState({ toast: '', lastGone: null }), 2600);
+  }
+  componentWillUnmount() { clearTimeout(this.toastTimer); }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', cold: '#14201F', frost: '#18262A', glass: '#2C4246', drawer: '#1D2C2E', wall: '#24221D', wood: '#6B5536' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', cold: '#E3F1F3', frost: '#F4FBFC', glass: '#C4E3E8', drawer: '#D3ECEF', wall: '#F1EADB', wood: '#D9B98A' };
+    const ICONS = {
+      milk: { bg: '#D6F0FB', p: [['M7.5 9.5 L7.5 20.5 L16.5 20.5 L16.5 9.5 L14 6 L10 6 Z', '#FFFFFF'], ['M10 6 L10 3.5 L14 3.5 L14 6', 'none'], ['M7.5 13 H16.5 V17 H7.5 Z', '#7FD3F7']] },
+      oatmilk: { bg: '#FFF0C2', p: [['M7.5 9.5 L7.5 20.5 L16.5 20.5 L16.5 9.5 L14 6 L10 6 Z', '#FFFFFF'], ['M10 6 L10 3.5 L14 3.5 L14 6', 'none'], ['M7.5 13 H16.5 V17 H7.5 Z', '#E8D2A6']] },
+      eggs: { bg: '#FFF0C2', p: [['M3.5 13.5 H20.5 V17.5 Q20.5 19.5 18.5 19.5 H5.5 Q3.5 19.5 3.5 17.5 Z', '#E8D2A6'], ['M6 13.5 C6 8.5 11 8.5 11 13.5', '#FFFFFF'], ['M13 13.5 C13 8.5 18 8.5 18 13.5', '#FFFFFF']] },
+      yogurt: { bg: '#E3DDFF', p: [['M6.5 8.5 L8.2 20 H15.8 L17.5 8.5 Z', '#FFFFFF'], ['M5.5 6 H18.5 V8.5 H5.5 Z', '#C6F432'], ['M7.3 12 H16.7 L16.2 15.5 H7.8 Z', '#FF8A65']] },
+      chicken: { bg: '#FFE0D4', p: [['M13 4 C18 3 21.5 7.5 19.5 11.5 C18 14.5 14.5 15.5 12 14.5 L9.5 12 C8.5 9 9.5 4.8 13 4 Z', '#E9A15A'], ['M10.5 13.5 L6.8 17.2', 'none'], ['M4.2 17.6 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0', '#FFFFFF']] },
+      spinach: { bg: '#E7F3B5', p: [['M5 19.5 C5 10.5 11 4.5 19.5 4.5 C20 13 14 19.5 5 19.5 Z', '#7BC86C'], ['M5 19.5 L15 9.5', 'none'], ['M0 0', 'none']] },
+      kimchi: { bg: '#FFE0D4', p: [['M7 7.5 H17 V19.5 Q17 20.5 16 20.5 H8 Q7 20.5 7 19.5 Z', '#FF6B4A'], ['M6.5 4.5 H17.5 V7.5 H6.5 Z', '#7B61FF'], ['M9 11.5 H15 V16 H9 Z', '#FFFFFF']] },
+      tofu: { bg: '#D6F0FB', p: [['M4 9.5 L12 5.5 L20 9.5 L12 13.5 Z', '#FFFFFF'], ['M4 9.5 V15.5 L12 19.5 V13.5 Z', '#EDEAE0'], ['M20 9.5 V15.5 L12 19.5 V13.5 Z', '#D9D5C8']] },
+      dumplings: { bg: '#E3DDFF', p: [['M6 5 H18 L19 20.5 H5 Z', '#7FD3F7'], ['M8 15.5 C8 11 16 11 16 15.5 Z', '#FFFFFF'], ['M10 13 L10.6 14.6 M12 12.4 V14.4 M14 13 L13.4 14.6', 'none']] },
+      icecream: { bg: '#FFE0D4', p: [['M6 9.5 L7.5 20.5 H16.5 L18 9.5 Z', '#FFB3C7'], ['M5 7 H19 V9.5 H5 Z', '#FFFFFF'], ['M8 13 H16', 'none']] },
+      rice: { bg: '#FFE0D4', p: [['M6 7.5 C6 5 8.5 4 12 4 C15.5 4 18 5 18 7.5 L19 20.5 H5 Z', '#FFFFFF'], ['M8 7.5 H16', 'none'], ['M8.2 11.5 H15.8 V16 H8.2 Z', '#FF6FB5']] },
+      bananas: { bg: '#FFF0C2', p: [['M4.5 7.5 C5.5 16 12.5 20.5 20 15 C19 14 17.8 14 17 14.6 C12 17.5 8 14 6.3 7.5 Z', '#F7D046'], ['M4.5 7.5 L4 5.5 L6 5.3 L6.3 7.5', '#5A5850'], ['M0 0', 'none']] },
+      bars: { bg: '#E3DDFF', p: [['M3 9 H21 V17 H3 Z', '#B0A6FF'], ['M3 12.2 H21', 'none'], ['M8 14.6 H16', 'none']] },
+      coffee: { bg: '#FFF0C2', p: [['M7 6.5 L6 20.5 H18 L17 6.5 Z', '#A8743F'], ['M7 6.5 L9 3.5 H15 L17 6.5', '#C99560'], ['M10.4 13.5 a1.6 2.2 0 1 0 3.2 0 a1.6 2.2 0 1 0 -3.2 0 M12 11.3 V15.7', '#3B2A1A']] },
+      ramen: { bg: '#FFE0D4', p: [['M4 7.5 H20 V19.5 H4 Z', '#F7A44A'], ['M4 7.5 L6 5.5 L8 7.5 L10 5.5 L12 7.5 L14 5.5 L16 7.5 L18 5.5 L20 7.5', 'none'], ['M7 12 C9 10.5 10 13.5 12 12 C14 10.5 15 13.5 17 12 M7 15 C9 13.5 10 16.5 12 15 C14 13.5 15 16.5 17 15', 'none']] }
+    };
+    // DATA-START
+    const VIEW = { title: 'The pantry', noun: 'ITEMS', add: '+ Add something', appBg: c.wall, appRadius: '4px' };
+    const SECTIONS = [
+      { label: '', kind: 'wood', items: [
+        { id: 'coffee', name: 'Coffee beans', short: 'Coffee', icon: 'coffee', owners: ['P', 'M', 'K'], consent: { P: false }, soon: false, src: 'SHOPRITE \u00b7 OCT 2 \u00b7 $9.99' },
+        { id: 'bars', name: 'Protein bars, 12 ct', short: 'Protein bars', icon: 'bars', owners: ['A'], consent: {}, soon: false, src: 'SHOPRITE \u00b7 OCT 2 \u00b7 $17.99' },
+        { id: 'rice', name: 'Basmati rice, 10 lb', short: 'Rice', icon: 'rice', owners: ['P', 'A', 'M', 'K'], consent: { P: true, A: true, M: true, K: true }, soon: false, src: 'SHOPRITE \u00b7 OCT 2 \u00b7 $14.99' },
+        { id: 'ramen', name: 'Shin ramyun, 4 pk', short: 'Ramen', icon: 'ramen', owners: ['P', 'A', 'M', 'K'], consent: { P: true, A: true, M: true, K: true }, soon: false, src: 'H MART \u00b7 SEP 27 \u00b7 $5.99' },
+        { id: 'bananas', name: 'Bananas', short: 'Bananas', icon: 'bananas', owners: ['P', 'K'], consent: { P: true }, soon: true, src: 'SHOPRITE \u00b7 OCT 2 \u00b7 $1.32' } ] }
+    ];
+    const START_SEL = 'bars';
+    // DATA-END
+    const LOOKS = {
+      frost: { bg: c.frost, border: '2px dashed ' + c.faint, radius: '8px', lipH: '0px', lipBg: 'transparent', lipBorder: 'none', rows: 'none', minH: '74px' },
+      glass: { bg: 'transparent', border: 'none', radius: '0px', lipH: '0px', lipBg: 'transparent', lipBorder: 'none', minH: '158px', rows: 'repeating-linear-gradient(to bottom, transparent 0px, transparent 76px, ' + c.line + ' 76px, ' + c.line + ' 78px, ' + c.glass + ' 78px, ' + c.glass + ' 84px)' },
+      drawer: { bg: c.drawer, border: '2px solid ' + c.line, radius: '8px', lipH: '0px', lipBg: 'transparent', lipBorder: 'none', rows: 'none', minH: '74px' },
+      wood: { bg: 'transparent', border: 'none', radius: '0px', lipH: '0px', lipBg: 'transparent', lipBorder: 'none', minH: '242px', rows: 'repeating-linear-gradient(to bottom, transparent 0px, transparent 76px, ' + c.line + ' 76px, ' + c.line + ' 78px, ' + c.wood + ' 78px, ' + c.wood + ' 84px)' }
+    };
+    const PEOPLE = {
+      P: { name: 'Pranav', bg: '#C6F432', fg: '#121210' },
+      A: { name: 'Arjun', bg: '#7B61FF', fg: '#FFFFFF' },
+      M: { name: 'Meera', bg: '#FF8A65', fg: '#121210' },
+      K: { name: 'Kabir', bg: '#7FD3F7', fg: '#121210' }
+    };
+    const me = 'P';
+    const st = this.state;
+    const selId = st.sel === null ? START_SEL : st.sel;
+    const all = [];
+    SECTIONS.forEach((s) => s.items.forEach((it) => all.push(it)));
+    const consentOf = (it, o) => (o === me && st.mine[it.id] !== undefined) ? st.mine[it.id] : !!it.consent[o];
+    const isOpen = (it) => it.owners.every((o) => consentOf(it, o));
+    const isMine = (it) => it.owners.indexOf(me) >= 0;
+    const isSoon = (it) => it.soon && !st.fresh[it.id];
+    const live = all.filter((it) => !st.gone[it.id]);
+    const match = (it) => st.filter === 'all' || (st.filter === 'mine' && isMine(it)) || (st.filter === 'open' && isOpen(it)) || (st.filter === 'soon' && isSoon(it));
+    const names = (list) => list.length === 1 ? list[0] : list.slice(0, -1).join(', ') + ' & ' + list[list.length - 1];
+    const paths = (ic) => ({ bg: ic.bg, d1: ic.p[0][0], f1: ic.p[0][1], d2: ic.p[1][0], f2: ic.p[1][1], d3: ic.p[2][0], f3: ic.p[2][1] });
+    let n = 0;
+    const sections = SECTIONS.map((s) => Object.assign({ label: s.label, hasLabel: !!s.label }, LOOKS[s.kind], {
+      items: s.items.filter((it) => !st.gone[it.id]).map((it) => {
+        const open = isOpen(it);
+        const soon = isSoon(it);
+        const who = names(it.owners.map((o) => o === me ? 'you' : PEOPLE[o].name));
+        return Object.assign(paths(ICONS[it.icon]), {
+          short: it.short,
+          aria: it.name + ', owned by ' + who + (open ? ', open to share' : ', ask first') + (soon ? ', use soon' : ''),
+          isOpen: open, isAsk: !open, badgeBg: open ? c.accent : c.paper, soon,
+          ring: soon ? '#FF8A65' : c.line, ringStyle: soon ? 'dashed' : 'solid',
+          opacity: match(it) ? 1 : 0.22, delay: (n++ * 55) + 'ms',
+          owners: it.owners.map((o, i) => ({ initial: o, bg: PEOPLE[o].bg, fg: PEOPLE[o].fg, ml: i === 0 ? '0px' : '-4px' })),
+          openSheet: () => this.setState({ sel: it.id, amount: 'A BIT' })
+        });
+      })
+    }));
+    const counts = { all: live.length, mine: live.filter(isMine).length, open: live.filter(isOpen).length, soon: live.filter(isSoon).length };
+    const filters = [['all', 'ALL'], ['mine', 'MINE'], ['open', 'OPEN'], ['soon', 'USE SOON']].map(([k, l]) => ({
+      label: l + ' ' + counts[k], pressed: st.filter === k ? 'true' : 'false',
+      bg: st.filter === k ? c.ink : c.paper, fg: st.filter === k ? c.bg : c.ink,
+      pick: () => this.setState({ filter: k })
+    }));
+    const amounts = ['A BIT', 'HALF', 'ALL OF IT'].map((a) => ({
+      label: a, pressed: st.amount === a ? 'true' : 'false',
+      bg: st.amount === a ? c.ink : 'transparent', fg: st.amount === a ? c.bg : c.ink,
+      pick: () => this.setState({ amount: a })
+    }));
+    const it = selId === 'none' ? null : all.find((x) => x.id === selId && !st.gone[x.id]);
+    let sel = { name: '', src: '', bg: '', d1: 'M0 0', f1: 'none', d2: 'M0 0', f2: 'none', d3: 'M0 0', f3: 'none', owners: [], ownerView: false, helpView: false, askView: false, sentView: false, soon: false, myOpenStr: 'false', swBg: c.faint, knobX: '2px', coNote: '', helpNote: '', askNote: '', askLabel: '', sentLabel: '', toggleMine: () => {}, usedUp: () => {}, stillGood: () => {}, ask: () => {}, cancel: () => {} };
+    if (it) {
+      const open = isOpen(it);
+      const mineIt = isMine(it);
+      const others = it.owners.filter((o) => o !== me);
+      const othersClosed = others.filter((o) => !consentOf(it, o)).map((o) => PEOPLE[o].name);
+      const myOpen = mineIt ? consentOf(it, me) : false;
+      const ownerNames = names(it.owners.map((o) => PEOPLE[o].name));
+      const many = it.owners.length > 1;
+      sel = Object.assign(paths(ICONS[it.icon]), {
+        name: it.name, src: it.src,
+        owners: it.owners.map((o) => ({ initial: o, bg: PEOPLE[o].bg, fg: PEOPLE[o].fg, label: o === me ? 'You' : PEOPLE[o].name })),
+        ownerView: mineIt, helpView: !mineIt && open, askView: !mineIt && !open && !st.requested[it.id], sentView: !mineIt && !open && !!st.requested[it.id],
+        soon: mineIt && isSoon(it),
+        myOpenStr: myOpen ? 'true' : 'false', swBg: myOpen ? c.accent : c.faint, knobX: myOpen ? '26px' : '3px',
+        coNote: !myOpen ? 'Off. Housemates have to ask first.' : (othersClosed.length ? names(othersClosed) + ' hasn’t opened it up, so others still ask first.' : (others.length ? 'Everyone who owns it is happy to share.' : 'Housemates can help themselves.')),
+        helpNote: ownerNames + (many ? ' are' : ' is') + ' happy to share.',
+        askNote: many ? ownerNames + ' own this. Any of them can say yes.' : ownerNames + ' hasn’t opened this up. Ask first?',
+        askLabel: 'Ask ' + ownerNames + ' →',
+        sentLabel: 'ASKED · WAITING ON ' + (many ? 'AN OWNER' : ownerNames.toUpperCase()),
+        toggleMine: () => this.setState({ mine: Object.assign({}, st.mine, { [it.id]: !myOpen }) }),
+        usedUp: () => this.flash(it.short + ' marked used up', { gone: Object.assign({}, st.gone, { [it.id]: true }), sel: 'none', lastGone: it.id }),
+        stillGood: () => this.flash('Nudge pushed back 3 days', { fresh: Object.assign({}, st.fresh, { [it.id]: true }) }),
+        ask: () => this.flash('Request sent to ' + ownerNames, { requested: Object.assign({}, st.requested, { [it.id]: true }) }),
+        cancel: () => { const r = Object.assign({}, st.requested); delete r[it.id]; this.setState({ requested: r }); }
+      });
+    }
+    return {
+      c, sections, filters, amounts, sel,
+      title: VIEW.title, step: 'APT 4B · ' + live.length + ' ' + VIEW.noun, addLabel: VIEW.add, appBg: VIEW.appBg, appRadius: VIEW.appRadius,
+      hasSel: !!it, closeSheet: () => this.setState({ sel: 'none' }),
+      hasToast: !!st.toast, toast: st.toast, canUndo: !!st.lastGone,
+      undo: () => { const g = Object.assign({}, st.gone); delete g[st.lastGone]; this.setState({ gone: g, toast: '', lastGone: null }); },
+      isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>
