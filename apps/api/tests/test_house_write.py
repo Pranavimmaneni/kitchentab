@@ -41,10 +41,7 @@ async def _touch(writes: WriteContext, house_id: uuid.UUID, i: int, *, fail: boo
 async def _event_count(sessions: async_sessionmaker[AsyncSession], house_id: uuid.UUID) -> int:
     async with sessions() as s:
         return int(
-            await s.scalar(
-                select(func.count()).select_from(HouseEvent).where(HouseEvent.house_id == house_id)
-            )
-            or 0
+            await s.scalar(select(func.count()).select_from(HouseEvent).where(HouseEvent.house_id == house_id)) or 0
         )
 
 
@@ -190,9 +187,7 @@ async def test_write_helper_load_twenty_writers(
     assert await _event_count(sessions, house.id) == total
     async with sessions() as s:
         seqs = (
-            await s.scalars(
-                select(HouseEvent.seq).where(HouseEvent.house_id == house.id).order_by(HouseEvent.seq)
-            )
+            await s.scalars(select(HouseEvent.seq).where(HouseEvent.house_id == house.id).order_by(HouseEvent.seq))
         ).all()
     assert list(seqs) == list(range(1, total + 1))
     assert p95 < 0.300, f"p95 {p95 * 1000:.0f} ms exceeds 300 ms"

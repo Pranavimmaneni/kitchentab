@@ -68,9 +68,7 @@ def upgrade() -> None:
             name=op.f("ck_users_phone_e164_format"),
         ),
         sa.CheckConstraint("theme IN ('system', 'light', 'dark')", name=op.f("ck_users_theme_enum")),
-        sa.CheckConstraint(
-            "char_length(display_name) BETWEEN 1 AND 60", name=op.f("ck_users_display_name_length")
-        ),
+        sa.CheckConstraint("char_length(display_name) BETWEEN 1 AND 60", name=op.f("ck_users_display_name_length")),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_users")),
         sa.UniqueConstraint("email", name=op.f("uq_users_email")),
         sa.UniqueConstraint("phone_e164", name=op.f("uq_users_phone_e164")),
@@ -82,16 +80,12 @@ def upgrade() -> None:
         sa.Column("provider", sa.Text(), nullable=False),
         sa.Column("provider_subject", sa.Text(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.CheckConstraint(
-            "provider IN ('google', 'email', 'phone')", name=op.f("ck_auth_identities_provider_enum")
-        ),
+        sa.CheckConstraint("provider IN ('google', 'email', 'phone')", name=op.f("ck_auth_identities_provider_enum")),
         sa.ForeignKeyConstraint(
             ["user_id"], ["users.id"], name=op.f("fk_auth_identities_user_id_users"), ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_auth_identities")),
-        sa.UniqueConstraint(
-            "provider", "provider_subject", name=op.f("uq_auth_identities_provider_provider_subject")
-        ),
+        sa.UniqueConstraint("provider", "provider_subject", name=op.f("uq_auth_identities_provider_provider_subject")),
     )
     op.create_index(op.f("ix_auth_identities_user_id"), "auth_identities", ["user_id"], unique=False)
     op.create_table(
@@ -155,9 +149,7 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "method IN ('venmo', 'cashapp', 'paypal', 'zelle')", name=op.f("ck_payment_handles_method_enum")
         ),
-        sa.CheckConstraint(
-            "char_length(handle) BETWEEN 1 AND 120", name=op.f("ck_payment_handles_handle_length")
-        ),
+        sa.CheckConstraint("char_length(handle) BETWEEN 1 AND 120", name=op.f("ck_payment_handles_handle_length")),
         sa.ForeignKeyConstraint(
             ["user_id"], ["users.id"], name=op.f("fk_payment_handles_user_id_users"), ondelete="CASCADE"
         ),
@@ -177,9 +169,7 @@ def upgrade() -> None:
         sa.Column("last_success_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("failure_count", sa.Integer(), server_default=sa.text("0"), nullable=False),
         sa.Column("stale_at", sa.DateTime(timezone=True), nullable=True),
-        sa.CheckConstraint(
-            "failure_count >= 0", name=op.f("ck_push_subscriptions_failure_count_nonnegative")
-        ),
+        sa.CheckConstraint("failure_count >= 0", name=op.f("ck_push_subscriptions_failure_count_nonnegative")),
         sa.ForeignKeyConstraint(
             ["user_id"], ["users.id"], name=op.f("fk_push_subscriptions_user_id_users"), ondelete="CASCADE"
         ),
@@ -198,9 +188,7 @@ def upgrade() -> None:
         sa.Column("last_seen_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["user_id"], ["users.id"], name=op.f("fk_sessions_user_id_users"), ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], name=op.f("fk_sessions_user_id_users"), ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_sessions")),
         sa.UniqueConstraint("token_hash", name=op.f("uq_sessions_token_hash")),
     )
@@ -227,15 +215,11 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "status IN ('placeholder', 'active', 'left', 'removed')", name=op.f("ck_members_status_enum")
         ),
-        sa.CheckConstraint(
-            "char_length(display_name) BETWEEN 1 AND 24", name=op.f("ck_members_display_name_length")
-        ),
+        sa.CheckConstraint("char_length(display_name) BETWEEN 1 AND 24", name=op.f("ck_members_display_name_length")),
         sa.ForeignKeyConstraint(
             ["house_id"], ["houses.id"], name=op.f("fk_members_house_id_houses"), ondelete="RESTRICT"
         ),
-        sa.ForeignKeyConstraint(
-            ["user_id"], ["users.id"], name=op.f("fk_members_user_id_users"), ondelete="RESTRICT"
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], name=op.f("fk_members_user_id_users"), ondelete="RESTRICT"),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_members")),
         sa.UniqueConstraint("house_id", "user_id", name=op.f("uq_members_house_id_user_id")),
     )
@@ -270,9 +254,7 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("sent_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("read_at", sa.DateTime(timezone=True), nullable=True),
-        sa.CheckConstraint(
-            "channel IN ('inapp', 'push', 'email')", name=op.f("ck_notifications_channel_enum")
-        ),
+        sa.CheckConstraint("channel IN ('inapp', 'push', 'email')", name=op.f("ck_notifications_channel_enum")),
         sa.CheckConstraint(
             "status IN ('pending', 'held', 'sent', 'failed', 'suppressed')",
             name=op.f("ck_notifications_status_enum"),
@@ -297,9 +279,7 @@ def upgrade() -> None:
         ["status", "next_attempt_at"],
         unique=False,
     )
-    op.create_index(
-        op.f("ix_notifications_user_id_read_at"), "notifications", ["user_id", "read_at"], unique=False
-    )
+    op.create_index(op.f("ix_notifications_user_id_read_at"), "notifications", ["user_id", "read_at"], unique=False)
     op.create_table(
         "bills",
         sa.Column("id", sa.UUID(), nullable=False),
@@ -335,12 +315,8 @@ def upgrade() -> None:
             "state <> 'voided' OR coalesce(char_length(void_reason), 0) BETWEEN 3 AND 200",
             name=op.f("ck_bills_void_has_reason"),
         ),
-        sa.CheckConstraint(
-            "state = 'draft' OR sent_at IS NOT NULL", name=op.f("ck_bills_sent_bills_have_sent_at")
-        ),
-        sa.CheckConstraint(
-            "state IN ('draft', 'open', 'settled', 'voided')", name=op.f("ck_bills_state_enum")
-        ),
+        sa.CheckConstraint("state = 'draft' OR sent_at IS NOT NULL", name=op.f("ck_bills_sent_bills_have_sent_at")),
+        sa.CheckConstraint("state IN ('draft', 'open', 'settled', 'voided')", name=op.f("ck_bills_state_enum")),
         sa.CheckConstraint(
             "printed_total_cents IS NULL OR (printed_total_cents = total_cents AND reconcile_override_reason IS NOT NULL)",
             name=op.f("ck_bills_override_has_reason"),
@@ -503,15 +479,9 @@ def upgrade() -> None:
         sa.Column("link_token_hash", sa.Text(), nullable=False),
         sa.Column("sort_order", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.CheckConstraint(
-            "char_length(display_name) BETWEEN 1 AND 24", name=op.f("ck_guests_display_name_length")
-        ),
-        sa.ForeignKeyConstraint(
-            ["bill_id"], ["bills.id"], name=op.f("fk_guests_bill_id_bills"), ondelete="RESTRICT"
-        ),
-        sa.ForeignKeyConstraint(
-            ["user_id"], ["users.id"], name=op.f("fk_guests_user_id_users"), ondelete="RESTRICT"
-        ),
+        sa.CheckConstraint("char_length(display_name) BETWEEN 1 AND 24", name=op.f("ck_guests_display_name_length")),
+        sa.ForeignKeyConstraint(["bill_id"], ["bills.id"], name=op.f("fk_guests_bill_id_bills"), ondelete="RESTRICT"),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], name=op.f("fk_guests_user_id_users"), ondelete="RESTRICT"),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_guests")),
         sa.UniqueConstraint("link_token_hash", name=op.f("uq_guests_link_token_hash")),
     )
@@ -542,21 +512,13 @@ def upgrade() -> None:
             "category IS NULL OR category IN ('produce', 'dairy', 'eggs', 'meat_fish', 'plant_protein', 'drinks', 'frozen', 'grains', 'bakery', 'snacks', 'condiments', 'canned', 'coffee_tea', 'prepared', 'household', 'other')",
             name=op.f("ck_items_category_enum"),
         ),
-        sa.CheckConstraint(
-            "storage IN ('fridge', 'freezer', 'pantry', 'none')", name=op.f("ck_items_storage_enum")
-        ),
+        sa.CheckConstraint("storage IN ('fridge', 'freezer', 'pantry', 'none')", name=op.f("ck_items_storage_enum")),
         sa.CheckConstraint("char_length(name) BETWEEN 1 AND 120", name=op.f("ck_items_name_length")),
-        sa.CheckConstraint(
-            "confidence IS NULL OR confidence BETWEEN 0 AND 1", name=op.f("ck_items_confidence_range")
-        ),
+        sa.CheckConstraint("confidence IS NULL OR confidence BETWEEN 0 AND 1", name=op.f("ck_items_confidence_range")),
         sa.CheckConstraint("discount_cents >= 0", name=op.f("ck_items_discount_nonnegative")),
         sa.CheckConstraint("quantity > 0", name=op.f("ck_items_quantity_positive")),
-        sa.CheckConstraint(
-            "shelf_life_days IS NULL OR shelf_life_days > 0", name=op.f("ck_items_shelf_life_positive")
-        ),
-        sa.ForeignKeyConstraint(
-            ["bill_id"], ["bills.id"], name=op.f("fk_items_bill_id_bills"), ondelete="RESTRICT"
-        ),
+        sa.CheckConstraint("shelf_life_days IS NULL OR shelf_life_days > 0", name=op.f("ck_items_shelf_life_positive")),
+        sa.ForeignKeyConstraint(["bill_id"], ["bills.id"], name=op.f("fk_items_bill_id_bills"), ondelete="RESTRICT"),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_items")),
     )
     op.create_index("ix_items_bill_id_position", "items", ["bill_id", "position"], unique=False)
@@ -579,9 +541,7 @@ def upgrade() -> None:
         sa.Column("next_attempt_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("last_error", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.CheckConstraint(
-            "status IN ('pending', 'processing', 'done', 'failed')", name=op.f("ck_outbox_status_enum")
-        ),
+        sa.CheckConstraint("status IN ('pending', 'processing', 'done', 'failed')", name=op.f("ck_outbox_status_enum")),
         sa.ForeignKeyConstraint(
             ["house_id", "seq"],
             ["house_events.house_id", "house_events.seq"],
@@ -590,9 +550,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_outbox")),
     )
-    op.create_index(
-        op.f("ix_outbox_status_next_attempt_at"), "outbox", ["status", "next_attempt_at"], unique=False
-    )
+    op.create_index(op.f("ix_outbox_status_next_attempt_at"), "outbox", ["status", "next_attempt_at"], unique=False)
     op.create_table(
         "receipt_extractions",
         sa.Column("id", sa.UUID(), nullable=False),
@@ -632,9 +590,7 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint("bytes > 0 AND bytes <= 15728640", name=op.f("ck_receipts_bytes_max_15mb")),
         sa.CheckConstraint("page_index >= 0", name=op.f("ck_receipts_page_index_nonnegative")),
-        sa.ForeignKeyConstraint(
-            ["bill_id"], ["bills.id"], name=op.f("fk_receipts_bill_id_bills"), ondelete="RESTRICT"
-        ),
+        sa.ForeignKeyConstraint(["bill_id"], ["bills.id"], name=op.f("fk_receipts_bill_id_bills"), ondelete="RESTRICT"),
         sa.ForeignKeyConstraint(
             ["uploaded_by"], ["users.id"], name=op.f("fk_receipts_uploaded_by_users"), ondelete="RESTRICT"
         ),
@@ -735,16 +691,12 @@ def upgrade() -> None:
             "category IS NULL OR category IN ('produce', 'dairy', 'eggs', 'meat_fish', 'plant_protein', 'drinks', 'frozen', 'grains', 'bakery', 'snacks', 'condiments', 'canned', 'coffee_tea', 'prepared', 'household', 'other')",
             name=op.f("ck_inventory_items_category_enum"),
         ),
-        sa.CheckConstraint(
-            "place IN ('fridge', 'freezer', 'pantry')", name=op.f("ck_inventory_items_place_enum")
-        ),
+        sa.CheckConstraint("place IN ('fridge', 'freezer', 'pantry')", name=op.f("ck_inventory_items_place_enum")),
         sa.CheckConstraint(
             "status <> 'used_up' OR (used_up_at IS NOT NULL AND used_up_by_member_id IS NOT NULL)",
             name=op.f("ck_inventory_items_used_up_stamped"),
         ),
-        sa.CheckConstraint(
-            "status IN ('in_stock', 'used_up', 'removed')", name=op.f("ck_inventory_items_status_enum")
-        ),
+        sa.CheckConstraint("status IN ('in_stock', 'used_up', 'removed')", name=op.f("ck_inventory_items_status_enum")),
         sa.CheckConstraint(
             "(bill_id IS NULL) = (item_id IS NULL)", name=op.f("ck_inventory_items_bill_and_item_together")
         ),
@@ -817,12 +769,8 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint("amount_cents BETWEEN 1 AND 10000000", name=op.f("ck_payments_amount_range")),
         sa.CheckConstraint("note IS NULL OR char_length(note) <= 280", name=op.f("ck_payments_note_length")),
-        sa.CheckConstraint(
-            "num_nonnulls(member_id, guest_id) = 1", name=op.f("ck_payments_exactly_one_participant")
-        ),
-        sa.ForeignKeyConstraint(
-            ["bill_id"], ["bills.id"], name=op.f("fk_payments_bill_id_bills"), ondelete="RESTRICT"
-        ),
+        sa.CheckConstraint("num_nonnulls(member_id, guest_id) = 1", name=op.f("ck_payments_exactly_one_participant")),
+        sa.ForeignKeyConstraint(["bill_id"], ["bills.id"], name=op.f("fk_payments_bill_id_bills"), ondelete="RESTRICT"),
         sa.ForeignKeyConstraint(
             ["confirmed_by"], ["users.id"], name=op.f("fk_payments_confirmed_by_users"), ondelete="RESTRICT"
         ),
@@ -942,9 +890,7 @@ def upgrade() -> None:
         sa.CheckConstraint(
             "chip_in_cents IS NULL OR chip_in_cents > 0", name=op.f("ck_share_requests_chip_in_positive")
         ),
-        sa.CheckConstraint(
-            "note IS NULL OR char_length(note) <= 140", name=op.f("ck_share_requests_note_length")
-        ),
+        sa.CheckConstraint("note IS NULL OR char_length(note) <= 140", name=op.f("ck_share_requests_note_length")),
         sa.ForeignKeyConstraint(
             ["answered_by_member_id"],
             ["members.id"],
@@ -968,9 +914,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_share_requests")),
     )
-    op.create_index(
-        op.f("ix_share_requests_house_id_status"), "share_requests", ["house_id", "status"], unique=False
-    )
+    op.create_index(op.f("ix_share_requests_house_id_status"), "share_requests", ["house_id", "status"], unique=False)
     op.create_index(
         op.f("ix_share_requests_requester_member_id_created_at"),
         "share_requests",

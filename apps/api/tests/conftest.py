@@ -6,21 +6,32 @@ between tests. The app runs in-process with its real lifespan.
 from __future__ import annotations
 
 import os
-from collections.abc import AsyncIterator, Iterator
+from collections.abc import AsyncIterator, Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 # Test env before any app import: fakes on, test routes on (TEST_PLAN §2).
+# Email goes to the Postgres test inbox (ADR-0016) so tests read codes the way production checks do.
 os.environ.update(
     {
         "APP_ENV": "test",
+        "PROFILE": os.environ.get("PROFILE", "local"),
         "TEST_ROUTES_ENABLED": "true",
         "SESSION_SECRET": "test-session-secret-0123456789abcdef",
         "TOKEN_HASH_PEPPER": "test-pepper-0123456789abcdef0123",
-        "EMAIL_PROVIDER": "fake",
+        "CRON_SECRET": "test-cron-secret-0123456789abcdef01",
+        "WEB_ORIGIN": "https://app.test",
+        "PUBLIC_LINK_BASE": "https://app.test",
+        "EMAIL_PROVIDER": "testinbox",
+        "TEST_INBOX_SECRET": "t" * 64,
         "SMS_PROVIDER": "fake",
+        "GOOGLE_ISSUER": "http://oidc.test",
+        "GOOGLE_CLIENT_ID": "kitchentab-test",
+        "GOOGLE_CLIENT_SECRET": "google-test-secret",
+        "GOOGLE_REDIRECT_URI": "https://app.test/api/v1/auth/google/callback",
         "EXTRACTOR_PROVIDER": "fake",
         "PUSH_PROVIDER": "fake",
+        "STORAGE_PROVIDER": "s3",
         "LOG_LEVEL": "WARNING",
     }
 )
@@ -40,6 +51,7 @@ from app.models import Base
 from app.services.bus import RedisBus
 from app.services.house_write import WriteContext
 from app.settings import Settings, get_settings
+from tests.harness.api import BASE_URL, Api
 
 API_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -135,7 +147,7 @@ async def db_reset(engine: AsyncEngine, redis: Redis) -> None:
     await redis.flushdb()
 
 
-_STATEFUL = {"engine", "sessions", "redis", "writes", "app", "client", "seeded"}
+_STATEFUL = {"engine", "sessions", "redis", "writes", "app", "client", "api", "seeded"}
 
 
 @pytest.fixture(autouse=True)
@@ -154,15 +166,17 @@ def clock() -> ControllableClock:
 
 
 @pytest.fixture
-def writes(
-    sessions: async_sessionmaker[AsyncSession], clock: ControllableClock, redis: Redis
-) -> WriteContext:
+def writes(sessions: async_sessionmaker[AsyncSession], clock: ControllableClock, redis: Redis) -> WriteContext:
     return WriteContext(sessions, clock, RedisBus(redis))
 
 
 @pytest.fixture
 async def app(settings: Settings) -> AsyncIterator[Any]:
+    from fakeservices.mock_oidc import create_app as create_mock_oidc
+
     application = create_app(settings)
+    # Google sign-in runs the real client against the mock issuer in-process (TEST_PLAN §2).
+    application.state.google_transport = httpx.ASGITransport(app=create_mock_oidc(settings.google_issuer))
     async with application.router.lifespan_context(application):
         yield application
 
@@ -170,5 +184,20 @@ async def app(settings: Settings) -> AsyncIterator[Any]:
 @pytest.fixture
 async def client(app: Any) -> AsyncIterator[httpx.AsyncClient]:
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://api.test") as c:
+    async with httpx.AsyncClient(transport=transport, base_url=BASE_URL) as c:
         yield c
+
+
+@pytest.fixture
+async def api(app: Any) -> AsyncIterator[Callable[[], Api]]:
+    """Factory of independent browsers (own cookie jar) against the same app: `alice = api()`."""
+    clients: list[httpx.AsyncClient] = []
+
+    def make() -> Api:
+        c = httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url=BASE_URL, follow_redirects=False)
+        clients.append(c)
+        return Api(c)
+
+    yield make
+    for c in clients:
+        await c.aclose()

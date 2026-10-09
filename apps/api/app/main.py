@@ -7,17 +7,18 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
 
 from app.clock import ControllableClock
 from app.db import make_engine, make_sessionmaker
+from app.deps import guard_middleware
 from app.errors import install_error_handlers
 from app.ids import uuid7
 from app.logs import configure_logging, request_id_var
-from app.routes import health
+from app.routes import auth, health, houses, me, test_inbox
 from app.services.bus import NullBus, RedisBus
-from app.services.house_write import WriteContext
+from app.services.house_write import IdempotentReplay, WriteContext
 from app.settings import Settings, get_settings
 
 API_PREFIX = "/api/v1"
@@ -61,28 +62,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     install_error_handlers(app)
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[settings.web_origin],
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=[
-            "Content-Type",
-            "If-Match",
-            "Idempotency-Key",
-            "X-Client-Mutation-Id",
-            "X-Client-Version",
-            "X-Link-Token",
-            "X-CSRF-Token",
-            "Last-Event-ID",
-        ],
-        expose_headers=["ETag", "Retry-After", "X-Request-Id"],
-    )
+    # Same origin in every environment (ADR-0006): no CORS. CSRF, body cap: deps.guard_middleware.
+    app.middleware("http")(guard_middleware)
+
+    @app.exception_handler(IdempotentReplay)
+    async def _replay(request: Request, exc: IdempotentReplay) -> JSONResponse:
+        return JSONResponse(exc.body, status_code=exc.status_code, headers={"Idempotent-Replayed": "true"})
 
     @app.middleware("http")
-    async def request_context(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
+    async def request_context(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         rid = request.headers.get("X-Request-Id") or str(uuid7())
         token = request_id_var.set(rid)
         started = time.perf_counter()
@@ -94,7 +82,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.headers["Server-Timing"] = f"app;dur={(time.perf_counter() - started) * 1000:.1f}"
         return response
 
-    app.include_router(health.router, prefix=API_PREFIX)
+    for router in (health.router, auth.router, me.router, houses.router):
+        app.include_router(router, prefix=API_PREFIX)
+    app.include_router(test_inbox.router)  # 404 unless EMAIL_PROVIDER=testinbox (ADR-0016)
     if settings.test_routes_active:
         from app.routes import test_routes  # imported only in test env (SEC-11)
 

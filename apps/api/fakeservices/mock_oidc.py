@@ -117,8 +117,7 @@ def create_app(issuer: str | None = None) -> FastAPI:
         if login_hint:
             return issue_code(params, login_hint, email_verified, name)
         hidden = "".join(
-            f'<input type="hidden" name="{html.escape(k)}" value="{html.escape(v)}">'
-            for k, v in params.items()
+            f'<input type="hidden" name="{html.escape(k)}" value="{html.escape(v)}">' for k, v in params.items()
         )
         return HTMLResponse(
             "<!doctype html><title>Mock Google sign-in</title><form method=post action=/authorize>"
@@ -156,9 +155,7 @@ def create_app(issuer: str | None = None) -> FastAPI:
             raise HTTPException(400, "invalid_grant")
         if grant.redirect_uri != redirect_uri or grant.client_id != client_id:
             raise HTTPException(400, "invalid_grant: redirect_uri or client_id mismatch")
-        challenge = (
-            base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b"=").decode()
-        )
+        challenge = base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b"=").decode()
         if challenge != grant.code_challenge:
             raise HTTPException(400, "invalid_grant: PKCE verifier mismatch")
         now = int(time.time())

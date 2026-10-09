@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.adapters.email import Email, MailpitClient, SmtpEmailSender
 from app.adapters.extractor import ExtractionFailed, FakeExtractor, image_key
@@ -16,14 +17,18 @@ from app.adapters.sms import FakeSms
 from app.clock import ControllableClock
 
 
-async def test_fake_sms_records_codes(redis: Redis, clock: ControllableClock) -> None:
-    sms = FakeSms(redis, clock)
-    await sms.send_code("+12015550142", "123456")
-    await sms.send_code("+12015550177", "654321")
-    assert [e["code"] for e in await sms.sent("+12015550142")] == ["123456"]
+async def test_fake_sms_records_and_checks_codes(
+    sessions: async_sessionmaker[AsyncSession], clock: ControllableClock
+) -> None:
+    sms = FakeSms(sessions, clock)
+    await sms.start("+12015550142")
+    await sms.start("+12015550177")
+    [latest] = await sms.sent("+12015550142")
+    assert len(latest["code"]) == 6
+    assert await sms.check("+12015550142", latest["code"])
+    wrong = "000000" if latest["code"] != "000000" else "111111"
+    assert not await sms.check("+12015550142", wrong)
     assert len(await sms.sent()) == 2
-    await sms.clear()
-    assert await sms.sent() == []
 
 
 async def test_fake_extractor_modes(tmp_path: Path, redis: Redis) -> None:

@@ -24,6 +24,7 @@ house edit (rename) updates the row through `w.touch_house()` which defers it to
 
 from __future__ import annotations
 
+import json
 import uuid
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
@@ -85,6 +86,24 @@ class CommittedEvent:
         }
 
 
+@dataclass(frozen=True)
+class Idempotency:
+    """`Idempotency-Key` for a create or transition (PRD §21.3); stored with the write itself."""
+
+    user_id: uuid.UUID
+    key: str
+    request_hash: str
+
+
+class IdempotentReplay(Exception):
+    """The same key already completed: return the stored response instead of writing again."""
+
+    def __init__(self, status_code: int, body: Any) -> None:
+        super().__init__("idempotent replay")
+        self.status_code = status_code
+        self.body = body
+
+
 @dataclass
 class WriteContext:
     sessions: async_sessionmaker[AsyncSession]
@@ -107,6 +126,8 @@ class HouseWrite:
         self._pending: list[PendingEvent] = []
         self._bump_house_version = False
         self.committed: list[CommittedEvent] = []
+        self.idempotency: Idempotency | None = None
+        self._response: tuple[int, Any] | None = None
 
     def emit(
         self,
@@ -120,11 +141,60 @@ class HouseWrite:
         agg_type, agg_id, version = aggregate
         self._pending.append(PendingEvent(type, agg_type, agg_id, version, data, activity, tuple(notify)))
 
+    def respond(self, status_code: int, body: Any) -> None:
+        """The response a retry with the same Idempotency-Key gets back (stored in this commit)."""
+        self._response = (status_code, body)
+
+    async def _claim_idempotency_key(self, now: Any) -> None:
+        """First statement of the transaction. A concurrent request with the same key blocks on the
+        primary key until this transaction ends, then replays what it committed."""
+        idem = self.idempotency
+        if idem is None:
+            return
+        inserted = (
+            await self.session.execute(
+                text(
+                    "INSERT INTO idempotency_keys (user_id, key, request_hash, created_at) "
+                    "VALUES (:u, :k, :h, :t) ON CONFLICT (user_id, key) DO NOTHING RETURNING key"
+                ),
+                {"u": idem.user_id, "k": idem.key, "h": idem.request_hash, "t": now},
+            )
+        ).first()
+        if inserted is not None:
+            return
+        row = (
+            await self.session.execute(
+                text(
+                    "SELECT request_hash, status_code, response_body FROM idempotency_keys "
+                    "WHERE user_id = :u AND key = :k"
+                ),
+                {"u": idem.user_id, "k": idem.key},
+            )
+        ).one()
+        if row.request_hash != idem.request_hash:
+            raise Problem(422, ErrorCode.IDEMPOTENCY_MISMATCH, "This Idempotency-Key was used for a different request")
+        raise IdempotentReplay(int(row.status_code or 200), row.response_body)
+
     def touch_house(self) -> None:
         """Bump `houses.version` (guarded house edits) together with the sequence, house lock last."""
         self._bump_house_version = True
 
     async def _finish(self, now_clock: Clock) -> None:
+        if self.idempotency is not None:
+            if self._response is None:
+                raise RuntimeError("an idempotent write must call respond() before it ends")
+            await self.session.execute(
+                text(
+                    "UPDATE idempotency_keys SET status_code = :s, response_body = CAST(:b AS jsonb) "
+                    "WHERE user_id = :u AND key = :k"
+                ),
+                {
+                    "s": self._response[0],
+                    "b": json.dumps(self._response[1], default=str),
+                    "u": self.idempotency.user_id,
+                    "k": self.idempotency.key,
+                },
+            )
         if not self._pending:
             return
         n = len(self._pending)
@@ -210,9 +280,12 @@ async def house_write(
     *,
     actor_member_id: uuid.UUID | None = None,
     client_mutation_id: str | None = None,
+    idempotency: Idempotency | None = None,
 ) -> AsyncIterator[HouseWrite]:
     async with ctx.sessions() as session, session.begin():
         write = HouseWrite(session, house_id, actor_member_id, client_mutation_id)
+        write.idempotency = idempotency
+        await write._claim_idempotency_key(ctx.clock.now())
         yield write
         await write._finish(ctx.clock)
         # Committed. Publish strictly after commit (§21.5).

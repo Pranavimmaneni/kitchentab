@@ -176,9 +176,7 @@ def test_MONEY_06_no_float_touches_money() -> None:
     violations: list[str] = []
     money_files = [REPO_ROOT / "apps" / "api" / "app" / "domain" / "money.py"]
     money_files += [
-        p
-        for p in (REPO_ROOT / "apps" / "api" / "app").rglob("*.py")
-        if "cents" in p.read_text(encoding="utf-8")
+        p for p in (REPO_ROOT / "apps" / "api" / "app").rglob("*.py") if "cents" in p.read_text(encoding="utf-8")
     ]
     for path in sorted(set(money_files)):
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -203,9 +201,7 @@ def test_MONEY_06_no_float_touches_money() -> None:
 @tid("MONEY-10")
 def test_MONEY_10_limits_200_items_20_members_100k() -> None:
     people = tuple(Participant(f"p{i:02d}", i) for i in range(20))
-    items = tuple(
-        Item(f"i{k}", 50_000, tuple(Allocation(p.id) for p in people[: 1 + k % 20])) for k in range(200)
-    )
+    items = tuple(Item(f"i{k}", 50_000, tuple(Allocation(p.id) for p in people[: 1 + k % 20])) for k in range(200))
     total = sum(i.line_total_cents for i in items)
     assert total == 10_000_000  # $100,000.00
     bill = BillInput(people, items, tax_cents=0, fees=(), total_cents=total)

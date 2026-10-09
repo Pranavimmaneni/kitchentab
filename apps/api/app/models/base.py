@@ -32,12 +32,8 @@ def uuid_pk() -> Mapped[uuid.UUID]:
     return mapped_column(UUID(as_uuid=True), primary_key=True)
 
 
-def fk(
-    target: str, *, nullable: bool = False, ondelete: str = "RESTRICT", index: bool = False
-) -> Mapped[uuid.UUID]:
-    return mapped_column(
-        UUID(as_uuid=True), ForeignKey(target, ondelete=ondelete), nullable=nullable, index=index
-    )
+def fk(target: str, *, nullable: bool = False, ondelete: str = "RESTRICT", index: bool = False) -> Mapped[uuid.UUID]:
+    return mapped_column(UUID(as_uuid=True), ForeignKey(target, ondelete=ondelete), nullable=nullable, index=index)
 
 
 def ts(*, nullable: bool = False) -> Mapped[datetime]:

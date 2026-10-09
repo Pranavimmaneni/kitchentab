@@ -28,6 +28,22 @@ class ErrorCode(StrEnum):
     IDEMPOTENCY_MISMATCH = "IDEMPOTENCY_MISMATCH"
     STALE_CLIENT = "STALE_CLIENT"
     RATE_LIMITED = "RATE_LIMITED"
+    # Sign-in and links
+    CODE_EXPIRED = "CODE_EXPIRED"
+    CODE_LOCKED = "CODE_LOCKED"
+    CODE_MISMATCH = "CODE_MISMATCH"
+    CAPTCHA_REQUIRED = "CAPTCHA_REQUIRED"
+    METHOD_DISABLED = "METHOD_DISABLED"
+    EMAIL_UNVERIFIED = "EMAIL_UNVERIFIED"
+    IDENTITY_TAKEN = "IDENTITY_TAKEN"
+    LAST_SIGN_IN_METHOD = "LAST_SIGN_IN_METHOD"
+    LINK_EXPIRED = "LINK_EXPIRED"
+    # Houses
+    DUPLICATE_NAME = "DUPLICATE_NAME"
+    HOUSE_FULL = "HOUSE_FULL"
+    ALREADY_MEMBER = "ALREADY_MEMBER"
+    PAYER_ON_OPEN_BILLS = "PAYER_ON_OPEN_BILLS"
+    ADMIN_REQUIRED = "ADMIN_REQUIRED"
     # Request shape
     IF_MATCH_REQUIRED = "IF_MATCH_REQUIRED"
     IDEMPOTENCY_KEY_REQUIRED = "IDEMPOTENCY_KEY_REQUIRED"
@@ -106,9 +122,7 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def _http(request: Request, exc: StarletteHTTPException) -> JSONResponse:
-        code = _STATUS_CODES.get(
-            exc.status_code, ErrorCode.INTERNAL if exc.status_code >= 500 else ErrorCode.CONFLICT
-        )
+        code = _STATUS_CODES.get(exc.status_code, ErrorCode.INTERNAL if exc.status_code >= 500 else ErrorCode.CONFLICT)
         title = str(exc.detail) if exc.detail else "Request failed"
         return _response(Problem(exc.status_code, code, title, headers=dict(exc.headers or {})), request)
 

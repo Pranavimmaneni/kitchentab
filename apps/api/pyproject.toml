@@ -21,6 +21,7 @@ dependencies = [
   "http-ece>=1.2",
   "cryptography>=43",
   "pyyaml>=6.0",
+  "tzdata>=2024.1",  # zoneinfo data on Windows dev machines (house and user time zones)
 ]
 
 [dependency-groups]
@@ -40,7 +41,7 @@ dev = [
 package = false
 
 [tool.ruff]
-line-length = 110
+line-length = 120
 target-version = "py312"
 extend-exclude = ["migrations/versions/*.py.tmpl"]
 

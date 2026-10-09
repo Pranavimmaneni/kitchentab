@@ -42,9 +42,7 @@ class WebPushSender:
         self._key = vapid_private_key
         self._subject = vapid_subject
 
-    def _send_sync(
-        self, sub: SubscriptionInfo, body: bytes, ttl: int, urgency: Urgency, topic: str | None
-    ) -> int:
+    def _send_sync(self, sub: SubscriptionInfo, body: bytes, ttl: int, urgency: Urgency, topic: str | None) -> int:
         headers: dict[str, str] = {"Urgency": urgency}
         if topic:
             headers["Topic"] = topic

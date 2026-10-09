@@ -55,9 +55,7 @@ async def sync_clock(ctx: dict[str, Any]) -> None:
 async def poll_outbox(ctx: dict[str, Any]) -> int:
     await sync_clock(ctx)
     async with ctx["sessions"]() as session:
-        pending = await session.scalar(
-            select(func.count()).select_from(OutboxRow).where(OutboxRow.status == "pending")
-        )
+        pending = await session.scalar(select(func.count()).select_from(OutboxRow).where(OutboxRow.status == "pending"))
     if pending:
         log.info("outbox pending", extra={"pending": pending})
     return int(pending or 0)

@@ -187,9 +187,7 @@ class Item(Base):
 
 class Guest(Base):
     __tablename__ = "guests"
-    __table_args__ = (
-        CheckConstraint("char_length(display_name) BETWEEN 1 AND 24", name="display_name_length"),
-    )
+    __table_args__ = (CheckConstraint("char_length(display_name) BETWEEN 1 AND 24", name="display_name_length"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     bill_id: Mapped[uuid.UUID] = fk("bills.id", index=True)

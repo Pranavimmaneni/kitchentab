@@ -92,9 +92,7 @@ async def test_seeded_kitchen_matches_mockup_counts(sessions: async_sessionmaker
                 )
             ).all()
         )
-        pending = await s.scalar(
-            select(func.count()).select_from(ShareRequest).where(ShareRequest.status == "pending")
-        )
+        pending = await s.scalar(select(func.count()).select_from(ShareRequest).where(ShareRequest.status == "pending"))
         colors = (await s.scalars(select(Member.color).order_by(Member.sort_order))).all()
     # Kitchen.dc.html: FRIDGE 10 ITEMS (freezer + refrigerated), PANTRY 5 ITEMS.
     assert counts["fridge"] + counts["freezer"] == 10 and counts["pantry"] == 5

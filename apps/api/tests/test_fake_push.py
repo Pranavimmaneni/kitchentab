@@ -88,9 +88,7 @@ async def test_sender_refuses_payloads_over_two_kilobytes(fake_push: str, vapid_
 
 def test_vapid_with_wrong_audience_is_rejected(vapid_private_key: str) -> None:
     v = Vapid02.from_raw(vapid_private_key.encode())
-    headers = v.sign(
-        {"aud": "https://elsewhere.example", "sub": "mailto:a@b.c", "exp": int(time.time()) + 600}
-    )
+    headers = v.sign({"aud": "https://elsewhere.example", "sub": "mailto:a@b.c", "exp": int(time.time()) + 600})
     with pytest.raises(Exception, match="aud"):
         verify_vapid(headers["Authorization"], "http://127.0.0.1:1", time.time())
 
@@ -103,9 +101,7 @@ def test_vapid_signed_by_another_key_is_rejected(vapid_private_key: str) -> None
     token = v.sign(claims)["Authorization"].split("t=", 1)[1].split(",", 1)[0]
     other_k = (
         base64.urlsafe_b64encode(
-            other.public_key.public_bytes(
-                serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
-            )
+            other.public_key.public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
         )
         .rstrip(b"=")
         .decode()

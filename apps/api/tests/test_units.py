@@ -48,9 +48,7 @@ def test_tokens_are_128_bit_base62_and_hashed() -> None:
 
 
 def test_redaction_masks_secrets_codes_contacts() -> None:
-    text = redact_text(
-        "code 123456 sent to meera@example.com and +1 (201) 555-0142 tok k7Q2xR9pVw3LmZt8Hc5NbY"
-    )
+    text = redact_text("code 123456 sent to meera@example.com and +1 (201) 555-0142 tok k7Q2xR9pVw3LmZt8Hc5NbY")
     assert "123456" not in text and "meera@" not in text and "555-0142" not in text and "k7Q2xR9p" not in text
     assert "m***@example.com" in text
     assert redact({"session_token": "abc", "nested": {"push_endpoint": "x"}, "count": 3}) == {
@@ -68,8 +66,6 @@ def test_json_log_line_never_contains_the_code() -> None:
 
 
 def test_problem_body_shape() -> None:
-    body = Problem(409, ErrorCode.LAST_PERSON, "Someone has to keep it", extra={"item_id": "x"}).body(
-        "/api/v1/x"
-    )
+    body = Problem(409, ErrorCode.LAST_PERSON, "Someone has to keep it", extra={"item_id": "x"}).body("/api/v1/x")
     assert body["code"] == "LAST_PERSON" and body["status"] == 409 and body["item_id"] == "x"
     assert body["type"].endswith("/last-person")

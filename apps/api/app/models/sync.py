@@ -51,9 +51,7 @@ class OutboxRow(Base):
     __tablename__ = "outbox"
     __table_args__ = (
         enum_check("status", enums.OUTBOX_STATUSES),
-        ForeignKeyConstraint(
-            ["house_id", "seq"], ["house_events.house_id", "house_events.seq"], ondelete="CASCADE"
-        ),
+        ForeignKeyConstraint(["house_id", "seq"], ["house_events.house_id", "house_events.seq"], ondelete="CASCADE"),
         Index(None, "status", "next_attempt_at"),
     )
 

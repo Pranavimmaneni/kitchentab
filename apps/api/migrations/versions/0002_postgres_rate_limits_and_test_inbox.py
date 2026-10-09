@@ -27,9 +27,7 @@ def upgrade() -> None:
         sa.CheckConstraint("count > 0", name=op.f("ck_rate_limit_hits_count_positive")),
         sa.PrimaryKeyConstraint("bucket", "key", "window_start", name=op.f("pk_rate_limit_hits")),
     )
-    op.create_index(
-        op.f("ix_rate_limit_hits_window_start"), "rate_limit_hits", ["window_start"], unique=False
-    )
+    op.create_index(op.f("ix_rate_limit_hits_window_start"), "rate_limit_hits", ["window_start"], unique=False)
     op.create_table(
         "test_inbox",
         sa.Column("id", sa.UUID(), nullable=False),

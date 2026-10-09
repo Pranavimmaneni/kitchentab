@@ -49,25 +49,33 @@ async def set_clock(body: ClockBody, request: Request) -> ClockState:
         clock.set(body.now)
     if body.advance_seconds:
         clock.advance(timedelta(seconds=body.advance_seconds))
-    await request.app.state.redis.set(REDIS_CLOCK_KEY, clock.dump())
+    if request.app.state.redis is not None:
+        await request.app.state.redis.set(REDIS_CLOCK_KEY, clock.dump())
     return ClockState(now=clock.now(), overridden=True)
 
 
 @router.delete("/clock", status_code=204)
 async def reset_clock(request: Request) -> Response:
     _clock(request).reset()
-    await request.app.state.redis.delete(REDIS_CLOCK_KEY)
+    if request.app.state.redis is not None:
+        await request.app.state.redis.delete(REDIS_CLOCK_KEY)
     return Response(status_code=204)
 
 
 @router.get("/sms")
 async def sms(request: Request, to: str | None = None) -> list[dict[str, str]]:
-    return await FakeSms(request.app.state.redis, request.app.state.clock).sent(to)
+    return await FakeSms(request.app.state.sessions, request.app.state.clock).sent(to)
 
 
 @router.delete("/sms", status_code=204)
 async def clear_sms(request: Request) -> Response:
-    await FakeSms(request.app.state.redis, request.app.state.clock).clear()
+    from sqlalchemy import delete
+
+    from app.adapters.sms import FAKE_SMS_SUBJECT
+    from app.models import TestInboxMessage
+
+    async with request.app.state.sessions() as db, db.begin():
+        await db.execute(delete(TestInboxMessage).where(TestInboxMessage.subject == FAKE_SMS_SUBJECT))
     return Response(status_code=204)
 
 
@@ -77,5 +85,6 @@ class ExtractorMode(BaseModel):
 
 @router.post("/extractor", status_code=204)
 async def extractor_mode(body: ExtractorMode, request: Request) -> Response:
-    await request.app.state.redis.set(FAKE_EXTRACTOR_MODE_KEY, body.mode)
+    if request.app.state.redis is not None:
+        await request.app.state.redis.set(FAKE_EXTRACTOR_MODE_KEY, body.mode)
     return Response(status_code=204)

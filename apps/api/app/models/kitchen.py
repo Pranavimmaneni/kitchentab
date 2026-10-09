@@ -89,9 +89,7 @@ class ShareRequest(Base):
         enum_check("resolution", enums.REQUEST_RESOLUTIONS, nullable=True),
         CheckConstraint("note IS NULL OR char_length(note) <= 140", name="note_length"),
         CheckConstraint("chip_in_cents IS NULL OR chip_in_cents > 0", name="chip_in_positive"),
-        CheckConstraint(
-            "(status = 'approved') = (resolution IS NOT NULL)", name="resolution_only_when_approved"
-        ),
+        CheckConstraint("(status = 'approved') = (resolution IS NOT NULL)", name="resolution_only_when_approved"),
         CheckConstraint(
             "(resolution IS NOT DISTINCT FROM 'chip_in') = (chip_in_cents IS NOT NULL)", name="chip_in_amount"
         ),

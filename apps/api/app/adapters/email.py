@@ -1,18 +1,28 @@
-"""Transactional email (PRD §7, §8). EMAIL_PROVIDER=fake delivers over SMTP to Mailpit.
+"""Transactional email (PRD §7, §8; ADR-0016).
 
-Real providers (Resend/Postmark/SES) land in Milestone 3. `MailpitClient` is the test-side reader.
+EMAIL_PROVIDER:
+* `fake`      plain SMTP to Mailpit (local and tests); `MailpitClient` reads it back.
+* `smtp`      Gmail: STARTTLS on 587 with an app password.
+* `testinbox` stored in Postgres, readable only at /api/test/inbox with the secret.
 """
 
 from __future__ import annotations
 
 import asyncio
 import smtplib
+import ssl
 from dataclasses import dataclass, field
 from email.message import EmailMessage
 from typing import Any, Protocol
 from urllib.parse import urlsplit
 
 import httpx
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from app.clock import Clock
+from app.ids import uuid7
+from app.models import TestInboxMessage
+from app.settings import Settings
 
 
 @dataclass(frozen=True)
@@ -28,8 +38,21 @@ class EmailSender(Protocol):
     async def send(self, message: Email) -> None: ...
 
 
+def _build(sender: str, message: Email) -> EmailMessage:
+    msg = EmailMessage()
+    msg["From"] = sender
+    msg["To"] = message.to
+    msg["Subject"] = message.subject
+    for name, value in message.headers.items():
+        msg[name] = value
+    msg.set_content(message.text)
+    if message.html:
+        msg.add_alternative(message.html, subtype="html")
+    return msg
+
+
 class SmtpEmailSender:
-    """Plain SMTP; used with Mailpit locally and in tests."""
+    """Plain SMTP without auth: Mailpit locally and in tests (EMAIL_PROVIDER=fake)."""
 
     def __init__(self, smtp_url: str, sender: str) -> None:
         parts = urlsplit(smtp_url)
@@ -38,20 +61,69 @@ class SmtpEmailSender:
         self._sender = sender
 
     def _send_sync(self, message: Email) -> None:
-        msg = EmailMessage()
-        msg["From"] = self._sender
-        msg["To"] = message.to
-        msg["Subject"] = message.subject
-        for name, value in message.headers.items():
-            msg[name] = value
-        msg.set_content(message.text)
-        if message.html:
-            msg.add_alternative(message.html, subtype="html")
         with smtplib.SMTP(self._host, self._port, timeout=10) as smtp:
-            smtp.send_message(msg)
+            smtp.send_message(_build(self._sender, message))
 
     async def send(self, message: Email) -> None:
         await asyncio.to_thread(self._send_sync, message)
+
+
+class AuthenticatedSmtpSender:
+    """Gmail (EMAIL_PROVIDER=smtp): STARTTLS, then login with the app password."""
+
+    def __init__(self, host: str, port: int, user: str, password: str, sender: str, *, starttls: bool = True) -> None:
+        self._host, self._port, self._user, self._password = host, port, user, password
+        self._sender = sender
+        self._starttls = starttls
+
+    def _send_sync(self, message: Email) -> None:
+        with smtplib.SMTP(self._host, self._port, timeout=15) as smtp:
+            if self._starttls:
+                smtp.starttls(context=ssl.create_default_context())
+            smtp.login(self._user, self._password)
+            smtp.send_message(_build(self._sender, message))
+
+    async def send(self, message: Email) -> None:
+        await asyncio.to_thread(self._send_sync, message)
+
+
+class TestInboxSender:
+    """EMAIL_PROVIDER=testinbox: store instead of sending (ADR-0016)."""
+
+    __test__ = False  # not a pytest class
+
+    def __init__(self, sessions: async_sessionmaker[AsyncSession], clock: Clock) -> None:
+        self._sessions = sessions
+        self._clock = clock
+
+    async def send(self, message: Email) -> None:
+        async with self._sessions() as db, db.begin():
+            db.add(
+                TestInboxMessage(
+                    id=uuid7(),
+                    to_address=message.to,
+                    subject=message.subject,
+                    text_body=message.text,
+                    html_body=message.html,
+                    headers=dict(message.headers),
+                    created_at=self._clock.now(),
+                )
+            )
+
+
+def email_sender(settings: Settings, sessions: async_sessionmaker[AsyncSession], clock: Clock) -> EmailSender:
+    if settings.email_provider == "testinbox":
+        return TestInboxSender(sessions, clock)
+    if settings.email_provider == "smtp":
+        assert settings.smtp_host and settings.smtp_user and settings.smtp_password  # validated at boot
+        return AuthenticatedSmtpSender(
+            settings.smtp_host,
+            settings.smtp_port,
+            settings.smtp_user,
+            settings.smtp_password.get_secret_value(),
+            settings.email_from,
+        )
+    return SmtpEmailSender(settings.smtp_url, settings.email_from)
 
 
 class MailpitClient:

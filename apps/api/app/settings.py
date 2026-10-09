@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     google_issuer: str = "https://accounts.google.com"
     google_client_id: str | None = None
     google_client_secret: SecretStr | None = None
-    google_redirect_uri: str = "http://localhost:3000/auth/google/callback"
+    google_redirect_uri: str = "http://localhost:3000/api/v1/auth/google/callback"
 
     # Email (ADR-0016): fake = SMTP to Mailpit; smtp = Gmail; testinbox = Postgres + secret.
     email_provider: Literal["fake", "smtp", "testinbox"] = "fake"
@@ -138,9 +138,7 @@ class Settings(BaseSettings):
         if self.test_routes_enabled and self.app_env != "test":
             problems.append("TEST_ROUTES_ENABLED is only allowed when APP_ENV=test")
         if self.profile == "local" and not self.redis_url and self.queue == "arq":
-            problems.append(
-                "REDIS_URL is required with PROFILE=local (arq queue); use PROFILE=vercel without Redis"
-            )
+            problems.append("REDIS_URL is required with PROFILE=local (arq queue); use PROFILE=vercel without Redis")
 
         if self.is_deployed:
             for name in ("session_secret", "token_hash_pepper", "cron_secret"):
@@ -182,9 +180,7 @@ class Settings(BaseSettings):
             (self.push_provider == "webpush", "VAPID_PRIVATE_KEY", self.vapid_private_key),
             (self.storage_provider == "vercel_blob", "BLOB_READ_WRITE_TOKEN", self.blob_read_write_token),
         ]
-        problems += [
-            f"{name} is required by the configured provider" for cond, name, v in required if cond and not v
-        ]
+        problems += [f"{name} is required by the configured provider" for cond, name, v in required if cond and not v]
 
         if self.email_provider == "testinbox":
             secret = self.test_inbox_secret.get_secret_value() if self.test_inbox_secret else ""

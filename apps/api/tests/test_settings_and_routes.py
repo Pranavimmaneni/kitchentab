@@ -148,10 +148,11 @@ async def test_clock_control_pins_and_advances_server_time(client: httpx.AsyncCl
 async def test_sms_inbox_route(client: httpx.AsyncClient, app: Any) -> None:
     from app.adapters.sms import FakeSms
 
-    await FakeSms(app.state.redis, app.state.clock).send_code("+12015550142", "246810")
-    assert [e["code"] for e in (await client.get("/__test/sms", params={"to": "+12015550142"})).json()] == [
-        "246810"
-    ]
+    sms = FakeSms(app.state.sessions, app.state.clock)
+    await sms.start("+12015550142")
+    [sent] = await sms.sent("+12015550142")
+    listed = (await client.get("/__test/sms", params={"to": "+12015550142"})).json()
+    assert [e["code"] for e in listed] == [sent["code"]]
 
 
 @pytest.mark.usefixtures("clean_env")

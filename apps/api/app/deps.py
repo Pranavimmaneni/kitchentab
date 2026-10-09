@@ -1,0 +1,209 @@
+"""Request plumbing shared by every route: context, sign-in, CSRF, body cap, idempotency keys.
+
+Authorization decisions are not made here; they live in `app.policy` (CLAUDE.md rule 2).
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import uuid
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any
+from urllib.parse import urlsplit
+
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
+from redis.asyncio import Redis
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from app import ratelimit
+from app.clock import ControllableClock
+from app.errors import PROBLEM_JSON, ErrorCode, Problem
+from app.models import Session, User
+from app.security import CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE, csrf_matches, session_hash
+from app.services.house_write import Idempotency, WriteContext
+from app.settings import Settings
+
+SESSION_TTL = timedelta(days=30)
+SESSION_REFRESH_AFTER = timedelta(hours=1)
+UNSAFE = {"POST", "PUT", "PATCH", "DELETE"}
+# Endpoints with their own authentication (bearer secrets), exempt from CSRF.
+CSRF_EXEMPT_PREFIXES = ("/api/v1/cron/", "/api/v1/queue/", "/api/test/", "/__test/")
+
+
+@dataclass
+class Ctx:
+    settings: Settings
+    sessions: async_sessionmaker[AsyncSession]
+    clock: ControllableClock
+    writes: WriteContext
+    redis: Redis | None
+
+
+def ctx(request: Request) -> Ctx:
+    s = request.app.state
+    return Ctx(s.settings, s.sessions, s.clock, s.writes, s.redis)
+
+
+@dataclass(frozen=True)
+class Actor:
+    user: User
+    session_id: uuid.UUID
+
+
+# ---- sessions --------------------------------------------------------------------------------
+
+
+async def optional_actor(request: Request) -> Actor | None:
+    if hasattr(request.state, "actor"):
+        cached: Actor | None = request.state.actor
+        return cached
+    token = request.cookies.get(SESSION_COOKIE)
+    actor: Actor | None = None
+    if token:
+        c = ctx(request)
+        now = c.clock.now()
+        async with c.sessions() as db, db.begin():
+            row = (
+                await db.execute(
+                    select(Session, User)
+                    .join(User, User.id == Session.user_id)
+                    .where(
+                        Session.token_hash == session_hash(token),
+                        Session.revoked_at.is_(None),
+                        Session.expires_at > now,
+                        User.deleted_at.is_(None),
+                    )
+                )
+            ).first()
+            if row is not None:
+                sess, user = row
+                if now - sess.last_seen_at > SESSION_REFRESH_AFTER:  # sliding expiry (AUTH-08)
+                    await db.execute(
+                        update(Session)
+                        .where(Session.id == sess.id)
+                        .values(last_seen_at=now, expires_at=now + SESSION_TTL)
+                    )
+                actor = Actor(user, sess.id)
+    request.state.actor = actor
+    return actor
+
+
+async def require_actor(request: Request) -> Actor:
+    actor = await optional_actor(request)
+    if actor is None:
+        raise Problem(401, ErrorCode.UNAUTHENTICATED, "Sign in to do that")
+    return actor
+
+
+def set_session_cookie(response: Response, settings: Settings, token: str) -> None:
+    response.set_cookie(
+        SESSION_COOKIE,
+        token,
+        max_age=int(SESSION_TTL.total_seconds()),
+        httponly=True,
+        secure=cookie_secure(settings),
+        samesite="lax",
+        path="/",
+    )
+
+
+def clear_session_cookie(response: Response, settings: Settings) -> None:
+    response.delete_cookie(SESSION_COOKIE, path="/", secure=cookie_secure(settings), httponly=True, samesite="lax")
+
+
+def cookie_secure(settings: Settings) -> bool:
+    return settings.web_origin.startswith("https://")
+
+
+# ---- rate limits ---------------------------------------------------------------------------
+
+
+async def rate_limit(request: Request, bucket: str, raw_key: str, *, limit: int, window: timedelta) -> int:
+    """Count an attempt in its own transaction so a later failure can't roll it back."""
+    c = ctx(request)
+    key = hashlib.sha256(f"{bucket}:{raw_key}".encode()).hexdigest()
+    async with c.sessions() as db, db.begin():
+        return await ratelimit.hit(db, c.clock, bucket, key, limit=limit, window=window)
+
+
+def client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+# ---- CSRF, body size, client version (middleware) ----------------------------------------------
+
+
+def _allowed_origins(settings: Settings) -> set[str]:
+    out = set()
+    for url in (settings.web_origin, settings.public_link_base):
+        parts = urlsplit(url)
+        out.add(f"{parts.scheme}://{parts.netloc}")
+    return out
+
+
+def problem_response(problem: Problem, path: str) -> JSONResponse:
+    return JSONResponse(
+        problem.body(path), status_code=problem.status, media_type=PROBLEM_JSON, headers=problem.headers
+    )
+
+
+async def guard_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    settings: Settings = request.app.state.settings
+    path = request.url.path
+    length = request.headers.get("content-length")
+    if length and length.isdigit() and int(length) > settings.max_body_bytes:  # VERCEL-03
+        return problem_response(
+            Problem(413, ErrorCode.VALIDATION_FAILED, "That's too big to send", "Upload files directly instead."),
+            path,
+        )
+    if request.method in UNSAFE and not path.startswith(CSRF_EXEMPT_PREFIXES):
+        origin = request.headers.get("origin")
+        if origin is not None and origin not in _allowed_origins(settings):
+            return problem_response(Problem(403, ErrorCode.FORBIDDEN, "Cross-site request blocked"), path)
+        if not csrf_matches(request.cookies.get(CSRF_COOKIE), request.headers.get(CSRF_HEADER)):
+            return problem_response(Problem(403, ErrorCode.FORBIDDEN, "Missing or stale security token"), path)
+    return await call_next(request)
+
+
+# ---- idempotency ---------------------------------------------------------------------------
+
+
+def request_hash(request: Request, body: Any) -> str:
+    payload = json.dumps(body, sort_keys=True, default=str) if body is not None else ""
+    return hashlib.sha256(f"{request.method} {request.url.path}\n{payload}".encode()).hexdigest()
+
+
+def idempotency(request: Request, actor: Actor, body: Any) -> Idempotency:
+    """Every POST that creates or transitions needs a key (400 without one, PRD §21.8)."""
+    key = request.headers.get("Idempotency-Key")
+    if not key or len(key) > 200:
+        raise Problem(400, ErrorCode.IDEMPOTENCY_KEY_REQUIRED, "Idempotency-Key header required")
+    return Idempotency(actor.user.id, key, request_hash(request, body))
+
+
+def if_match(request: Request) -> int:
+    """Guarded edits need If-Match with the row version (428 without it)."""
+    raw = request.headers.get("If-Match")
+    if raw is None:
+        raise Problem(428, ErrorCode.IF_MATCH_REQUIRED, "If-Match header required")
+    try:
+        return int(raw.strip('W/"'))
+    except ValueError as exc:
+        raise Problem(400, ErrorCode.VALIDATION_FAILED, "If-Match must be a version number") from exc
+
+
+def client_mutation_id(request: Request) -> str | None:
+    value = request.headers.get("X-Client-Mutation-Id")
+    return value[:100] if value else None
+
+
+def now(request: Request) -> datetime:
+    return ctx(request).clock.now()

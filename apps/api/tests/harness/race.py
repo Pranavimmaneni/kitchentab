@@ -25,9 +25,7 @@ class Outcome[T]:
         return self.error is None
 
 
-async def run_concurrently[T](
-    n: int, fn: Callable[[int], Awaitable[T]], *, timeout: float = 30.0
-) -> list[Outcome[T]]:
+async def run_concurrently[T](n: int, fn: Callable[[int], Awaitable[T]], *, timeout: float = 30.0) -> list[Outcome[T]]:
     barrier = asyncio.Barrier(n)
 
     async def one(i: int) -> Outcome[T]:

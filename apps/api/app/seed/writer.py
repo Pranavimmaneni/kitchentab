@@ -274,8 +274,7 @@ async def _stock(
         item_id=item.id,
         place=item.storage,
         category=item.category,
-        icon_key=item.icon_key
-        or ("generic_fridge" if item.storage in ("fridge", "freezer") else "generic_pantry"),
+        icon_key=item.icon_key or ("generic_fridge" if item.storage in ("fridge", "freezer") else "generic_pantry"),
         name=item.name,
         short_name=spec.get("short", item.name[:14]),
         price_cents=item.line_total_cents,
@@ -306,16 +305,10 @@ async def _stock(
     )
 
 
-async def _requests(
-    session: AsyncSession, sc: Scenario, ids: dict[str, uuid.UUID], house_id: uuid.UUID
-) -> None:
+async def _requests(session: AsyncSession, sc: Scenario, ids: dict[str, uuid.UUID], house_id: uuid.UUID) -> None:
     for r in sc.raw.get("requests", []):
         created = sc.now - timedelta(minutes=int(r["minutes_ago"]))
-        answered = (
-            sc.now - timedelta(minutes=int(r["answered_minutes_ago"]))
-            if r.get("answered_minutes_ago")
-            else None
-        )
+        answered = sc.now - timedelta(minutes=int(r["answered_minutes_ago"])) if r.get("answered_minutes_ago") else None
         inventory_id = ids[f"inventory:{r['item']}"]
         req = ShareRequest(
             id=seed_uuid(sc.name, "request", r["key"], created),

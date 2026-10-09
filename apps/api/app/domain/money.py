@@ -80,9 +80,7 @@ def weight_to_milli(weight: int | str | Decimal) -> int:
     return int(value)
 
 
-def largest_remainder(
-    amount: int, weights: Mapping[str, int], order: Mapping[str, tuple[int, str]]
-) -> dict[str, int]:
+def largest_remainder(amount: int, weights: Mapping[str, int], order: Mapping[str, tuple[int, str]]) -> dict[str, int]:
     """Split integer `amount` across `weights` (positive integers) exactly.
 
     Each key gets floor(|amount| * w / W); the leftover cents go one at a time to the largest
@@ -157,9 +155,7 @@ def compute_shares(bill: BillInput) -> ShareResult:
 
     expected_total = sum(i.line_total_cents for i in bill.items) + sum(a for _, a in levels)
     if expected_total != bill.total_cents:
-        raise ReconciliationError(
-            f"bill does not reconcile: computed {expected_total} vs total {bill.total_cents}"
-        )
+        raise ReconciliationError(f"bill does not reconcile: computed {expected_total} vs total {bill.total_cents}")
     if sum(shares.values()) != bill.total_cents:
         raise InvariantError("share invariant violated")
     return ShareResult(item_sub, shares, by_item)
@@ -176,10 +172,7 @@ def bill_from_dict(raw: Mapping[str, Any]) -> BillInput:
             Item(
                 str(i["id"]),
                 int(i["line_total_cents"]),
-                tuple(
-                    Allocation(str(a["participant"]), weight_to_milli(a.get("weight", 1)))
-                    for a in i["allocations"]
-                ),
+                tuple(Allocation(str(a["participant"]), weight_to_milli(a.get("weight", 1))) for a in i["allocations"]),
             )
             for i in raw["items"]
         ),

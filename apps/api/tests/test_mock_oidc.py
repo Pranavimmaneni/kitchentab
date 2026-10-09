@@ -72,9 +72,9 @@ async def test_code_flow_issues_a_verifiable_id_token(oidc: httpx.AsyncClient) -
     ).json()
     jwks = KeySet.import_key_set((await oidc.get("/jwks")).json())
     claims = jwt.decode(tokens["id_token"], jwks, algorithms=["RS256"]).claims
-    jwt.JWTClaimsRegistry(
-        iss={"essential": True, "value": ISSUER}, aud={"essential": True, "value": CLIENT}
-    ).validate(claims)
+    jwt.JWTClaimsRegistry(iss={"essential": True, "value": ISSUER}, aud={"essential": True, "value": CLIENT}).validate(
+        claims
+    )
     assert claims["iss"] == ISSUER and claims["aud"] == CLIENT and claims["nonce"] == "n-1"
     assert claims["email"] == "meera@example.test" and claims["email_verified"] is True
     assert claims["sub"] == subject_for("meera@example.test")
