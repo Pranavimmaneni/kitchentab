@@ -14,6 +14,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.links import bill_token, invite_token
 from app.models import (
     Allocation,
     AuthIdentity,
@@ -30,7 +31,6 @@ from app.models import (
     User,
 )
 from app.seed.scenario import Scenario, seed_uuid
-from app.tokens import hash_token
 
 # Default shelf life (PRD §19.5 table), by icon first, then category. Milestone 8 moves this into
 # the domain layer with the extractor's own value taking precedence.
@@ -124,11 +124,12 @@ async def write_scenario(session: AsyncSession, sc: Scenario, pepper: str) -> di
     await session.flush()
 
     admin_user = ids[f"user:{raw['house']['admin']}"]
+    house_id = uid("house", sc.name, house_created)
     house = House(
-        id=uid("house", sc.name, house_created),
+        id=house_id,
         name=raw["house"]["name"],
         timezone=raw["house"]["timezone"],
-        invite_token_hash=hash_token(raw["house"]["invite_token"], pepper),
+        invite_token_hash=invite_token(pepper, house_id, house_created)[1],
         created_by=admin_user,
         created_at=house_created,
     )
@@ -159,8 +160,9 @@ async def write_scenario(session: AsyncSession, sc: Scenario, pepper: str) -> di
         created = bill.sent_at or sc.now
         payer = ids[f"member:{bill.payer}"]
         subtotal = sum(i.cents for i in bill.items)
+        bill_id = uid("bill", bill.key, created)
         b = Bill(
-            id=uid("bill", bill.key, created),
+            id=bill_id,
             house_id=house.id,
             payer_member_id=payer,
             created_by=ids[f"user:{bill.payer}"],
@@ -170,7 +172,7 @@ async def write_scenario(session: AsyncSession, sc: Scenario, pepper: str) -> di
             tax_cents=bill.tax_cents,
             total_cents=bill.total_cents,
             state=bill.state,
-            link_token_hash=hash_token(bill.link_token, pepper),
+            link_token_hash=bill_token(pepper, bill_id, created)[1],
             sent_at=bill.sent_at,
             settled_at=bill.settled_at,
             settled_by=payer if bill.settled_at else None,

@@ -1,0 +1,85 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/components.css";
+
+/*
+ * Tailwind reads the design tokens; the default palette is removed so only token colors exist
+ * (CLAUDE.md rule 9).
+ */
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-control-edge: var(--control-edge);
+  --color-shadow: var(--shadow);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-on-accent: var(--on-accent);
+  --color-on-accent-2: var(--on-accent-2);
+  --color-warn: var(--warn);
+  --color-good: var(--good);
+  --color-till: var(--till);
+  --color-on-till: var(--on-till);
+  --color-side: var(--side);
+  --color-top: var(--top);
+  --color-cold: var(--cold);
+  --color-frost: var(--frost);
+  --color-glass: var(--glass);
+  --color-wall: var(--wall);
+  --color-wood: var(--wood);
+  --color-wood-top: var(--wood-top);
+  --color-soon: var(--soon);
+  --color-member-1: var(--member-1);
+  --color-member-2: var(--member-2);
+  --color-member-3: var(--member-3);
+  --color-member-4: var(--member-4);
+  --color-member-5: var(--member-5);
+  --color-member-6: var(--member-6);
+  --color-member-7: var(--member-7);
+  --color-member-8: var(--member-8);
+
+  --font-*: initial;
+  --font-mono: var(--font-space-mono), "Space Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-sans: var(--font-work-sans), "Work Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 4px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+
+  --shadow-sticker: 4px 4px 0 var(--shadow);
+  --shadow-hero: 5px 5px 0 var(--shadow);
+
+  --animate-*: initial;
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+  }
+  [data-theme] {
+    background: var(--bg);
+    color: var(--ink);
+  }
+  :focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "kitchentab",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm -C apps/web dev",
+    "build": "pnpm -C apps/web build",
+    "start": "pnpm -C apps/web start",
+    "lint": "pnpm -C apps/web lint",
+    "typecheck": "pnpm -C apps/web typecheck",
+    "test": "pnpm -C apps/web test",
+    "test:coverage": "pnpm -C apps/web test:coverage",
+    "e2e": "pnpm -C apps/web e2e",
+    "format": "pnpm -C apps/web format"
+  }
+}

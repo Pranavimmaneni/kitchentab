@@ -1,0 +1,151 @@
+/*
+ * KitchenTab design tokens — the only source of colors, fonts and motion values (PRD §14, §19.8).
+ *
+ * Themes:
+ *   - `:root` is light.
+ *   - `[data-theme="dark"]` (on <html> or on any element) is dark.
+ *   - With no explicit choice, `prefers-color-scheme: dark` makes the root dark.
+ *   - `[data-theme="light"]` on any element forces light inside it, so /dev/components can show
+ *     both themes side by side.
+ * Contrast is checked by tests/unit/tokens-contrast.test.ts (A11Y-05). Keep values in sync with
+ * PRD §14; ADR-0005 explains --control-edge and the violet member color.
+ */
+
+:root {
+  /* Type (next/font sets --font-space-mono / --font-work-sans on <html>) */
+  --font-mono: var(--font-space-mono), "Space Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-sans: var(--font-work-sans), "Work Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Motion (PRD §14B) — only used inside prefers-reduced-motion: no-preference */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --ease-stamp: cubic-bezier(0.2, 1.4, 0.4, 1);
+
+  /* Shape */
+  --radius-card: 4px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+  --border-width: 2px;
+  --shadow-offset: 4px;
+
+  /* Theme-independent colors */
+  --on-accent: #121210; /* text on --accent is always #121210 (PRD §14) */
+  --till: #121210; /* receipt-till bar under the split grid; the same in both themes */
+  --on-till: #f1efe7;
+
+  /* Member colors, assigned in join order and cycling after 8 (PRD §14, ADR-0005) */
+  --member-1: #c6f432;
+  --member-2: #6a4cff;
+  --member-3: #ff8a65;
+  --member-4: #7fd3f7;
+  --member-5: #f7d046;
+  --member-6: #ff6fb5;
+  --member-7: #4fd1a5;
+  --member-8: #b0a6ff;
+  --on-member-1: #121210;
+  --on-member-2: #ffffff;
+  --on-member-3: #121210;
+  --on-member-4: #121210;
+  --on-member-5: #121210;
+  --on-member-6: #121210;
+  --on-member-7: #121210;
+  --on-member-8: #121210;
+
+  /* Food icon pastels (PRD §19.8); icons are stroked #121210 in both themes */
+  --food-sky: #d6f0fb;
+  --food-butter: #fff0c2;
+  --food-lilac: #e3ddff;
+  --food-peach: #ffe0d4;
+  --food-pea: #e7f3b5;
+  --food-stroke: #121210;
+
+  /* Storage tags on the review screen (Scan.dc.html): fridge sky, freezer lilac, pantry tan */
+  --tag-fridge: #7fd3f7;
+  --tag-freezer: #e3ddff;
+  --tag-pantry: #e8d2a6;
+}
+
+/* Light theme: the default, and forced by data-theme="light" on any element */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eceae2;
+  --paper: #fbfaf6;
+  --ink: #121210;
+  --muted: #5a5850;
+  --faint: #c9c6bb;
+  --control-edge: var(--muted);
+  --shadow: #121210;
+  --accent: #c6f432;
+  --accent-2: #6a4cff;
+  --on-accent-2: #ffffff;
+  --warn: #c23a1e;
+  --good: #3e6b00;
+
+  /* Kitchen (PRD §19.8) */
+  --side: #d9d5c8;
+  --top: #edeae0;
+  --cold: #e3f1f3;
+  --frost: #f4fbfc;
+  --glass: #c4e3e8;
+  --wall: #f1eadb;
+  --wood: #d9b98a;
+  --wood-top: #e8d2a6;
+  --soon: #ff8a65;
+}
+
+/* Dark theme: explicit choice on <html> or on any element */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d0d0b;
+  --paper: #1a1a17;
+  --ink: #f1efe7;
+  --muted: #a9a699;
+  --faint: #3a3933;
+  --control-edge: var(--muted);
+  --shadow: #7b61ff;
+  --accent: #c6f432;
+  --accent-2: #c6f432;
+  --on-accent-2: #121210;
+  --warn: #ff7a5c;
+  --good: #c6f432;
+
+  --side: #2c2b26;
+  --top: #3a3933;
+  --cold: #14201f;
+  --frost: #18262a;
+  --glass: #2c4246;
+  --wall: #24221d;
+  --wood: #6b5536;
+  --wood-top: #8a6f48;
+  --soon: #ff8a65;
+}
+
+/* System preference: dark unless the user picked light */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0d0d0b;
+    --paper: #1a1a17;
+    --ink: #f1efe7;
+    --muted: #a9a699;
+    --faint: #3a3933;
+    --control-edge: var(--muted);
+    --shadow: #7b61ff;
+    --accent: #c6f432;
+    --accent-2: #c6f432;
+    --on-accent-2: #121210;
+    --warn: #ff7a5c;
+    --good: #c6f432;
+
+    --side: #2c2b26;
+    --top: #3a3933;
+    --cold: #14201f;
+    --frost: #18262a;
+    --glass: #2c4246;
+    --wall: #24221d;
+    --wood: #6b5536;
+    --wood-top: #8a6f48;
+    --soon: #ff8a65;
+  }
+}

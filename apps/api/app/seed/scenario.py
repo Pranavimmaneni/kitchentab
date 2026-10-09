@@ -75,7 +75,6 @@ class BillSpec:
     state: str
     sent_at: datetime | None
     settled_at: datetime | None
-    link_token: str
     tax_cents: int
     total_cents: int
     items: tuple[ItemSpec, ...]
@@ -139,7 +138,6 @@ def load_scenario(name: str, directory: Path = SCENARIO_DIR) -> Scenario:
                 state=b["state"],
                 sent_at=_dt(b["sent_at"]) if b.get("sent_at") else None,
                 settled_at=_dt(b["settled_at"]) if b.get("settled_at") else None,
-                link_token=b["link_token"],
                 tax_cents=int(b["tax_cents"]),
                 total_cents=int(b["total_cents"]),
                 items=items,

@@ -5,8 +5,10 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
+from datetime import datetime
 
 from app.db import make_engine, make_sessionmaker
+from app.links import bill_token, invite_token
 from app.seed.scenario import load_scenario
 from app.seed.writer import truncate_all, write_scenario
 from app.settings import get_settings
@@ -27,9 +29,13 @@ async def run(name: str) -> int:
         await engine.dispose()
     house = ids[f"house:{scenario.name}"]
     print(f"seeded scenario {scenario.name}: house {house}, {len(scenario.bills)} bills, {len(ids)} ids")
-    print(f"invite link: {settings.public_link_base}/h/{scenario.raw['house']['invite_token']}")
+    pepper = settings.token_hash_pepper.get_secret_value()
+    created = datetime.fromisoformat(str(scenario.raw["house"]["created_at"]))
+    print(f"invite link: {settings.public_link_base}/h/{invite_token(pepper, house, created)[0]}")
     for bill in scenario.bills:
-        print(f"bill link ({bill.store}): {settings.public_link_base}/b/{bill.link_token}")
+        at = bill.sent_at or scenario.now
+        token = bill_token(pepper, ids[f"bill:{bill.key}"], at)[0]
+        print(f"bill link ({bill.store}): {settings.public_link_base}/b/{token}")
     return 0
 
 

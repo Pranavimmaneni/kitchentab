@@ -22,3 +22,4 @@ ones where they say so.
 | 0015 | Receipt storage: Vercel Blob client uploads, MinIO/fake locally (C2) |
 | 0016 | Day-one sign-in: email codes via Gmail SMTP, test inbox until then (C3) |
 | 0017 | `PROFILE=vercel` and `TARGET=local-vercel` rehearsal |
+| 0018 | Derived link tokens (members can see links again without storing them) |
