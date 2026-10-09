@@ -1,0 +1,86 @@
+# Local stack for `make dev` (PRD §12 "local"): Postgres 16, Redis, MinIO, Mailpit, the in-repo
+# mock Google OIDC issuer and the in-repo fake Web Push service. Never used in staging or prod.
+name: kitchentab
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    # Commit timestamps let SYNC-25 prove event sequence order equals commit order.
+    command: ["postgres", "-c", "track_commit_timestamp=on"]
+    environment:
+      POSTGRES_USER: kitchentab
+      POSTGRES_PASSWORD: kitchentab
+      POSTGRES_DB: kitchentab
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kitchentab -d kitchentab"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # MinIO no longer publishes images on Docker Hub; this is the same release (2025-04-22) from
+  # Broadcom's frozen Bitnami archive. It creates the private bucket on start.
+  minio:
+    image: bitnamilegacy/minio:2025.4.22
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_DEFAULT_BUCKETS: kitchentab-receipts
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/bitnami/minio/data]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.24
+    ports: ["1025:1025", "8025:8025"]
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+
+  mock-oidc:
+    build:
+      context: ../apps/api
+      dockerfile: ../../infra/fakes.Dockerfile
+    command: ["uvicorn", "--factory", "fakeservices.mock_oidc:create_app", "--host", "0.0.0.0", "--port", "4011"]
+    environment:
+      MOCK_OIDC_ISSUER: http://localhost:4011
+    ports: ["4011:4011"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4011/.well-known/openid-configuration')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  fake-push:
+    build:
+      context: ../apps/api
+      dockerfile: ../../infra/fakes.Dockerfile
+    command: ["uvicorn", "--factory", "fakeservices.fake_push:create_app", "--host", "0.0.0.0", "--port", "4010"]
+    environment:
+      FAKE_PUSH_BASE_URL: http://localhost:4010
+    ports: ["4010:4010"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4010/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:
+  miniodata:

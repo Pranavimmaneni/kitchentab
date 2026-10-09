@@ -1,0 +1,136 @@
+# The mockup household (TEST_PLAN §2 "Scenario seeder"): `make seed SCENARIO=apt4b`.
+#
+# Reused by pytest (apps/api/tests), Playwright global setup and manual QA. Amounts follow the
+# money fixtures, not the mockups' rounding (docs/design/README.md). The H Mart and Costco line
+# items are not in any mockup; they were chosen so the reference compute_shares reproduces the
+# mockup totals (H Mart $62.40 with Pranav owing $14.10; Costco settled) and the Tabs card nets to
+# +$40.37 for Pranav (MONEY-08 / BAL-01). tests/test_seed.py checks all of that.
+#
+# Kitchen states (use soon, sharing, asks) are illustrative in the mockups. Where the §19.5 rules
+# cannot produce a mockup label from the bill's purchase date, the item carries an explicit
+# `stocked_on` / `shelf_life_days` override (agreed risk 27). KITCH-10 revisits this in Milestone 8.
+
+scenario: apt4b
+now: "2026-10-03T19:00:00-04:00"           # Bill.dc.html: "STILL OPEN · DAY 2"
+
+house:
+  name: Apt 4B
+  timezone: America/New_York
+  invite_token: k7Q2xR9pVw3LmZt8Hc5NbY      # shown as kitchentab.app/h/k7Q2xR9p... in House.dc.html
+  created_at: "2026-09-01T19:00:00-04:00"
+  admin: pranav
+
+users:
+  - {key: pranav, name: Pranav, email: pranav@example.test, via: google}
+  - {key: arjun, name: Arjun, email: arjun@example.test, via: google}
+  - {key: meera, name: Meera, phone: "+12015550142", via: phone}
+  - {key: kabir, name: Kabir, phone: "+12015550177", via: phone}
+
+# Join order drives member colors (PRD §14) and rounding tie-breaks (sort_order).
+members:
+  - {key: pranav, user: pranav, name: Pranav, role: admin, color: "#C6F432"}
+  - {key: arjun, user: arjun, name: Arjun, color: "#6A4CFF"}
+  - {key: meera, user: meera, name: Meera, color: "#FF8A65"}
+  - {key: kabir, user: kabir, name: Kabir, color: "#7FD3F7"}
+
+bills:
+  - key: shoprite
+    store: ShopRite
+    purchase_date: 2026-10-02
+    payer: pranav
+    state: open
+    sent_at: "2026-10-02T18:40:00-04:00"
+    link_token: Zp4mQ81cRt6UvW2xYa9BcD
+    tax_cents: 89
+    total_cents: 9518
+    # Meera hopped on the coffee beans after send (Bill.dc.html activity).
+    items:
+      - {key: milk, name: Whole milk 1 gal, cents: 429, storage: fridge, category: dairy, icon: milk, who: [pranav, arjun, meera]}
+      - {key: eggs, name: Eggs 18 ct, cents: 549, storage: fridge, category: eggs, icon: eggs, who: [pranav, arjun, meera, kabir]}
+      - {key: rice, name: Basmati rice 10 lb, cents: 1499, storage: pantry, category: grains, icon: rice, who: [pranav, arjun, meera, kabir]}
+      - {key: yogurt, name: Greek yogurt 32 oz, cents: 679, storage: fridge, category: dairy, icon: yogurt, who: [meera]}
+      - {key: bananas, name: Bananas 2.1 lb, cents: 132, storage: pantry, category: produce, icon: banana, who: [pranav, kabir], quantity: "2.1", unit_price_cents: 63, flagged: true, confidence: "0.72"}
+      - {key: towels, name: Paper towels 6 pk, cents: 999, storage: none, category: household, who: [pranav, arjun, meera, kabir]}
+      - {key: soap, name: Dish soap, cents: 349, storage: none, category: household, who: [pranav, arjun, meera, kabir]}
+      - {key: chicken, name: Chicken thighs 3 lb, cents: 1137, storage: fridge, category: meat_fish, icon: chicken, who: [pranav, arjun]}
+      - {key: oatmilk, name: Oat milk, cents: 459, storage: fridge, category: drinks, icon: plant_milk, who: [kabir]}
+      - {key: spinach, name: Baby spinach, cents: 399, storage: fridge, category: produce, icon: leafy_greens, who: [pranav, meera]}
+      - {key: bars, name: Protein bars 12 ct, cents: 1799, storage: pantry, category: snacks, icon: bar, who: [arjun]}
+      - {key: coffee, name: Coffee beans 12 oz, cents: 999, storage: pantry, category: coffee_tea, icon: coffee, who: [pranav, meera, kabir]}
+    payments:
+      - {from: kabir, amount_cents: 1889, method: venmo, status: confirmed, at: "2026-10-03T09:12:00-04:00"}
+    expected_shares: {pranav: 2182, arjun: 3391, meera: 2224, kabir: 1721}
+
+  - key: hmart
+    store: H Mart
+    purchase_date: 2026-09-27
+    payer: meera
+    state: open
+    sent_at: "2026-09-27T20:05:00-04:00"
+    link_token: Hm8tRk2QwE5yU7iO1pAsDf
+    tax_cents: 0
+    total_cents: 6240
+    items:
+      - {key: dumplings, name: Frozen dumplings, cents: 899, storage: freezer, category: frozen, icon: dumplings, who: [arjun, kabir]}
+      - {key: icecream, name: Ice cream, cents: 649, storage: freezer, category: frozen, icon: ice_cream, who: [meera]}
+      - {key: kimchi, name: Kimchi, cents: 799, storage: fridge, category: prepared, icon: kimchi_jar, who: [meera, kabir], shelf_life_days: 60}
+      - {key: tofu, name: Firm tofu, cents: 249, storage: fridge, category: plant_protein, icon: tofu, who: [meera]}
+      - {key: ramen, name: Shin ramyun 4 pk, cents: 599, storage: pantry, category: grains, icon: noodles, who: [pranav, arjun, meera, kabir]}
+      - {key: pears, name: Korean pear box, cents: 1499, storage: pantry, category: produce, icon: apple, who: [pranav, meera], used_up: {by: meera, at: "2026-10-01T20:00:00-04:00"}}
+      - {key: cleaner, name: Rice cooker cleaner, cents: 1020, storage: none, category: household, who: [pranav, arjun]}
+      - {key: gloves, name: Dish gloves, cents: 299, storage: none, category: household, who: [meera]}
+      - {key: sponges, name: Scrub sponges, cents: 227, storage: none, category: household, who: [arjun, kabir]}
+    payments: []
+    expected_shares: {pranav: 1410, arjun: 1224, meera: 2496, kabir: 1110}
+
+  - key: costco
+    store: Costco
+    purchase_date: 2026-09-20
+    payer: arjun
+    state: settled
+    sent_at: "2026-09-20T17:30:00-04:00"
+    settled_at: "2026-09-24T21:00:00-04:00"
+    link_token: Cs3vBn6MqL9wE2rT5yU8iO
+    tax_cents: 0
+    total_cents: 4198
+    items:
+      - {key: towels, name: Paper towels 12 pk, cents: 2299, storage: none, category: household, who: [pranav, arjun, meera, kabir]}
+      - {key: oil, name: Olive oil 2 L, cents: 1899, storage: pantry, category: condiments, icon: oil, who: [pranav, arjun, meera, kabir], used_up: {by: arjun, at: "2026-10-01T19:00:00-04:00"}}
+    payments:
+      - {from: pranav, amount_cents: 1050, method: venmo, status: confirmed, at: "2026-09-21T10:00:00-04:00"}
+      - {from: meera, amount_cents: 1050, method: zelle, status: confirmed, at: "2026-09-22T10:00:00-04:00"}
+      - {from: kabir, amount_cents: 1048, method: cash, status: confirmed, at: "2026-09-23T10:00:00-04:00"}
+    expected_shares: {pranav: 1050, arjun: 1050, meera: 1050, kabir: 1048}
+
+# What the signed-in Pranav sees on Tabs and Kitchen (Main.dc.html, Kitchen.dc.html).
+expected_balances_for: pranav
+expected_pairs: {arjun: 3391, meera: 814, kabir: -168}   # + = they owe Pranav
+expected_net: 4037
+
+# Inventory from sent bills: one per consumable line (storage != none). Owners = allocations.
+# Overrides only where noted; `open` lists owners who switched sharing on (Fridge/Pantry data).
+kitchen:
+  shoprite.milk: {short: Milk, open: [pranav, arjun, meera]}
+  shoprite.eggs: {short: Eggs, open: [pranav, arjun, meera, kabir]}
+  shoprite.rice: {short: Rice, open: [pranav, arjun, meera, kabir]}
+  shoprite.yogurt: {short: Yogurt}
+  shoprite.bananas: {short: Bananas, open: [pranav], stocked_on: 2026-09-25, shelf_life_days: 10}   # "2 DAYS LEFT"
+  shoprite.chicken: {short: Chicken, open: [pranav]}
+  shoprite.oatmilk: {short: Oat milk, open: [kabir]}
+  shoprite.spinach: {short: Spinach, open: [pranav], stocked_on: 2026-09-29}                       # "1 DAY LEFT"
+  shoprite.bars: {short: Protein bars}
+  shoprite.coffee: {short: Coffee}
+  hmart.dumplings: {short: Dumplings}
+  hmart.icecream: {short: Ice cream}
+  hmart.kimchi: {short: Kimchi, open: [meera, kabir]}
+  hmart.tofu: {short: Tofu}                                                                        # mockup "USE TODAY"; rules give 1 day left (M8)
+  hmart.ramen: {short: Ramen, open: [pranav, arjun, meera, kabir]}
+  hmart.pears: {short: Pears}
+  costco.oil: {short: Olive oil}
+
+# Share requests (Requests.dc.html, Pantry.dc.html).
+requests:
+  - {key: r1, item: shoprite.chicken, requester: kabir, amount: a_bit, note: "For tonight’s curry", minutes_ago: 12, status: pending}
+  - {key: r2, item: shoprite.bananas, requester: meera, amount: all, note: "Banana bread for the house", minutes_ago: 60, status: pending}
+  - {key: r3, item: shoprite.bars, requester: pranav, amount: half, minutes_ago: 5, status: pending}
+  - {key: r4, item: shoprite.yogurt, requester: pranav, amount: a_bit, minutes_ago: 180, status: approved, resolution: free, answered_by: meera, answered_minutes_ago: 170}
