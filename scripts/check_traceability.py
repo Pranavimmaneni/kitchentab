@@ -134,10 +134,11 @@ def _walk(root: Path, suffixes: tuple[str, ...]) -> list[Path]:
 
 
 PY_MARK = re.compile(r"(?:\btid|\bfr|pytest\.mark\.id|pytest\.mark\.fr)\(([^)]*)\)")
-TS_TITLE = re.compile(
-    r"\b(?:test|it|describe)(?:\.(?:only|skip|fixme|fail|serial|parallel))?\(\s*(['\"`])(.+?)\1",
-    re.DOTALL,
-)
+# A test title is the first string argument of a call (`test("SYNC-03 ...")`,
+# `it.each(rows)("MONEY-02 ...")`) that starts with a TEST_PLAN ID. Skipped or expected-to-fail
+# tests (.skip, .fixme, .fail, .todo) never count as coverage.
+TS_TITLE = re.compile(r"(\.?[A-Za-z_$][\w$]*)?\(\s*(['\"`])(.+?)\2", re.DOTALL)
+SKIPPED = {".skip", ".fixme", ".fail", ".todo"}
 
 
 def scan_tests(root: Path) -> dict[str, set[str]]:
@@ -158,10 +159,12 @@ def scan_tests(root: Path) -> dict[str, set[str]]:
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
         for m in TS_TITLE.finditer(text):
-            title = m.group(2)
-            line = text.count("\n", 0, m.start()) + 1
+            title = m.group(3)
             lead = re.match(rf"^((?:{ID_RE})(?:[ ,/+]+(?:{ID_RE}))*)\b", title)
-            ids = re.findall(ID_RE, lead.group(1)) if lead else []
+            if not lead or (m.group(1) or "") in SKIPPED:
+                continue
+            line = text.count("\n", 0, m.start()) + 1
+            ids = re.findall(ID_RE, lead.group(1))
             ids += re.findall(rf"[\[@]({FR_RE})\]?", title)
             for ident in ids:
                 found[ident].add(f"{rel}:{line}")

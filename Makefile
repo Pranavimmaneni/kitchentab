@@ -89,8 +89,9 @@ test-web:
 	pnpm -C $(WEB) test
 test-scripts:
 	$(UV) pytest -q -p no:cacheprovider scripts/tests
-check-fixtures: ## Money fixtures match the reference (never rewrites them)
+check-fixtures: ## Money fixtures and the corpus digest match the reference (never rewrites them)
 	$(UV) python docs/reference/compute_shares_reference.py --check
+	$(UV) python packages/fixtures/money_corpus.py --check
 check-traceability: ## FR / TEST_PLAN / edge-case coverage for done milestones
 	$(UV) python scripts/check_traceability.py
 

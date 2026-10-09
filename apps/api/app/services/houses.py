@@ -47,7 +47,9 @@ def target_of(m: Member) -> TargetMember:
 
 async def _member_for_update(db: AsyncSession, house_id: uuid.UUID, member_id: uuid.UUID) -> Member:
     m = (
-        await db.scalars(select(Member).where(Member.id == member_id, Member.house_id == house_id).with_for_update())
+        await db.scalars(
+            select(Member).where(Member.id == member_id, Member.house_id == house_id).with_for_update(key_share=True)
+        )
     ).first()
     if m is None:
         raise Problem(404, ErrorCode.NOT_FOUND, "That person isn't in the house")
@@ -526,7 +528,9 @@ async def claim(
         db = w.session
         existing = (
             await db.scalars(
-                select(Member).where(Member.house_id == house_id, Member.user_id == user.id).with_for_update()
+                select(Member)
+                .where(Member.house_id == house_id, Member.user_id == user.id)
+                .with_for_update(key_share=True)
             )
         ).first()
         if existing is not None and existing.status == "active":

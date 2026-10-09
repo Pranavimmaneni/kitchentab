@@ -115,6 +115,11 @@ def reference_digest(seed: int = SEED, count: int = COUNT) -> str:
 
 
 if __name__ == "__main__":
+    if "--check" in sys.argv:
+        stored = json.loads(DIGEST_FILE.read_text(encoding="utf-8"))
+        ok = stored == {"seed": SEED, "count": COUNT, "sha256": reference_digest()}
+        print("ok: corpus digest matches the reference" if ok else "FAIL: corpus digest differs from the reference")
+        sys.exit(0 if ok else 1)
     if "--write" in sys.argv:
         value = {"seed": SEED, "count": COUNT, "sha256": reference_digest()}
         DIGEST_FILE.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8", newline="\n")

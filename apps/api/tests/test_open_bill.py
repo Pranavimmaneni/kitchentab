@@ -127,9 +127,9 @@ async def test_BILL_10_reopen_within_30_days_reverses_carryover(
         entries = (await db.scalars(select(LedgerEntry))).all()
     net: dict[tuple[str, str], int] = {}
     for e in entries:
-        key = tuple(sorted((str(e.from_member_id), str(e.to_member_id))))
-        sign = 1 if str(e.from_member_id) == key[0] else -1
-        net[key] = net.get(key, 0) + sign * e.amount_cents  # type: ignore[index]
+        low, high = sorted((str(e.from_member_id), str(e.to_member_id)))
+        sign = 1 if str(e.from_member_id) == low else -1
+        net[(low, high)] = net.get((low, high), 0) + sign * e.amount_cents
     assert all(v == 0 for v in net.values()), "reopening reverses the carryover; nothing is deleted"
     await w.admin.post(f"/api/v1/bills/{bill_id}/settle", {"confirm_outstanding": True})
     await w.admin.post("/__test/clock", {"advance_seconds": 25 * 86400}, idem=False)

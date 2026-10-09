@@ -50,7 +50,7 @@ async def bill_house_id(db: AsyncSession, bill_id: uuid.UUID) -> uuid.UUID:
 
 
 async def _lock_bill(w: HouseWrite, bill_id: uuid.UUID) -> Bill:
-    bill = (await w.session.scalars(select(Bill).where(Bill.id == bill_id).with_for_update())).first()
+    bill = (await w.session.scalars(select(Bill).where(Bill.id == bill_id).with_for_update(key_share=True))).first()
     if bill is None or bill.deleted_at is not None:
         raise Problem(404, ErrorCode.NOT_FOUND, "Tab not found")
     return bill
@@ -596,7 +596,7 @@ async def update_item(
         require(Action.BILL_EDIT, actor=me, bill=bill_ctx(bill))
         item = (
             await w.session.scalars(
-                select(ItemRow).where(ItemRow.id == item_id, ItemRow.bill_id == bill_id).with_for_update()
+                select(ItemRow).where(ItemRow.id == item_id, ItemRow.bill_id == bill_id).with_for_update(key_share=True)
             )
         ).first()
         if item is None or item.deleted_at is not None:
@@ -639,7 +639,7 @@ async def delete_item(
         require(Action.BILL_EDIT, actor=me, bill=bill_ctx(bill))
         item = (
             await w.session.scalars(
-                select(ItemRow).where(ItemRow.id == item_id, ItemRow.bill_id == bill_id).with_for_update()
+                select(ItemRow).where(ItemRow.id == item_id, ItemRow.bill_id == bill_id).with_for_update(key_share=True)
             )
         ).first()
         if item is None or item.deleted_at is not None:
@@ -895,7 +895,7 @@ async def set_allocations(
                     select(ItemRow)
                     .where(ItemRow.id.in_(touched), ItemRow.deleted_at.is_(None))
                     .order_by(ItemRow.id)
-                    .with_for_update()
+                    .with_for_update(key_share=True)
                 )
             ).all()
         }

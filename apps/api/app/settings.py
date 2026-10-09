@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     cron_secret: SecretStr | None = None
     log_level: str = "INFO"
     max_body_bytes: int = VERCEL_MAX_BODY_BYTES
+    # Clients older than this get 426 STALE_CLIENT (PRD §21.6); bump on breaking API changes.
+    min_client_version: int = 0
 
     # Database / cache. Redis is used only with PROFILE=local (ADR-0012, ADR-0014).
     database_url: str
@@ -160,6 +162,16 @@ class Settings(BaseSettings):
                 problems.append(f"STORAGE_PROVIDER must be vercel_blob in {self.app_env}")
             if self.google_enabled and "localhost" in self.google_issuer:
                 problems.append("GOOGLE_ISSUER must be Google's issuer in production")
+            for name in ("web_origin", "public_link_base"):
+                value = getattr(self, name)
+                if not value.startswith("https://") or "localhost" in value:
+                    problems.append(f"{name.upper()} must be the https production URL")
+            if self.google_enabled and (
+                not self.google_redirect_uri.startswith("https://") or "localhost" in self.google_redirect_uri
+            ):
+                problems.append("GOOGLE_REDIRECT_URI must be the https production callback")
+            if self.queue != "vercel":
+                problems.append(f"QUEUE_PROVIDER must be vercel in {self.app_env}")
 
         required: list[tuple[bool, str, object]] = [
             (self.email_provider == "smtp", "SMTP_HOST", self.smtp_host),

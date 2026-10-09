@@ -12,7 +12,7 @@ from redis.asyncio import Redis
 
 from app.clock import ControllableClock
 from app.db import make_engine, make_sessionmaker
-from app.deps import guard_middleware
+from app.deps import BodyLimitMiddleware, guard_middleware
 from app.errors import install_error_handlers
 from app.ids import uuid7
 from app.logs import configure_logging, request_id_var
@@ -30,7 +30,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        engine = make_engine(settings.database_url)
+        engine = make_engine(settings.database_url, serverless=settings.profile == "vercel")
         redis = (
             Redis.from_url(settings.redis_url, decode_responses=True)
             if settings.use_redis and settings.redis_url
@@ -64,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # Same origin in every environment (ADR-0006): no CORS. CSRF, body cap: deps.guard_middleware.
     app.middleware("http")(guard_middleware)
+    app.add_middleware(BodyLimitMiddleware)  # outermost: also catches chunked bodies
 
     @app.exception_handler(IdempotentReplay)
     async def _replay(request: Request, exc: IdempotentReplay) -> JSONResponse:

@@ -182,7 +182,9 @@ async def answer_payment(
             raise Problem(
                 409, ErrorCode.BILL_SETTLED if bill.state == "settled" else ErrorCode.BILL_VOIDED, "This tab isn't open"
             )
-        p = (await w.session.scalars(select(Payment).where(Payment.id == payment_id).with_for_update())).one()
+        p = (
+            await w.session.scalars(select(Payment).where(Payment.id == payment_id).with_for_update(key_share=True))
+        ).one()
         if p.status != "pending_confirmation":
             raise Problem(
                 409, ErrorCode.ALREADY_ANSWERED, "This payment was already answered", extra={"payment": payment_view(p)}
@@ -485,7 +487,7 @@ async def remind(
 async def mark_seen(db: AsyncSession, user_id: uuid.UUID, bill_id: uuid.UUID, version: int, now: datetime) -> None:
     """Set-state "I've looked at this bill now". Ticks don't bump the bill version (SYNC-04), so the
     badge compares against the share as of the moment the user last looked, not a version."""
-    marker = await db.get(SeenMarker, (user_id, bill_id), with_for_update=True)
+    marker = await db.get(SeenMarker, (user_id, bill_id), with_for_update={"key_share": True})
     if marker is None:
         db.add(SeenMarker(user_id=user_id, bill_id=bill_id, last_seen_version=version, updated_at=now))
     else:

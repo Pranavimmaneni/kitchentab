@@ -132,9 +132,13 @@ async def rate_limit(request: Request, bucket: str, raw_key: str, *, limit: int,
 
 
 def client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    """Behind Vercel's proxy (PROFILE=vercel) the platform sets X-Forwarded-For; anywhere else the
+    header is client-controlled, so it is ignored (rate limits key on the IP)."""
+    settings: Settings = request.app.state.settings
+    if settings.profile == "vercel":
+        forwarded = request.headers.get("x-vercel-forwarded-for") or request.headers.get("x-forwarded-for")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
 
 
@@ -163,6 +167,15 @@ async def guard_middleware(request: Request, call_next: Callable[[Request], Awai
         return problem_response(
             Problem(413, ErrorCode.VALIDATION_FAILED, "That's too big to send", "Upload files directly instead."),
             path,
+        )
+    version = request.headers.get("x-client-version")
+    if (
+        version is not None
+        and settings.min_client_version
+        and (not version.isdigit() or int(version) < settings.min_client_version)
+    ):
+        return problem_response(
+            Problem(426, ErrorCode.STALE_CLIENT, "A new version is ready", "Refresh to keep going."), path
         )
     if request.method in UNSAFE and not path.startswith(CSRF_EXEMPT_PREFIXES):
         origin = request.headers.get("origin")
@@ -207,3 +220,44 @@ def client_mutation_id(request: Request) -> str | None:
 
 def now(request: Request) -> datetime:
     return ctx(request).clock.now()
+
+
+class BodyLimitMiddleware:
+    """Bodies without Content-Length (chunked) are buffered here up to the 4.5 MB Vercel limit and
+    refused with 413 beyond it, before the app sees them (VERCEL-03). Sized bodies are checked by
+    `guard_middleware` from the header. Receipts never come through here (ADR-0015)."""
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
+        headers = dict(scope.get("headers") or []) if scope["type"] == "http" else {}
+        if scope["type"] != "http" or b"content-length" in headers or scope.get("method") in ("GET", "HEAD"):
+            await self.app(scope, receive, send)
+            return
+        limit = scope["app"].state.settings.max_body_bytes
+        messages: list[dict[str, Any]] = []
+        size = 0
+        while True:
+            message = await receive()
+            messages.append(message)
+            if message["type"] != "http.request":
+                break
+            size += len(message.get("body", b""))
+            if size > limit:
+                response = problem_response(
+                    Problem(
+                        413, ErrorCode.VALIDATION_FAILED, "That's too big to send", "Upload files directly instead."
+                    ),
+                    scope.get("path", ""),
+                )
+                await response(scope, receive, send)
+                return
+            if not message.get("more_body"):
+                break
+        pending = iter(messages)
+
+        async def replay() -> Any:
+            return next(pending, None) or await receive()
+
+        await self.app(scope, replay, send)

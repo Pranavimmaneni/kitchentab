@@ -103,7 +103,9 @@ async def _close_access(db: AsyncSession, inventory_item_id: uuid.UUID, now: dat
 
 async def unstock_item(db: AsyncSession, item: ItemRow, now: datetime) -> None:
     """Line deleted or retagged NOT FOOD on an open bill: the item leaves unless already used up."""
-    inv = (await db.scalars(select(InventoryItem).where(InventoryItem.item_id == item.id).with_for_update())).first()
+    inv = (
+        await db.scalars(select(InventoryItem).where(InventoryItem.item_id == item.id).with_for_update(key_share=True))
+    ).first()
     if inv is None or inv.status != "in_stock":
         return
     inv.status = "removed"

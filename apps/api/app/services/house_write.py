@@ -29,6 +29,7 @@ import uuid
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from datetime import timedelta
 from typing import Any
 
 from sqlalchemy import insert, text
@@ -39,6 +40,8 @@ from app.errors import ErrorCode, Problem
 from app.ids import uuid7
 from app.models import ActivityEvent, HouseEvent, OutboxRow
 from app.services.bus import EventBus, house_channel, publish_safely
+
+IDEMPOTENCY_TTL = timedelta(hours=24)
 
 
 @dataclass(frozen=True)
@@ -165,12 +168,22 @@ class HouseWrite:
         row = (
             await self.session.execute(
                 text(
-                    "SELECT request_hash, status_code, response_body FROM idempotency_keys "
-                    "WHERE user_id = :u AND key = :k"
+                    "SELECT request_hash, status_code, response_body, created_at FROM idempotency_keys "
+                    "WHERE user_id = :u AND key = :k FOR NO KEY UPDATE"
                 ),
                 {"u": idem.user_id, "k": idem.key},
             )
         ).one()
+        if row.created_at < now - IDEMPOTENCY_TTL:
+            # Replays last 24 h (PRD §21.8); an older key is a new request.
+            await self.session.execute(
+                text(
+                    "UPDATE idempotency_keys SET request_hash = :h, status_code = NULL, response_body = NULL, "
+                    "created_at = :t WHERE user_id = :u AND key = :k"
+                ),
+                {"u": idem.user_id, "k": idem.key, "h": idem.request_hash, "t": now},
+            )
+            return
         if row.request_hash != idem.request_hash:
             raise Problem(422, ErrorCode.IDEMPOTENCY_MISMATCH, "This Idempotency-Key was used for a different request")
         raise IdempotentReplay(int(row.status_code or 200), row.response_body)

@@ -71,7 +71,7 @@ async def latest_code(db: AsyncSession, channel: Channel, destination: str, pepp
             )
             .order_by(OtpCode.created_at.desc())
             .limit(1)
-            .with_for_update()
+            .with_for_update(key_share=True)
         )
     ).first()
 

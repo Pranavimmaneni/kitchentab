@@ -257,3 +257,21 @@ def test_invariant_guard_refuses_instead_of_adjusting(monkeypatch: pytest.Monkey
     bill = BillInput((Participant("a", 0),), (Item("x", 100, (Allocation("a"),)),), 0, (), 100)
     with pytest.raises(InvariantError):
         money.compute_shares(bill)
+
+
+def test_inputs_must_be_integer_cents_and_known_fee_kinds() -> None:
+    base = {
+        "participants": [{"id": "a", "sort_order": 0}],
+        "items": [{"id": "x", "line_total_cents": 100, "allocations": [{"participant": "a"}]}],
+        "tax_cents": 0,
+        "fees": [],
+        "total_cents": 100,
+    }
+    for bad in ({"total_cents": 100.0}, {"tax_cents": 1.5}, {"total_cents": True}):
+        with pytest.raises(MoneyError, match="integer"):
+            bill_from_dict({**base, **bad})
+    with pytest.raises(MoneyError, match="fee kind"):
+        bill_from_dict({**base, "fees": [{"kind": "bribe", "label": "x", "amount_cents": 1}]})
+    bad_fee = Fee("bribe", "x", 1)  # type: ignore[arg-type]
+    with pytest.raises(MoneyError, match="fee kind"):
+        compute_shares(BillInput((Participant("a", 0),), (Item("x", 100, (Allocation("a"),)),), 0, (bad_fee,), 101))

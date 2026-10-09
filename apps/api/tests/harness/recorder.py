@@ -88,3 +88,79 @@ class EventRecorder:
     def assert_in_order(self) -> None:
         """Delivered in sequence order (for ordered transports such as the SSE replay, Milestone 6)."""
         assert self.seqs == sorted(self.seqs), f"out of order: {self.seqs}"
+
+
+class DbEventRecorder:
+    """PROFILE=vercel: there is no pub/sub, so record what clients will see by polling
+    `house_events` (the same query the SSE stream runs, ADR-0012). Same assertions as above."""
+
+    def __init__(self, sessions: Any, house_id: uuid.UUID, poll: float = 0.05) -> None:
+        self._sessions = sessions
+        self._house_id = house_id
+        self._poll = poll
+        self.events: list[dict[str, Any]] = []
+        self._last = 0
+        self._task: asyncio.Task[None] | None = None
+
+    async def __aenter__(self) -> DbEventRecorder:
+        from sqlalchemy import func, select
+
+        from app.models import HouseEvent
+
+        async with self._sessions() as db:
+            self._last = int(
+                await db.scalar(
+                    select(func.coalesce(func.max(HouseEvent.seq), 0)).where(HouseEvent.house_id == self._house_id)
+                )
+                or 0
+            )
+        self._task = asyncio.create_task(self._run())
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        if self._task:
+            self._task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._task
+
+    async def _run(self) -> None:
+        from sqlalchemy import select
+
+        from app.models import HouseEvent
+
+        while True:
+            async with self._sessions() as db:
+                rows = (
+                    await db.scalars(
+                        select(HouseEvent)
+                        .where(HouseEvent.house_id == self._house_id, HouseEvent.seq > self._last)
+                        .order_by(HouseEvent.seq)
+                    )
+                ).all()
+            for e in rows:
+                self._last = e.seq
+                self.events.append({"seq": e.seq, "type": e.type, "data": e.data})
+            await asyncio.sleep(self._poll)
+
+    async def wait_for(self, count: int, timeout: float = 5.0) -> list[dict[str, Any]]:
+        async def _enough() -> None:
+            while len(self.events) < count:  # noqa: ASYNC110 - the poller task appends; polling is the point
+                await asyncio.sleep(self._poll)
+
+        await asyncio.wait_for(_enough(), timeout)
+        return self.events
+
+    async def settle(self, quiet: float = 0.3) -> list[dict[str, Any]]:
+        seen = -1
+        while seen != len(self.events):
+            seen = len(self.events)
+            await asyncio.sleep(quiet)
+        return self.events
+
+    @property
+    def seqs(self) -> list[int]:
+        return [int(e["seq"]) for e in self.events]
+
+    def assert_gapless(self, start: int = 1) -> None:
+        expected = list(range(start, start + len(self.events)))
+        assert self.seqs == expected, f"expected {expected[:5]}.., got {self.seqs}"

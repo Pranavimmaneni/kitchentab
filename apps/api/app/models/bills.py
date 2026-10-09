@@ -117,7 +117,7 @@ class Receipt(Base):
     __tablename__ = "receipts"
     __table_args__ = (
         enum_check("mime", enums.RECEIPT_MIMES),
-        CheckConstraint("bytes > 0 AND bytes <= 15728640", name="bytes_max_15mb"),
+        CheckConstraint("bytes > 0 AND bytes <= 20971520", name="bytes_max_20mb"),
         CheckConstraint("page_index >= 0", name="page_index_nonnegative"),
     )
 

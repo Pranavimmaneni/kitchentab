@@ -65,7 +65,7 @@ class Profile(BaseModel):
 async def update_me(body: Profile, request: Request, actor: Annotated[Actor, Depends(require_actor)]) -> dict[str, Any]:
     """Set-state fields on the user's own row (last write wins; no other writer)."""
     async with ctx(request).sessions() as db, db.begin():
-        user = await db.get(User, actor.user.id, with_for_update=True)
+        user = await db.get(User, actor.user.id, with_for_update={"key_share": True})
         if user is None:
             raise Problem(404, ErrorCode.NOT_FOUND, "Account not found")
         for field, value in body.model_dump(exclude_none=True).items():

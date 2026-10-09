@@ -338,3 +338,58 @@ async def test_SYNC_29_same_key_different_body_422(api: ApiFactory) -> None:
     await p["arjun"].post(f"/api/v1/bills/{bill_id}/payments", {"amount_cents": 100}, key="k")
     r = await p["arjun"].post(f"/api/v1/bills/{bill_id}/payments", {"amount_cents": 200}, key="k")
     assert r.status_code == 422 and r.json()["code"] == "IDEMPOTENCY_MISMATCH"
+
+
+@pytest.mark.sync
+async def test_member_rename_while_that_member_ticks_never_deadlocks(api: ApiFactory) -> None:
+    """Review finding: row locks are FOR NO KEY UPDATE, so FK checks from event inserts
+    (actor_member_id) never wait on a member row another write holds."""
+    w, bill_id, ids, p = await open_bill(api)
+    for n in range(sync_iterations()):
+        members = (await w.admin.get(f"/api/v1/houses/{w.hid}")).json()["members"]
+        version = next(m["version"] for m in members if m["id"] == w.member["arjun"])
+        out = await race(
+            lambda: w.admin.call(
+                "PATCH",
+                f"/api/v1/houses/{w.hid}/members/{w.member['arjun']}",
+                {"name": f"Arjun{n % 2}"},
+                if_match=version,
+            ),
+            lambda: tick(p["arjun"], bill_id, ids[n % 12], w.key("arjun"), n % 2 == 0),
+        )
+        assert out[0].status_code == 200, out[0].text
+        assert out[1].status_code in (200, 409), out[1].text
+
+
+@pytest.mark.sync
+async def test_same_idempotency_key_in_parallel_runs_once(
+    api: ApiFactory, sessions: async_sessionmaker[AsyncSession]
+) -> None:
+    _, bill_id, _, p = await open_bill(api)
+    for n in range(sync_iterations()):
+        key = f"same-{n}"
+        out = await race(
+            *[lambda: p["meera"].post(f"/api/v1/bills/{bill_id}/payments", {"amount_cents": 1}, key=key)] * 4
+        )
+        assert codes(out) == [201] * 4
+        assert len({r.json()["id"] for r in out}) == 1
+    async with sessions() as db:
+        assert await db.scalar(select(func.count()).select_from(Payment)) == sync_iterations()
+
+
+async def test_rolled_back_request_is_reexecuted_not_replayed(api: ApiFactory) -> None:
+    w, bill_id, _, p = await open_bill(api)
+    body = {"participant": w.key("pranav")}
+    assert (await p["meera"].post(f"/api/v1/bills/{bill_id}/payments", body, key="k1")).status_code == 422
+    retry = await p["meera"].post(f"/api/v1/bills/{bill_id}/payments", body, key="k1")
+    assert retry.status_code == 422
+    assert "Idempotent-Replayed" not in retry.headers, "a rolled-back request leaves no stored response"
+
+
+async def test_idempotency_key_older_than_24h_is_a_new_request(api: ApiFactory) -> None:
+    w, bill_id, _, p = await open_bill(api)
+    first = await p["arjun"].post(f"/api/v1/bills/{bill_id}/payments", {"amount_cents": 5}, key="old")
+    await w.admin.post("/__test/clock", {"advance_seconds": 25 * 3600}, idem=False)
+    again = await p["arjun"].post(f"/api/v1/bills/{bill_id}/payments", {"amount_cents": 5}, key="old")
+    assert again.status_code == 201
+    assert again.json()["id"] != first.json()["id"]

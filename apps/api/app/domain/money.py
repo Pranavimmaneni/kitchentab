@@ -110,6 +110,7 @@ def bill_level_amounts(bill: BillInput) -> list[tuple[str, int]]:
     """Tax first, then each fee in order; order discounts negated, adjustments as stored."""
     out = [("tax", bill.tax_cents)]
     for fee in bill.fees:
+        _kind(fee.kind)
         out.append((fee.label, -fee.amount_cents if fee.kind == "order_discount" else fee.amount_cents))
     return out
 
@@ -164,6 +165,22 @@ def compute_shares(bill: BillInput) -> ShareResult:
 # ---- adapters ------------------------------------------------------------------------------
 
 
+FEE_KINDS: tuple[FeeKind, ...] = ("fee", "tip", "order_discount", "adjustment")
+
+
+def _cents(value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise MoneyError(f"cents must be an integer, got {value!r}")
+    return value
+
+
+def _kind(value: Any) -> FeeKind:
+    if value not in FEE_KINDS:
+        raise MoneyError(f"unknown fee kind {value!r}")
+    kind: FeeKind = value
+    return kind
+
+
 def bill_from_dict(raw: Mapping[str, Any]) -> BillInput:
     """The fixture / reference JSON shape (`packages/fixtures/money_cases.json`)."""
     return BillInput(
@@ -171,12 +188,12 @@ def bill_from_dict(raw: Mapping[str, Any]) -> BillInput:
         items=tuple(
             Item(
                 str(i["id"]),
-                int(i["line_total_cents"]),
+                _cents(i["line_total_cents"]),
                 tuple(Allocation(str(a["participant"]), weight_to_milli(a.get("weight", 1))) for a in i["allocations"]),
             )
             for i in raw["items"]
         ),
-        tax_cents=int(raw.get("tax_cents", 0)),
-        fees=tuple(Fee(f["kind"], str(f["label"]), int(f["amount_cents"])) for f in raw.get("fees", [])),
-        total_cents=int(raw["total_cents"]),
+        tax_cents=_cents(raw.get("tax_cents", 0)),
+        fees=tuple(Fee(_kind(f["kind"]), str(f["label"]), _cents(f["amount_cents"])) for f in raw.get("fees", [])),
+        total_cents=_cents(raw["total_cents"]),
     )

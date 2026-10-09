@@ -35,6 +35,8 @@ REAL_PROD: dict[str, Any] = {
     "vapid_private_key": "priv",
     "storage_provider": "vercel_blob",
     "blob_read_write_token": "vercel_blob_rw_x",
+    "web_origin": "https://kitchentab.vercel.app",
+    "public_link_base": "https://kitchentab.vercel.app",
 }
 
 

@@ -10,7 +10,6 @@ import uuid
 from typing import Any
 
 import pytest
-from redis.asyncio import Redis
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -20,7 +19,6 @@ from app.services.bus import NullBus
 from app.services.house_write import Activity, WriteContext, house_write
 from tests.factories import make_house
 from tests.harness.race import run_concurrently, sync_iterations
-from tests.harness.recorder import EventRecorder
 from tests.harness.tags import tid
 
 
@@ -48,11 +46,11 @@ async def _event_count(sessions: async_sessionmaker[AsyncSession], house_id: uui
 @pytest.mark.sync
 @tid("SYNC-25")
 async def test_SYNC_25_gapless_sequence_equals_commit_order(
-    writes: WriteContext, sessions: async_sessionmaker[AsyncSession], redis: Redis, clock: ControllableClock
+    writes: WriteContext, sessions: async_sessionmaker[AsyncSession], recorder: Any, clock: ControllableClock
 ) -> None:
     for _ in range(sync_iterations()):
         house, _members = await make_house(sessions, clock.now())
-        async with EventRecorder(redis, house.id) as rec:
+        async with recorder(house.id) as rec:
             touch = functools.partial(_touch, writes, house.id)
             outcomes = await run_concurrently(50, touch)
             assert all(o.ok for o in outcomes), [o.error for o in outcomes if not o.ok]
@@ -79,10 +77,10 @@ async def test_SYNC_25_gapless_sequence_equals_commit_order(
 
 @tid("SYNC-26")
 async def test_SYNC_26_rolled_back_write_publishes_nothing(
-    writes: WriteContext, sessions: async_sessionmaker[AsyncSession], redis: Redis, clock: ControllableClock
+    writes: WriteContext, sessions: async_sessionmaker[AsyncSession], recorder: Any, clock: ControllableClock
 ) -> None:
     house, _ = await make_house(sessions, clock.now())
-    async with EventRecorder(redis, house.id) as rec:
+    async with recorder(house.id) as rec:
         with pytest.raises(RuntimeError):
             await _touch(writes, house.id, 1, fail=True)
         await _touch(writes, house.id, 2)

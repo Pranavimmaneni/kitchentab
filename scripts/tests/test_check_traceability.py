@@ -100,3 +100,15 @@ def test_range_expansion() -> None:
     assert ct.expand("FR-01..FR-03") == ["FR-01", "FR-02", "FR-03"]
     assert ct.expand("AUTH-14..16") == ["AUTH-14", "AUTH-15", "AUTH-16"]
     assert ct.expand("Screens") == []
+
+
+def test_each_titles_count_and_skipped_tests_do_not(tmp_path: Path) -> None:
+    ts = (
+        "it.each(rows.map((r) => [r.name]))('E2E-01 fixture %s [FR-02]', () => {});\n"
+        "test.skip('AUTH-01 not yet', () => {});\n"
+    )
+    code, report = ct.run(make_repo(tmp_path, done=False, tests_ts=ts), enforce_all=False)
+    found = ct.scan_tests(tmp_path)
+    assert "E2E-01" in found and "FR-02" in found
+    assert "AUTH-01" not in found
+    assert code == 0

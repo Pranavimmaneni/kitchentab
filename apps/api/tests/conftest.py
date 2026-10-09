@@ -48,7 +48,7 @@ from app.clock import ControllableClock
 from app.db import make_engine, make_sessionmaker
 from app.main import create_app
 from app.models import Base
-from app.services.bus import RedisBus
+from app.services.bus import NullBus, RedisBus
 from app.services.house_write import WriteContext
 from app.settings import Settings, get_settings
 from tests.harness.api import BASE_URL, Api
@@ -166,8 +166,22 @@ def clock() -> ControllableClock:
 
 
 @pytest.fixture
-def writes(sessions: async_sessionmaker[AsyncSession], clock: ControllableClock, redis: Redis) -> WriteContext:
-    return WriteContext(sessions, clock, RedisBus(redis))
+def writes(
+    sessions: async_sessionmaker[AsyncSession], clock: ControllableClock, redis: Redis, settings: Settings
+) -> WriteContext:
+    """The production write path for the profile: Redis early-wake locally, nothing with PROFILE=vercel."""
+    return WriteContext(sessions, clock, RedisBus(redis) if settings.profile == "local" else NullBus())
+
+
+@pytest.fixture
+def recorder(sessions: async_sessionmaker[AsyncSession], redis: Redis, settings: Settings) -> Callable[[Any], Any]:
+    """`async with recorder(house_id) as rec:` — Redis pub/sub locally, Postgres polling on vercel."""
+    from tests.harness.recorder import DbEventRecorder, EventRecorder
+
+    def make(house_id: Any) -> Any:
+        return EventRecorder(redis, house_id) if settings.profile == "local" else DbEventRecorder(sessions, house_id)
+
+    return make
 
 
 @pytest.fixture
