@@ -16,45 +16,43 @@ export function appIcon(size: number, kind: AppIconKind): ImageResponse {
   const glyph = Math.round(size * (kind === "maskable" ? 0.5 : 0.6));
   const border = Math.max(2, Math.round(size / 48));
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: size,
+        height: size,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: fullBleed ? LIME : "transparent",
+      }}
+    >
       <div
         style={{
-          width: size,
-          height: size,
+          width: fullBleed ? size : Math.round(size * 0.92),
+          height: fullBleed ? size : Math.round(size * 0.92),
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: fullBleed ? LIME : "transparent",
+          background: LIME,
+          borderRadius: fullBleed ? 0 : Math.round(size * 0.22),
+          border: fullBleed ? "none" : `${border}px solid ${INK}`,
         }}
       >
-        <div
-          style={{
-            width: fullBleed ? size : Math.round(size * 0.92),
-            height: fullBleed ? size : Math.round(size * 0.92),
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: LIME,
-            borderRadius: fullBleed ? 0 : Math.round(size * 0.22),
-            border: fullBleed ? "none" : `${border}px solid ${INK}`,
-          }}
+        <svg
+          width={glyph}
+          height={glyph}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={INK}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          <svg
-            width={glyph}
-            height={glyph}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={INK}
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="6" y="2.5" width="12" height="19" rx="2" />
-            <path d="M6 9.5h12M9 5.5v2M9 12.5v4" />
-          </svg>
-        </div>
+          <rect x="6" y="2.5" width="12" height="19" rx="2" />
+          <path d="M6 9.5h12M9 5.5v2M9 12.5v4" />
+        </svg>
       </div>
-    ),
+    </div>,
     { width: size, height: size },
   );
 }

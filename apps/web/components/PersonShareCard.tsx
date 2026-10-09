@@ -27,7 +27,12 @@ export function PersonShareCard({
   return (
     <article className="kt-card kt-person-share" data-variant={variant}>
       <div className="kt-person-share__top">
-        <MemberAvatar name={name} colorIndex={colorIndex} size={36} placeholder={variant === "guest"} />
+        <MemberAvatar
+          name={name}
+          colorIndex={colorIndex}
+          size={36}
+          placeholder={variant === "guest"}
+        />
         <div className="kt-person-share__who">
           <span className="kt-person-share__name">{name}</span>
           <span className="kt-person-share__count">
@@ -40,7 +45,9 @@ export function PersonShareCard({
             {strings.people.guest}
           </StampChip>
         ) : null}
-        <span className="kt-person-share__amount kt-money">{formatMoney(amountCents, currency)}</span>
+        <span className="kt-person-share__amount kt-money">
+          {formatMoney(amountCents, currency)}
+        </span>
       </div>
       <hr className="kt-rule" />
       <p className="kt-person-share__items">{items}</p>

@@ -18,7 +18,15 @@ export type ShareCardProps = {
 };
 
 /** Chat-bubble preview with a lime band, an editable message and the link (PRD §14B). */
-export function ShareCard({ variant = "bill", kicker, title, subline, message, onMessageChange, link }: ShareCardProps) {
+export function ShareCard({
+  variant = "bill",
+  kicker,
+  title,
+  subline,
+  message,
+  onMessageChange,
+  link,
+}: ShareCardProps) {
   const messageId = useId();
   return (
     <div className="kt-share-card" data-variant={variant}>

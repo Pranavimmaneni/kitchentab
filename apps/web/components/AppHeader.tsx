@@ -42,10 +42,18 @@ export function AppHeader({
 }: AppHeaderProps) {
   const Heading = `h${headingLevel}` as "h1" | "h2" | "h3";
   return (
-    <header className="kt-app-header" data-large={large || undefined} data-back={Boolean(back) || undefined}>
+    <header
+      className="kt-app-header"
+      data-large={large || undefined}
+      data-back={Boolean(back) || undefined}
+    >
       <div className="kt-app-header__row">
         {back ? (
-          <Link href={back.href} aria-label={back.label ?? strings.header.back} className="kt-app-header__back">
+          <Link
+            href={back.href}
+            aria-label={back.label ?? strings.header.back}
+            className="kt-app-header__back"
+          >
             <BackIcon size={22} />
           </Link>
         ) : null}

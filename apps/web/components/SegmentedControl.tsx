@@ -12,13 +12,20 @@ export type SegmentedControlProps<T extends string> = {
 };
 
 /** Pill with 2–3 options; selected = ink fill. `role=tablist` / `tab`, arrows move and select. */
-export function SegmentedControl<T extends string>({ options, value, onChange, label }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+}: SegmentedControlProps<T>) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
 
   function onKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number): void {
     let next: number | null = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % options.length;
-    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + options.length) % options.length;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown")
+      next = (index + 1) % options.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+      next = (index - 1 + options.length) % options.length;
     else if (event.key === "Home") next = 0;
     else if (event.key === "End") next = options.length - 1;
     if (next === null) return;

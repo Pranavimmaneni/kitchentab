@@ -61,7 +61,13 @@ describe("SplitGrid", () => {
 
   it("member mode only lets you tick your own column and roves within it", () => {
     render(
-      <SplitGrid members={members} items={items} assigned={assigned} mode="member" currentMemberId="arjun" />,
+      <SplitGrid
+        members={members}
+        items={items}
+        assigned={assigned}
+        mode="member"
+        currentMemberId="arjun"
+      />,
     );
     expect(box("Pranav", "Whole milk")).toHaveProperty("disabled", true);
     expect(box("Arjun", "Whole milk")).toHaveProperty("disabled", false);
@@ -103,7 +109,9 @@ describe("SplitGrid", () => {
   it("read-only mode has no tab stop and every box is disabled", () => {
     render(<SplitGrid members={members} items={items} assigned={assigned} mode="readonly" />);
     expect(tabStops()).toEqual([]);
-    expect(screen.getAllByRole("button").every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
+    expect(screen.getAllByRole("button").every((b) => (b as HTMLButtonElement).disabled)).toBe(
+      true,
+    );
   });
 
   it("past five members the grid switches to the scrolling layout", () => {

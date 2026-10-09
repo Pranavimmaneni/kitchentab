@@ -47,7 +47,10 @@ export const SunIcon = makeIcon(
   </>,
 );
 
-export const MoonIcon = makeIcon("moon", <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />);
+export const MoonIcon = makeIcon(
+  "moon",
+  <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />,
+);
 
 export const ScanIcon = makeIcon(
   "scan",

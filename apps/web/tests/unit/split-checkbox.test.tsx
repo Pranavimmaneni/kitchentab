@@ -78,7 +78,16 @@ describe("SplitCheckbox", () => {
 
   it("marks pending cells (50% opacity) until the server acknowledges", () => {
     render(
-      <SplitCheckbox memberName="Meera" itemName="Eggs" initial="M" colorIndex={2} checked pending row={0} col={2} />,
+      <SplitCheckbox
+        memberName="Meera"
+        itemName="Eggs"
+        initial="M"
+        colorIndex={2}
+        checked
+        pending
+        row={0}
+        col={2}
+      />,
     );
     expect(screen.getByRole("button").getAttribute("data-pending")).toBe("true");
   });
@@ -90,7 +99,15 @@ describe("SplitCheckbox", () => {
         expect(checkboxTilt(row, col)).toBe(SPLIT_TILTS[(row + col) % 4]);
       }
     }
-    const props = { memberName: "Pranav", itemName: "Rice", initial: "P", colorIndex: 0, checked: true, row: 1, col: 2 };
+    const props = {
+      memberName: "Pranav",
+      itemName: "Rice",
+      initial: "P",
+      colorIndex: 0,
+      checked: true,
+      row: 1,
+      col: 2,
+    };
     const { container, rerender } = render(<SplitCheckbox {...props} />);
     const stamp = () => container.querySelector<HTMLElement>(".kt-split-box__box")!;
     expect(stamp().style.getPropertyValue("--tilt")).toBe("4deg");

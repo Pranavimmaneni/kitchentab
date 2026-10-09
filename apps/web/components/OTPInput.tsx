@@ -65,7 +65,12 @@ export function OTPInput({
       <div className="kt-otp__boxes" aria-hidden="true">
         {Array.from({ length: OTP_LENGTH }, (_, i) => {
           const digit = code[i] ?? "";
-          const state = focused && i === activeIndex && code.length < OTP_LENGTH ? "active" : digit ? "filled" : "empty";
+          const state =
+            focused && i === activeIndex && code.length < OTP_LENGTH
+              ? "active"
+              : digit
+                ? "filled"
+                : "empty";
           return (
             <span key={i} className="kt-otp__box" data-state={state}>
               {digit}

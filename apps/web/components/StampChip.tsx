@@ -19,7 +19,13 @@ export function clampRotation(deg: number): number {
 }
 
 /** Rubber-stamp chip: mono 11 bold, padding 3/8, 2 px border. Text only, never color alone. */
-export function StampChip({ children, tone = "lime", rotate = 0, large = false, animate = false }: StampChipProps) {
+export function StampChip({
+  children,
+  tone = "lime",
+  rotate = 0,
+  large = false,
+  animate = false,
+}: StampChipProps) {
   return (
     <span
       className="kt-stamp"

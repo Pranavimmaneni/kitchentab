@@ -61,7 +61,12 @@ export function ItemRow({
         <label htmlFor={nameId} className="sr-only">
           {strings.review.nameField}
         </label>
-        <input id={nameId} className="kt-input kt-item-row__name-input" value={draftName} onChange={(e) => setDraftName(e.target.value)} />
+        <input
+          id={nameId}
+          className="kt-input kt-item-row__name-input"
+          value={draftName}
+          onChange={(e) => setDraftName(e.target.value)}
+        />
         <label htmlFor={priceId} className="sr-only">
           {strings.review.priceField}
         </label>
@@ -97,7 +102,12 @@ export function ItemRow({
         </span>
       </button>
       <span className="kt-item-row__price kt-money">{price}</span>
-      <button type="button" className="kt-item-row__edit" aria-label={strings.review.edit(name)} onClick={onEdit}>
+      <button
+        type="button"
+        className="kt-item-row__edit"
+        aria-label={strings.review.edit(name)}
+        onClick={onEdit}
+      >
         <PencilIcon size={18} />
       </button>
     </div>

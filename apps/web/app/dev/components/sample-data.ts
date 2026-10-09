@@ -95,7 +95,13 @@ export const SIX_TOTALS: SplitTotal[] = [
   { memberId: "sam", amountCents: 758 },
 ];
 
-export const REVIEW_ITEMS: { id: string; name: string; priceCents: number; storage: Storage; flagged?: boolean }[] = [
+export const REVIEW_ITEMS: {
+  id: string;
+  name: string;
+  priceCents: number;
+  storage: Storage;
+  flagged?: boolean;
+}[] = [
   { id: "milk", name: "Whole milk 1 gal", priceCents: 429, storage: "fridge" },
   { id: "rice", name: "Basmati rice 10 lb", priceCents: 1499, storage: "pantry" },
   { id: "bananas", name: "Bananas 2.1 lb", priceCents: 132, storage: "pantry", flagged: true },

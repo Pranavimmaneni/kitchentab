@@ -29,11 +29,7 @@ export function BottomNav({ current, sticky = true }: BottomNavProps) {
   const pathname = usePathname();
   const path = current ?? pathname ?? "/";
   return (
-    <nav
-      className="kt-bottom-nav"
-      aria-label={strings.nav.label}
-      data-sticky={sticky || undefined}
-    >
+    <nav className="kt-bottom-nav" aria-label={strings.nav.label} data-sticky={sticky || undefined}>
       {NAV_ITEMS.map(({ href, label, Icon }) => {
         const active = isActive(href, path);
         return (

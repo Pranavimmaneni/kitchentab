@@ -26,3 +26,6 @@ test-results/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local Playwright browsers (ADR-0019)
+.cache/

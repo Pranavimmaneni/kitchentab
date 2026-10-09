@@ -12,6 +12,37 @@ function focusables(container: HTMLElement): HTMLElement[] {
 }
 
 /**
+ * Safari does not focus buttons on click, so document.activeElement is <body> when a sheet
+ * opens from a tap. Remember the last control the user pressed as the fallback opener.
+ */
+let lastPressed: HTMLElement | null = null;
+let tracking = false;
+
+function trackPresses(): void {
+  if (tracking || typeof document === "undefined") return;
+  tracking = true;
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      const target =
+        event.target instanceof Element ? event.target.closest<HTMLElement>(FOCUSABLE) : null;
+      if (target) lastPressed = target;
+    },
+    true,
+  );
+}
+
+function openerFor(container: HTMLElement): HTMLElement | null {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && active !== document.body && !container.contains(active)) {
+    return active;
+  }
+  if (lastPressed && lastPressed.isConnected && !container.contains(lastPressed))
+    return lastPressed;
+  return null;
+}
+
+/**
  * Traps Tab inside `containerRef` while active, closes on Escape and returns focus to the
  * element that was focused before activation.
  */
@@ -25,13 +56,13 @@ export function useFocusTrap(
   useEffect(() => {
     escapeRef.current = onEscape;
   }, [onEscape]);
+  useEffect(trackPresses, []);
 
   useEffect(() => {
     if (!active) return;
     const container = containerRef.current;
     if (!container) return;
-    const previouslyFocused =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previouslyFocused = openerFor(container);
 
     const first = initialFocusRef?.current ?? focusables(container)[0] ?? container;
     first.focus();

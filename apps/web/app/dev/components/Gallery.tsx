@@ -205,7 +205,12 @@ function Panel({ theme }: { theme: Theme }) {
           <PillButton variant="dashed" size={44} fullWidth icon={<PlusIcon size={16} />}>
             Split the rest with everyone
           </PillButton>
-          <PillButton variant="primary" disabled disabledReason="Give every item a home first." fullWidth>
+          <PillButton
+            variant="primary"
+            disabled
+            disabledReason="Give every item a home first."
+            fullWidth
+          >
             All sorted → review
           </PillButton>
           <PillButton variant="primary" loading fullWidth>
@@ -278,7 +283,13 @@ function Panel({ theme }: { theme: Theme }) {
         <Variant label="Sizes 26 · 28 · 30 · 32 · 36">
           <Row>
             {AVATAR_SIZES.map((size, i) => (
-              <MemberAvatar key={size} name={MEMBERS[i % 4]!.name} colorIndex={i % 4} size={size} decorative={false} />
+              <MemberAvatar
+                key={size}
+                name={MEMBERS[i % 4]!.name}
+                colorIndex={i % 4}
+                size={size}
+                decorative={false}
+              />
             ))}
           </Row>
         </Variant>
@@ -304,13 +315,58 @@ function Panel({ theme }: { theme: Theme }) {
             row={0}
             col={0}
           />
-          <SplitCheckbox memberName="Arjun" itemName="Whole milk" initial="A" colorIndex={1} checked row={0} col={1} />
-          <SplitCheckbox memberName="Meera" itemName="Whole milk" initial="M" colorIndex={2} checked={false} row={0} col={2} />
-          <SplitCheckbox memberName="Kabir" itemName="Whole milk" initial="K" colorIndex={3} checked disabled row={0} col={3} />
-          <SplitCheckbox memberName="Riya" itemName="Whole milk" initial="R" colorIndex={4} checked pending row={1} col={3} />
-          <SplitCheckbox memberName="Sam" itemName="Whole milk" initial="S" colorIndex={5} checked={false} disabled row={1} col={4} />
+          <SplitCheckbox
+            memberName="Arjun"
+            itemName="Whole milk"
+            initial="A"
+            colorIndex={1}
+            checked
+            row={0}
+            col={1}
+          />
+          <SplitCheckbox
+            memberName="Meera"
+            itemName="Whole milk"
+            initial="M"
+            colorIndex={2}
+            checked={false}
+            row={0}
+            col={2}
+          />
+          <SplitCheckbox
+            memberName="Kabir"
+            itemName="Whole milk"
+            initial="K"
+            colorIndex={3}
+            checked
+            disabled
+            row={0}
+            col={3}
+          />
+          <SplitCheckbox
+            memberName="Riya"
+            itemName="Whole milk"
+            initial="R"
+            colorIndex={4}
+            checked
+            pending
+            row={1}
+            col={3}
+          />
+          <SplitCheckbox
+            memberName="Sam"
+            itemName="Whole milk"
+            initial="S"
+            colorIndex={5}
+            checked={false}
+            disabled
+            row={1}
+            col={4}
+          />
         </Row>
-        <p className="m-0 text-[13px] text-muted">On · on · off · disabled · pending · disabled off</p>
+        <p className="m-0 text-[13px] text-muted">
+          On · on · off · disabled · pending · disabled off
+        </p>
       </Demo>
 
       <Demo title="ProgressBar">
@@ -362,22 +418,29 @@ function Panel({ theme }: { theme: Theme }) {
               mode="member"
               currentMemberId="arjun"
               onToggle={member.toggle}
-              conflict={
-                <span>
-                  {strings.split.conflict}
-                </span>
-              }
+              conflict={<span>{strings.split.conflict}</span>}
             />
           </div>
         </Variant>
         <Variant label="Read-only">
           <div className="-mx-4 sm:-mx-5">
-            <SplitGrid members={MEMBERS} items={ITEMS.slice(0, 3)} assigned={ASSIGNED} totals={TOTALS} mode="readonly" />
+            <SplitGrid
+              members={MEMBERS}
+              items={ITEMS.slice(0, 3)}
+              assigned={ASSIGNED}
+              totals={TOTALS}
+              mode="readonly"
+            />
           </div>
         </Variant>
         <Variant label="Six members: columns scroll, item column sticks">
           <div className="-mx-4 sm:-mx-5">
-            <SplitGrid members={SIX_MEMBERS} items={SIX_ITEMS} assigned={SIX_ASSIGNED} totals={SIX_TOTALS} />
+            <SplitGrid
+              members={SIX_MEMBERS}
+              items={SIX_ITEMS}
+              assigned={SIX_ASSIGNED}
+              totals={SIX_TOTALS}
+            />
           </div>
         </Variant>
         <Variant label="Loading">
@@ -398,7 +461,12 @@ function Panel({ theme }: { theme: Theme }) {
           <OTPInput value="482913" onChange={() => undefined} label="Code, filled example" />
         </Variant>
         <Variant label="Error">
-          <OTPInput value="482910" onChange={() => undefined} error={strings.otp.error} label="Code, error example" />
+          <OTPInput
+            value="482910"
+            onChange={() => undefined}
+            error={strings.otp.error}
+            label="Code, error example"
+          />
         </Variant>
       </Demo>
 
@@ -425,7 +493,9 @@ function Panel({ theme }: { theme: Theme }) {
       </Demo>
 
       <Demo title="ItemRow">
-        <p className="m-0 text-center font-mono text-[10px] text-muted">{strings.review.tagsHelp}</p>
+        <p className="m-0 text-center font-mono text-[10px] text-muted">
+          {strings.review.tagsHelp}
+        </p>
         <div className="flex flex-col">
           {REVIEW_ITEMS.map((item) => (
             <ItemRow
@@ -460,13 +530,26 @@ function Panel({ theme }: { theme: Theme }) {
           amountCents={3391}
           items="Whole milk, Eggs, Basmati rice, Paper towels, Dish soap, Chicken thighs, Protein bars"
         />
-        <PersonShareCard name="Dev (guest)" colorIndex={4} itemCount={1} amountCents={1022} variant="guest" items="Coffee beans" />
+        <PersonShareCard
+          name="Dev (guest)"
+          colorIndex={4}
+          itemCount={1}
+          amountCents={1022}
+          variant="guest"
+          items="Coffee beans"
+        />
       </Demo>
 
       <Demo title="WhoOwesRow">
         <ul className="kt-owes-list">
-          <WhoOwesRow name="You" colorIndex={0} amountCents={2351} status="payer" />
-          <WhoOwesRow name="Arjun" colorIndex={1} amountCents={3391} status="unpaid" onNudge={() => setToast("Nudged Arjun.")} />
+          <WhoOwesRow name="You" initial="P" colorIndex={0} amountCents={2351} status="payer" />
+          <WhoOwesRow
+            name="Arjun"
+            colorIndex={1}
+            amountCents={3391}
+            status="unpaid"
+            onNudge={() => setToast("Nudged Arjun.")}
+          />
           <WhoOwesRow
             name="Meera"
             colorIndex={2}
@@ -484,7 +567,13 @@ function Panel({ theme }: { theme: Theme }) {
             }
           />
           <WhoOwesRow name="Kabir" colorIndex={3} amountCents={1889} status="paid" />
-          <WhoOwesRow name="Riya" colorIndex={4} amountCents={1721} status="credit" statusAmountCents={168} />
+          <WhoOwesRow
+            name="Riya"
+            colorIndex={4}
+            amountCents={1721}
+            status="credit"
+            statusAmountCents={168}
+          />
         </ul>
       </Demo>
 
@@ -581,8 +670,18 @@ function Panel({ theme }: { theme: Theme }) {
         </Dialog>
         <Variant label="Toast: info, with Undo, error">
           <Toast placement="inline" message="Marked. Pranav will confirm." duration={Infinity} />
-          <Toast placement="inline" message="Arjun removed from Coffee beans." onUndo={() => undefined} duration={Infinity} />
-          <Toast placement="inline" variant="error" message="Something jammed. Try again." duration={Infinity} />
+          <Toast
+            placement="inline"
+            message="Arjun removed from Coffee beans."
+            onUndo={() => undefined}
+            duration={Infinity}
+          />
+          <Toast
+            placement="inline"
+            variant="error"
+            message="Something jammed. Try again."
+            duration={Infinity}
+          />
         </Variant>
         <Toast message={toast} onUndo={() => undefined} onDismiss={() => setToast(null)} />
       </Demo>
@@ -605,7 +704,12 @@ function Panel({ theme }: { theme: Theme }) {
           title={strings.kitchen.emptyTitle}
           body={strings.kitchen.comingSoon}
           action={
-            <PillButton variant="dashed" size={44} href="/dev/components" icon={<ScanIcon size={16} />}>
+            <PillButton
+              variant="dashed"
+              size={44}
+              href="/dev/components"
+              icon={<ScanIcon size={16} />}
+            >
               {strings.header.snapReceipt}
             </PillButton>
           }

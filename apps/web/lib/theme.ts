@@ -38,8 +38,7 @@ export function resolveTheme(preference: ThemePreference): Theme {
 function syncThemeColorMeta(preference: ThemePreference): void {
   document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
     if (meta.dataset.ktOriginal === undefined) meta.dataset.ktOriginal = meta.content;
-    meta.content =
-      preference === "system" ? meta.dataset.ktOriginal : THEME_COLORS[preference];
+    meta.content = preference === "system" ? meta.dataset.ktOriginal : THEME_COLORS[preference];
   });
 }
 
@@ -69,8 +68,7 @@ export function initTheme(): () => void {
 
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
-  const media =
-    typeof window.matchMedia === "function" ? window.matchMedia(DARK_QUERY) : undefined;
+  const media = typeof window.matchMedia === "function" ? window.matchMedia(DARK_QUERY) : undefined;
   media?.addEventListener("change", listener);
   return () => {
     listeners.delete(listener);

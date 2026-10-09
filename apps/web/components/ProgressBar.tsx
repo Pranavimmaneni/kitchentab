@@ -10,7 +10,12 @@ export type ProgressBarProps = {
 };
 
 /** 14 px outlined bar with a lime fill and a mono "9/12" label (PRD §14B). */
-export function ProgressBar({ value, max, label = strings.split.progressLabel, valueText }: ProgressBarProps) {
+export function ProgressBar({
+  value,
+  max,
+  label = strings.split.progressLabel,
+  valueText,
+}: ProgressBarProps) {
   const safeMax = Math.max(0, max);
   const clamped = Math.max(0, Math.min(value, safeMax));
   const pct = safeMax === 0 ? 0 : (clamped / safeMax) * 100;

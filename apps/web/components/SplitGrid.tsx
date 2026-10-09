@@ -145,7 +145,11 @@ export function SplitGrid({
   const totalFor = new Map(totals.map((t) => [t.memberId, t.amountCents]));
 
   return (
-    <div className="kt-split" data-wide={wide || undefined} style={{ ["--cols" as string]: members.length }}>
+    <div
+      className="kt-split"
+      data-wide={wide || undefined}
+      style={{ ["--cols" as string]: members.length }}
+    >
       {conflict ? (
         <div className="kt-split__conflict" role="status">
           {conflict}
@@ -165,7 +169,12 @@ export function SplitGrid({
             </span>
             {members.map((m) => (
               <span role="columnheader" key={m.id} className="kt-split__member" aria-label={m.name}>
-                <MemberAvatar name={m.name} initial={m.initial ?? initialOf(m.name)} colorIndex={m.colorIndex} size={26} />
+                <MemberAvatar
+                  name={m.name}
+                  initial={m.initial ?? initialOf(m.name)}
+                  colorIndex={m.colorIndex}
+                  size={26}
+                />
                 <span className="kt-split__tag" aria-hidden="true">
                   <span className="kt-split__tag-short">{m.tag}</span>
                   <span className="kt-split__tag-long">{m.name}</span>
@@ -174,15 +183,12 @@ export function SplitGrid({
             ))}
           </div>
         </div>
-        {loading ? (
-          <div className="kt-split__loading">
-            <Skeleton lines={6} />
-          </div>
-        ) : (
+        {loading ? null : (
           <div
             className="kt-split__body"
             onScroll={(event) => {
-              if (headerScrollRef.current) headerScrollRef.current.scrollLeft = event.currentTarget.scrollLeft;
+              if (headerScrollRef.current)
+                headerScrollRef.current.scrollLeft = event.currentTarget.scrollLeft;
             }}
           >
             {items.map((item, row) => {
@@ -235,25 +241,34 @@ export function SplitGrid({
           </div>
         )}
       </div>
-      {note ? <p className="kt-split__note">{note}</p> : null}
-      <div className="kt-split__totals">
-        <div
-          className="kt-split__sums"
-          role="group"
-          aria-label={strings.split.totalsLabel}
-          tabIndex={wide ? 0 : undefined}
-        >
-          <dl className="kt-split__sums-list">
-          {members.map((m) => (
-            <div key={m.id} className="kt-split__sum">
-              <dt>{m.tag}</dt>
-              <dd className="kt-money">{formatMoney(totalFor.get(m.id) ?? 0, currency)}</dd>
-            </div>
-          ))}
-          </dl>
+      {loading ? (
+        <div className="kt-split__loading">
+          <Skeleton lines={6} />
         </div>
-        {footer}
-      </div>
+      ) : null}
+      {note ? <p className="kt-split__note">{note}</p> : null}
+      {loading && !footer ? null : (
+        <div className="kt-split__totals">
+          {loading ? null : (
+            <div
+              className="kt-split__sums"
+              role="group"
+              aria-label={strings.split.totalsLabel}
+              tabIndex={wide ? 0 : undefined}
+            >
+              <dl className="kt-split__sums-list">
+                {members.map((m) => (
+                  <div key={m.id} className="kt-split__sum">
+                    <dt>{m.tag}</dt>
+                    <dd className="kt-money">{formatMoney(totalFor.get(m.id) ?? 0, currency)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
+          {footer}
+        </div>
+      )}
     </div>
   );
 }
