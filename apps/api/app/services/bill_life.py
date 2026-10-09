@@ -483,25 +483,28 @@ async def remind(
 
 
 async def mark_seen(db: AsyncSession, user_id: uuid.UUID, bill_id: uuid.UUID, version: int, now: datetime) -> None:
-    """Set-state: the highest version this user has looked at."""
+    """Set-state "I've looked at this bill now". Ticks don't bump the bill version (SYNC-04), so the
+    badge compares against the share as of the moment the user last looked, not a version."""
     marker = await db.get(SeenMarker, (user_id, bill_id), with_for_update=True)
     if marker is None:
         db.add(SeenMarker(user_id=user_id, bill_id=bill_id, last_seen_version=version, updated_at=now))
-    elif version > marker.last_seen_version:
-        marker.last_seen_version = version
-        marker.updated_at = now
+    else:
+        marker.last_seen_version = max(version, marker.last_seen_version)
+        marker.updated_at = max(now, marker.updated_at)
 
 
 async def changed_since_seen(
     db: AsyncSession, user_id: uuid.UUID, member_id: uuid.UUID, bill: Bill
 ) -> dict[str, Any] | None:
-    """Delta of my share between the snapshot I last saw and now; None when nothing changed."""
-    marker = await db.get(SeenMarker, (user_id, bill.id))
+    """FR-35: my share now minus my share when I last looked; None when unchanged or never looked."""
     if bill.state == "draft":
         return None
+    marker = await db.get(SeenMarker, (user_id, bill.id))
+    if marker is None:
+        return None  # first view: nothing to compare
     snaps = (
         await db.execute(
-            select(ShareSnapshot.bill_version, ShareSnapshot.share_cents)
+            select(ShareSnapshot.computed_at, ShareSnapshot.share_cents)
             .where(ShareSnapshot.bill_id == bill.id, ShareSnapshot.member_id == member_id)
             .order_by(ShareSnapshot.computed_at)
         )
@@ -509,12 +512,9 @@ async def changed_since_seen(
     if not snaps:
         return None
     current = snaps[-1][1]
-    seen_version = marker.last_seen_version if marker else None
-    if seen_version is None:
-        return None  # first view: nothing to compare
-    before = next((cents for version, cents in reversed(snaps) if version <= seen_version), snaps[0][1])
+    before = next((cents for at, cents in reversed(snaps) if at <= marker.updated_at), snaps[0][1])
     delta = current - before
-    return {"delta_cents": delta, "since_version": seen_version} if delta else None
+    return {"delta_cents": delta, "since": marker.updated_at.isoformat()} if delta else None
 
 
 __all__ = [
