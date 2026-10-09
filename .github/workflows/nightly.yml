@@ -27,6 +27,6 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
       - run: make install
-      - run: pnpm -C apps/web exec playwright install --with-deps chromium webkit firefox
+      - run: PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright" pnpm -C apps/web exec playwright install --with-deps chromium webkit firefox
       - run: cp .env.example .env && make up && make migrate
       - run: make ${{ matrix.suite }}

@@ -23,6 +23,8 @@ WEB := apps/web
 UV := uv run --project $(API)
 COMPOSE := docker compose -f infra/docker-compose.yml
 PY_TEST := cd $(API) && PROFILE=$(PROFILE) uv run pytest
+# Playwright browsers live in the repo (ADR-0019: Firefox can't start from %LOCALAPPDATA% on Windows).
+PW := PLAYWRIGHT_BROWSERS_PATH="$$PWD/.cache/ms-playwright" PROFILE=$(PROFILE) TARGET=$(TARGET)
 
 # Suites whose tests land in a later milestone. `make test-all` refuses to pass while any remain.
 PENDING ?= test-push:M9 test-chaos:M10 test-load:M10 test-security:M10 test-visual:M10 \
@@ -33,10 +35,12 @@ help:
 	@grep -E '^[a-z][a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-22s %s\n", $$1, $$2}'
 
 # ---------------------------------------------------------------- setup and dev
-.PHONY: install
+.PHONY: install browsers
 install: ## Install Python and Node dependencies
 	cd $(API) && uv sync
 	pnpm install --frozen-lockfile
+browsers: ## Install Playwright's WebKit, Chromium and Firefox into .cache/ms-playwright
+	$(PW) pnpm -C $(WEB) exec playwright install chromium webkit firefox
 
 .PHONY: up down
 up: ## Start the local docker-compose stack
@@ -96,11 +100,11 @@ test-sync: ## Concurrency and race suite, SYNC_ITERATIONS (default 200) each
 
 .PHONY: e2e e2e-multi test-a11y
 e2e: ## Playwright journeys on WebKit iPhone 14, Chromium Pixel 7, Firefox desktop
-	PROFILE=$(PROFILE) TARGET=$(TARGET) pnpm -C $(WEB) e2e
+	$(PW) pnpm -C $(WEB) e2e
 e2e-multi: ## Multi-roommate journeys (3-4 browser contexts at once)
-	PROFILE=$(PROFILE) TARGET=$(TARGET) pnpm -C $(WEB) e2e -- --grep @multi
+	$(PW) pnpm -C $(WEB) e2e --grep @multi
 test-a11y: ## axe on every screen in both themes
-	PROFILE=$(PROFILE) TARGET=$(TARGET) pnpm -C $(WEB) e2e -- --grep "A11Y|@a11y"
+	$(PW) pnpm -C $(WEB) e2e --grep "A11Y|@a11y"
 
 # ---------------------------------------------------------------- suites still to be built
 .PHONY: test-push test-chaos test-load test-security test-visual test-extract golden launch-check restore-drill
