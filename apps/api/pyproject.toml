@@ -50,9 +50,10 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC", "DTZ", "RUF", "SIM", "PT"
 ignore = ["S101", "RUF001", "RUF002", "RUF003", "PT018"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S105", "S106", "S311", "PT011", "ASYNC109", "ASYNC210"]
+"tests/**" = ["S105", "S106", "S311", "PT011", "ASYNC109", "ASYNC210", "B023"]  # B023: race lambdas are awaited in the same iteration
 "migrations/versions/**" = ["E501"]
 "fakeservices/**" = ["S105", "S106"]
+"app/openapi.py" = ["S106"]  # throwaway values for schema generation only
 
 [tool.mypy]
 python_version = "3.12"
