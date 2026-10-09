@@ -1,0 +1,82 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "build/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.12.24"
+  PNPM_VERSION: "9.15.9"
+  NODE_VERSION: "24"
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - uses: pnpm/action-setup@v4
+        with: { version: "${{ env.PNPM_VERSION }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: make install
+      - run: make lint
+
+  test:
+    # Postgres and Redis come from Testcontainers (Docker is available on the runner).
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - uses: pnpm/action-setup@v4
+        with: { version: "${{ env.PNPM_VERSION }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: make install
+      - run: make test
+
+  sync:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [local, vercel]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - run: cd apps/api && uv sync
+      - run: make test-sync PROFILE=${{ matrix.profile }}
+
+  e2e:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [e2e, e2e-multi, test-a11y]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - uses: pnpm/action-setup@v4
+        with: { version: "${{ env.PNPM_VERSION }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: make install
+      - run: pnpm -C apps/web exec playwright install --with-deps chromium webkit firefox
+      - run: cp .env.example .env && make up && make migrate
+      - run: make ${{ matrix.suite }}
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ matrix.suite }}
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results

@@ -78,7 +78,7 @@ IDs: FR-10..FR-12, FR-18, FR-60, EXTRACT-01..16, VERCEL-03
 - [ ] Gate
 
 ## Milestone 6: Real-time sync and open-bill life
-IDs: SYNC-01..34, FR-32..FR-43, PAY-01..08, VERCEL-01, VERCEL-02, VERCEL-05 · Screen 5
+IDs: SYNC-01..34, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VERCEL-02, VERCEL-05 · Screen 5
 
 - [ ] SSE from Postgres `house_events` (750 ms poll, 270 s rollover), replay, gap fill, leader tab
 - [ ] Idempotency store and rate limits in Postgres; version checks; four write kinds
@@ -86,7 +86,7 @@ IDs: SYNC-01..34, FR-32..FR-43, PAY-01..08, VERCEL-01, VERCEL-02, VERCEL-05 · S
 - [ ] Gate (both profiles)
 
 ## Milestone 7: Tabs and balances
-IDs: FR-50..FR-54, BAL-01..04, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · Screens 1, Settings, House, Balances
+IDs: FR-50..FR-54, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · Screens 1, Settings, House, Balances
 
 - [ ] Gate
 

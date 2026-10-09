@@ -1,0 +1,47 @@
+# IDs for the edge-case rows of PRD §15 and §19.9 (ADR-0004). Every ID needs at least one test
+# that carries it (pytest `@tid("EDGE-15-01")`, or a Vitest/Playwright title starting with it).
+# `milestone` is where the behavior is built; check_traceability.py enforces an ID once that
+# milestone is marked [done] in docs/PROGRESS.md.
+
+prd_15:
+  EDGE-15-01: {milestone: 5, area: Receipt, situation: "Photo is blurry, cut off or not a receipt"}
+  EDGE-15-02: {milestone: 5, area: Receipt, situation: "Long receipt in 2-3 photos with overlapping lines"}
+  EDGE-15-03: {milestone: 4, area: Receipt, situation: "Items sum differs from printed total"}
+  EDGE-15-04: {milestone: 5, area: Receipt, situation: "Quantity line or weighted item"}
+  EDGE-15-05: {milestone: 5, area: Receipt, situation: "Coupon or member discount on its own line"}
+  EDGE-15-06: {milestone: 5, area: Receipt, situation: "Bottle deposit, bag fee, tip, delivery, service fee"}
+  EDGE-15-07: {milestone: 5, area: Receipt, situation: "Card number or loyalty ID visible in the photo"}
+  EDGE-15-08: {milestone: 4, area: Receipt, situation: "Same receipt uploaded twice"}
+  EDGE-15-09: {milestone: 4, area: Split, situation: "Item with zero people at send time"}
+  EDGE-15-10: {milestone: 6, area: Split, situation: "Last person tries to untick on an open bill"}
+  EDGE-15-11: {milestone: 6, area: Split, situation: "Two people edit the same bill at once"}
+  EDGE-15-12: {milestone: 6, area: Split, situation: "Member added to house after a bill was sent"}
+  EDGE-15-13: {milestone: 6, area: Split, situation: "Member removed or leaves with open bills"}
+  EDGE-15-14: {milestone: 6, area: Payments, situation: "Member pays, then shares change"}
+  EDGE-15-15: {milestone: 6, area: Payments, situation: "Payer records a payment twice by double-tap"}
+  EDGE-15-16: {milestone: 6, area: Payments, situation: "Member marks paid but never actually paid"}
+  EDGE-15-17: {milestone: 6, area: Payments, situation: "Payer is also the only consumer of everything"}
+  EDGE-15-18: {milestone: 3, area: Identity, situation: "Two people claim the same placeholder at once"}
+  EDGE-15-19: {milestone: 3, area: Identity, situation: "Someone claims the wrong name"}
+  EDGE-15-20: {milestone: 3, area: Identity, situation: "Link forwarded outside the house"}
+  EDGE-15-21: {milestone: 3, area: Identity, situation: "User loses access to their email and phone"}
+  EDGE-15-22: {milestone: 7, area: Identity, situation: "User deletes account"}
+  EDGE-15-23: {milestone: 7, area: Bill state, situation: "Payer leaves the house with open bills"}
+  EDGE-15-24: {milestone: 6, area: Bill state, situation: "Settled by mistake"}
+  EDGE-15-25: {milestone: 6, area: Bill state, situation: "Bill stays open for months"}
+  EDGE-15-26: {milestone: 6, area: Network, situation: "Write fails or times out"}
+  EDGE-15-27: {milestone: 5, area: Network, situation: "Extraction provider down (parser or OCR failure)"}
+  EDGE-15-28: {milestone: 3, area: Abuse, situation: "Brute-forcing link tokens or OTPs"}
+  EDGE-15-29: {milestone: 4, area: Time, situation: "Payer in a different timezone"}
+
+prd_19_9:
+  EDGE-19-01: {milestone: 8, situation: "Item owned by every member"}
+  EDGE-19-02: {milestone: 8, situation: "Owner leaves or is removed from the house"}
+  EDGE-19-03: {milestone: 8, situation: "Two owners answer the same request at once"}
+  EDGE-19-04: {milestone: 8, situation: "Bill settled between ask and answer"}
+  EDGE-19-05: {milestone: 8, situation: "Item used up while a request is pending"}
+  EDGE-19-06: {milestone: 8, situation: "Payer retags a line to NOT FOOD or deletes it on an open bill"}
+  EDGE-19-07: {milestone: 8, situation: "Manual leftovers (no bill, no price)"}
+  EDGE-19-08: {milestone: 8, situation: "Same product bought on two bills"}
+  EDGE-19-09: {milestone: 8, situation: "Requester leaves the house"}
+  EDGE-19-10: {milestone: 8, situation: "Very full fridge (60+ items in an area)"}

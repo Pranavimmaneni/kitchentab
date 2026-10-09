@@ -1,0 +1,32 @@
+name: nightly
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+env:
+  UV_VERSION: "0.12.24"
+  PNPM_VERSION: "9.15.9"
+  NODE_VERSION: "24"
+
+jobs:
+  full:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [test-extract, test-push, test-chaos, test-security, test-load, test-visual, restore-drill]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - uses: pnpm/action-setup@v4
+        with: { version: "${{ env.PNPM_VERSION }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
+      - run: make install
+      - run: pnpm -C apps/web exec playwright install --with-deps chromium webkit firefox
+      - run: cp .env.example .env && make up && make migrate
+      - run: make ${{ matrix.suite }}
