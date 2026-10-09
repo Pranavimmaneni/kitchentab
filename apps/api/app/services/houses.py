@@ -371,6 +371,7 @@ async def remove_member(
             )
         target.status = "removed"
         target.version += 1
+        await _leaving(w.session, target.id)
         w.emit(
             "member_removed",
             aggregate=("member", member_id, target.version),
@@ -406,6 +407,7 @@ async def leave_house(
             )
         target.status = "left"
         target.version += 1
+        await _leaving(w.session, target.id)
         w.emit(
             "member_left",
             aggregate=("member", target.id, target.version),
@@ -486,6 +488,12 @@ async def transfer_admin(
         body = {"admin_member_id": str(target.id)}
         w.respond(200, body)
     return body
+
+
+async def _leaving(db: AsyncSession, member_id: uuid.UUID) -> None:
+    from app.services.inventory import member_left
+
+    await member_left(db, member_id)
 
 
 # ---- joining -------------------------------------------------------------------------------------

@@ -97,11 +97,20 @@ IDs: SYNC-01..34, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VE
 ## Milestone 7: Tabs and balances
 IDs: FR-50..FR-54, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · Screens 1, Settings, House, Balances
 
+- [x] API: balances (per-pair netting, carried), tabs lists with 20-per-page history, search, CSV export,
+      sign-in methods, payment handles, data export, account deletion (anonymize, keep amounts)
+- [ ] Screens: Tabs, Balances, House, Settings, house switcher
 - [ ] Gate
 
 ## Milestone 8: Fridge and pantry
 IDs: FR-60..FR-80, KITCH-01..16, ASK-01..14, MONEY-09 · Screens K1–K4
 
+- [x] API: kitchen panels, fridge/pantry views with filter counts, sharing consent (OPEN only when every
+      active owner says yes), use-soon/still-there in house tz, still good +3 d, used up + 60 s restore,
+      leftovers, asks with limits, answers (free / split / chip in / decline), undo, cancel, 48 h expiry,
+      member-left handling, history (24 tests in `tests/test_kitchen.py`, both profiles)
+- [ ] KITCH-15 daily use-soon round-up (lands with the M9 outbox drain and cron)
+- [ ] Screens K1–K4, item sheet, food icons; KITCH-16 / EDGE-19-10 virtualized long areas (Playwright)
 - [ ] Gate
 
 ## Milestone 9: Install and notifications

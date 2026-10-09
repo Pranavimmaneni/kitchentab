@@ -16,7 +16,7 @@ from app.deps import BodyLimitMiddleware, guard_middleware
 from app.errors import install_error_handlers
 from app.ids import uuid7
 from app.logs import configure_logging, request_id_var
-from app.routes import account, auth, bills, events, health, houses, lifecycle, me, tabs, test_inbox
+from app.routes import account, auth, bills, events, health, houses, kitchen, lifecycle, me, tabs, test_inbox
 from app.services.bus import NullBus, RedisBus
 from app.services.house_write import IdempotentReplay, WriteContext
 from app.settings import Settings, get_settings
@@ -92,6 +92,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         bills.router,
         lifecycle.router,
         tabs.router,
+        kitchen.router,
         events.router,
     ):
         app.include_router(router, prefix=API_PREFIX)

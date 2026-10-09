@@ -415,7 +415,7 @@ async def update_header(
         w.emit(
             "bill_updated",
             aggregate=("bill", bill.id, bill.version),
-            data={"fields": sorted(body), "share_deltas": deltas},
+            data={"bill_id": str(bill.id), "fields": sorted(body), "share_deltas": deltas},
             activity=Activity("bill_edited", bill_id=bill.id, actor_user_id=user_id, payload={"fields": sorted(body)}),
             notify=["share"] if deltas else [],
         )
@@ -449,11 +449,12 @@ async def override_reconciliation(
         bill.reconcile_override_reason = reason
         await _refresh_totals(w.session, rows, now)
         bill.version += 1
-        await _after_money_change(w, rows, "reconcile_override", now)
+        deltas = await _after_money_change(w, rows, "reconcile_override", now)
         w.emit(
             "bill_updated",
             aggregate=("bill", bill.id, bill.version),
-            data={"override": True},
+            data={"bill_id": str(bill.id), "override": True, "share_deltas": deltas},
+            notify=["share"] if deltas else [],
             activity=Activity(
                 "reconcile_override",
                 bill_id=bill.id,
@@ -616,7 +617,7 @@ async def update_item(
         w.emit(
             "item_updated",
             aggregate=("item", item.id, item.version),
-            data=item_view(item, allocations),
+            data={**item_view(item, allocations), "bill_id": str(bill_id), "share_deltas": deltas},
             activity=Activity(
                 "item_edited",
                 bill_id=bill_id,
@@ -656,7 +657,7 @@ async def delete_item(
         w.emit(
             "item_deleted",
             aggregate=("item", item.id, item.version),
-            data={"item_id": str(item.id)},
+            data={"item_id": str(item.id), "bill_id": str(bill_id), "share_deltas": deltas},
             activity=Activity("item_deleted", bill_id=bill_id, actor_user_id=user_id, payload={"name": item.name}),
             notify=["share"] if deltas else [],
         )
@@ -960,7 +961,7 @@ async def set_allocations(
         w.emit(
             "allocation_changed",
             aggregate=("bill", bill.id, bill.version),
-            data={"changes": applied, "shares": shares},
+            data={"bill_id": str(bill.id), "changes": applied, "shares": shares, "share_deltas": deltas},
             activity=Activity(
                 "allocation_changed", bill_id=bill.id, actor_user_id=user_id, payload={"changes": applied}
             )
@@ -1008,12 +1009,13 @@ async def fill_rest(
                 )
         await w.session.flush()
         rows = await bill_math.load(w.session, bill)
-        await _after_money_change(w, rows, "fill_rest", now)
+        deltas = await _after_money_change(w, rows, "fill_rest", now)
         if filled:
             w.emit(
                 "allocation_changed",
                 aggregate=("bill", bill.id, bill.version),
-                data={"filled_items": [str(i.id) for i in filled]},
+                data={"bill_id": str(bill.id), "filled_items": [str(i.id) for i in filled], "share_deltas": deltas},
+                notify=["share"] if deltas else [],
             )
         out = {"filled": [str(i.id) for i in filled], "shares": bill_math.preview(rows).shares}
         w.respond(200, out)

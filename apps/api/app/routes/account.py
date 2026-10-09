@@ -39,6 +39,7 @@ from app.security import mask_destination, new_otp_code, normalize_email, normal
 from app.services import auth as auth_svc
 from app.services.house_write import Activity, house_write
 from app.services.houses import member_view
+from app.services.inventory import member_left
 
 router = APIRouter(tags=["account"])
 FORMER = "Former roommate"
@@ -354,6 +355,7 @@ async def delete_account(
             row.status = "left" if row.status in ("active", "placeholder") else row.status
             row.role = "member"
             row.version += 1
+            await member_left(w.session, row.id)
             w.emit(
                 "member_anonymized",
                 aggregate=("member", row.id, row.version),
