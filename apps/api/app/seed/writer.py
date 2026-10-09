@@ -14,6 +14,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.kitchen import default_shelf_life
 from app.links import bill_token, invite_token
 from app.models import (
     Allocation,
@@ -31,55 +32,6 @@ from app.models import (
     User,
 )
 from app.seed.scenario import Scenario, seed_uuid
-
-# Default shelf life (PRD §19.5 table), by icon first, then category. Milestone 8 moves this into
-# the domain layer with the extractor's own value taking precedence.
-SHELF_LIFE_BY_ICON = {
-    "chicken": 2,
-    "beef": 2,
-    "fish": 2,
-    "leafy_greens": 5,
-    "berries": 5,
-    "leftovers": 4,
-    "milk": 7,
-    "plant_milk": 7,
-    "tofu": 7,
-    "yogurt": 14,
-    "eggs": 28,
-    "kimchi_jar": 60,
-    "banana": 6,
-    "apple": 6,
-    "bread": 7,
-    "coffee": 180,
-    "tea": 180,
-    "rice": 365,
-    "pasta": 365,
-    "noodles": 365,
-    "canned": 365,
-}
-SHELF_LIFE_BY_CATEGORY = {
-    "meat_fish": 2,
-    "produce": 5,
-    "prepared": 4,
-    "dairy": 7,
-    "drinks": 7,
-    "plant_protein": 7,
-    "eggs": 28,
-    "frozen": 90,
-    "bakery": 7,
-    "coffee_tea": 180,
-    "grains": 365,
-    "canned": 365,
-    "snacks": 180,
-    "condiments": 180,
-    "other": 30,
-}
-
-
-def default_shelf_life(category: str | None, icon: str | None) -> int:
-    if icon in SHELF_LIFE_BY_ICON:
-        return SHELF_LIFE_BY_ICON[icon]
-    return SHELF_LIFE_BY_CATEGORY.get(category or "other", 30)
 
 
 async def truncate_all(session: AsyncSession) -> None:

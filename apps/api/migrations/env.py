@@ -22,9 +22,7 @@ target_metadata = Base.metadata
 def _url() -> str:
     """Direct (unpooled) URL first: Neon's pooler can't run migrations (ADR-0011)."""
     url = (
-        config.attributes.get("database_url")
-        or os.environ.get("DATABASE_DIRECT_URL")
-        or os.environ.get("DATABASE_URL")
+        config.attributes.get("database_url") or os.environ.get("DATABASE_DIRECT_URL") or os.environ.get("DATABASE_URL")
     )
     if not url:
         from app.settings import get_settings  # reads .env

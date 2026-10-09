@@ -16,7 +16,7 @@ from app.deps import guard_middleware
 from app.errors import install_error_handlers
 from app.ids import uuid7
 from app.logs import configure_logging, request_id_var
-from app.routes import auth, health, houses, me, test_inbox
+from app.routes import auth, bills, health, houses, me, test_inbox
 from app.services.bus import NullBus, RedisBus
 from app.services.house_write import IdempotentReplay, WriteContext
 from app.settings import Settings, get_settings
@@ -82,7 +82,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.headers["Server-Timing"] = f"app;dur={(time.perf_counter() - started) * 1000:.1f}"
         return response
 
-    for router in (health.router, auth.router, me.router, houses.router):
+    for router in (health.router, auth.router, me.router, houses.router, bills.router):
         app.include_router(router, prefix=API_PREFIX)
     app.include_router(test_inbox.router)  # 404 unless EMAIL_PROVIDER=testinbox (ADR-0016)
     if settings.test_routes_active:

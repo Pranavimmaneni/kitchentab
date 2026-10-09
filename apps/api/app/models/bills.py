@@ -71,6 +71,8 @@ class Bill(Base):
     subtotal_cents: Mapped[int] = cents(default=0)
     tax_cents: Mapped[int] = cents(default=0)
     total_cents: Mapped[int] = cents(default=0)
+    # What the receipt (or the payer) says the total is; reconciliation compares against it (FR-13).
+    receipt_total_cents: Mapped[int | None] = cents(nullable=True)
     # FR-13 override: the printed receipt total, kept equal to total_cents (ADR-0002).
     printed_total_cents: Mapped[int | None] = cents(nullable=True)
     reconcile_override_reason: Mapped[str | None] = mapped_column(Text)
