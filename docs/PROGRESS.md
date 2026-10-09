@@ -4,9 +4,11 @@ Checkpoint for every session. Read `CLAUDE.md`, this file and `docs/BUILD_ALL.md
 continue from the first unchecked item. A box is checked only when its tests pass, not when code
 is written. Branch: `build/all`. No git remote is configured (nothing is pushed).
 
-**Status line:** P0 retrofit done for the backend; M1 web foundation being built by a subagent
-(apps/web). Backend for M2 (Python half), M3 and M4 built and green: 139 API tests, ruff + mypy clean,
-commit `7cae911`. Next: M6 sync backend, then the screens for M3/M4 once the web foundation lands.
+**Status line:** M1 + M2 built, reviewed (fresh-eyes review: 14 findings, backend ones fixed in
+`a070e8a`); three web review items open (below). Backends for M3, M4 and M6 built and green (186 API
+tests, 72 web unit tests, 40 Playwright, SYNC x200 local, SYNC x10 PROFILE=vercel). Screens for M3/M4
+are being built by a subagent in apps/web. Next: close M1/M2 web review items, M3/M4 screens + gates,
+M6 client (SSE, leader tab, polling fallback) and screen 5.
 
 `scripts/check_traceability.py` reads the `Milestone N` headings below: a milestone whose heading
 ends with `[done]` must have every FR and TEST_PLAN ID listed under its "IDs" line covered by a
@@ -38,9 +40,12 @@ IDs: DATA-01, SYNC-25, SYNC-26, SEC-11, PWA-10, A11Y-05
 - [x] `house_write` helper: house lock last, gapless seq, events/activity/outbox in one commit (SYNC-25, SYNC-26)
 - [x] Fakes: SMS, email→Mailpit, extractor, mock Google OIDC, fake Web Push (VAPID + RFC 8291)
 - [x] Harnesses: scenario seeder + `tests/scenarios/apt4b.yaml`, race helper, event recorder, clock control, test routes (SEC-11)
-- [ ] Next.js app: tokens.css (both themes + kitchen tokens), light/dark/system theming, manifest stub, fonts
-- [ ] §14B base components + `/dev/components` (both themes)
-- [ ] Multi-roommate Playwright fixture `roommates(n)` + `expectEverywhere`
+- [x] Next.js app: tokens.css (both themes + kitchen tokens), light/dark/system theming, manifest stub, fonts
+- [x] §14B base components + `/dev/components` (both themes; WebKit, Chromium, Firefox)
+- [x] Multi-roommate Playwright fixture `roommates(n)` + `expectEverywhere`
+- [x] Fresh-eyes review; backend findings fixed
+- [ ] Web review items: Undo toast pauses on hover/focus (WCAG 2.2.1); SplitCheckbox ignores key repeat;
+      theme preference saved to the account too (PATCH /me)
 - [x] Makefile (every CLAUDE.md target, `PROFILE=vercel`, `TARGET=`), GitHub Actions CI
 - [x] `scripts/check_traceability.py` + `docs/traceability/edge_cases.yaml` (self-tested)
 - [ ] Gate (lint, test, review)
@@ -50,7 +55,7 @@ IDs: MONEY-01, MONEY-02, MONEY-03, MONEY-04, MONEY-05, MONEY-06, MONEY-10, FR-23
 
 - [x] `app/domain/money.py` passes `money_cases.json` (incl. adjustment cases); 100% branch coverage
 - [x] Python property tests: 10,000-bill corpus digest == reference; hypothesis invariant; tie-breaks; no-float scan
-- [ ] `apps/web/lib/money/` (TS mirror) + corpus digest + fast-check; TS no-float lint
+- [x] `apps/web/lib/money/` (TS mirror) + corpus digest + fast-check; TS no-float lint (17 tests)
 - [ ] Gate
 
 ## Milestone 3: Auth and houses
@@ -82,9 +87,11 @@ IDs: FR-10..FR-12, FR-18, FR-60, EXTRACT-01..16, VERCEL-03
 ## Milestone 6: Real-time sync and open-bill life
 IDs: SYNC-01..34, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VERCEL-02, VERCEL-05 · Screen 5
 
-- [ ] SSE from Postgres `house_events` (750 ms poll, 270 s rollover), replay, gap fill, leader tab
-- [ ] Idempotency store and rate limits in Postgres; version checks; four write kinds
-- [ ] Member edits, change badges, activity, payments, reminders, settle, reopen, void
+- [x] API: SSE from Postgres `house_events` (750 ms poll, 270 s rollover), replay, gap fill, resync, revoked
+- [x] Idempotency store and rate limits in Postgres; version checks; four write kinds; 426 STALE_CLIENT
+- [x] API: member edits, change badges, activity, payments, reminders, settle, reopen, void (race tests at API level)
+- [ ] Client: event cache patching, gap fill, leader tab (Web Locks + BroadcastChannel), polling fallback,
+      tick coalescing; screen 5; multi-roommate browser tests for SYNC-01..24
 - [ ] Gate (both profiles)
 
 ## Milestone 7: Tabs and balances
@@ -139,6 +146,11 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 23. Link tokens are derived (ADR-0018) so members can see invite/bill links again.
 24. `tzdata` added (zoneinfo on Windows dev machines); `joserfc` declared (Authlib's own dependency).
 25. Fake SMS codes live in Postgres (`test_inbox`, subject `sms`) so no profile needs Redis for tests.
+26. Row locks are `FOR NO KEY UPDATE` (ticks take `FOR SHARE` on the bill) so FK checks never deadlock.
+27. The "changed" badge compares my share now with my share when I last looked (seen marker time), because ticks don't bump the bill version.
+28. Settle with outstanding money writes carryover ledger entries; reopen writes reversing entries (nothing financial deleted).
+29. Chunked request bodies are buffered up to 4.5 MB and refused beyond; X-Forwarded-For is trusted only with PROFILE=vercel.
+30. `MIN_CLIENT_VERSION` (default 0) drives 426 STALE_CLIENT from `X-Client-Version`.
 
 ## Waivers
 
