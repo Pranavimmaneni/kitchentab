@@ -13,11 +13,13 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "gen:api": "openapi-typescript lib/api/openapi.json -o lib/api/schema.d.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "5.104.1",
     "next": "15.5.27",
+    "openapi-fetch": "0.14",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -35,6 +37,7 @@
     "eslint-config-next": "15.5.27",
     "fast-check": "4",
     "jsdom": "30.1.2",
+    "openapi-typescript": "7",
     "prettier": "3.9.9",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
