@@ -4,8 +4,9 @@ Checkpoint for every session. Read `CLAUDE.md`, this file and `docs/BUILD_ALL.md
 continue from the first unchecked item. A box is checked only when its tests pass, not when code
 is written. Branch: `build/all`. No git remote is configured (nothing is pushed).
 
-**Status line:** Phase P0 (Reconcile) in progress. Last green: backend `make test` (66 tests),
-ruff + mypy clean, commit `9d7f1d2`.
+**Status line:** P0 retrofit done for the backend; M1 web foundation being built by a subagent
+(apps/web). Backend for M2 (Python half), M3 and M4 built and green: 139 API tests, ruff + mypy clean,
+commit `7cae911`. Next: M6 sync backend, then the screens for M3/M4 once the web foundation lands.
 
 `scripts/check_traceability.py` reads the `Milestone N` headings below: a milestone whose heading
 ends with `[done]` must have every FR and TEST_PLAN ID listed under its "IDs" line covered by a
@@ -21,9 +22,8 @@ test.
 - [x] Apply §1 (C1 local extraction, C2 Vercel, C3 day-one sign-in) to PRD §3, §5.2, §9, §11, §12, §13, §18
 - [x] Apply §1 to TEST_PLAN (EXTRACT-01..16, AUTH-15/16, VERCEL-01..10, new make targets)
 - [x] ADRs 0001-0017 (`docs/decisions/`)
-- [ ] Retrofit §1 into built code: settings (PROFILE, email smtp/testinbox, blob, queue), Postgres
-      realtime/rate limits/idempotency/test inbox tables (migration 0002), Redis optional in
-      `PROFILE=vercel`
+- [x] Retrofit §1 into built code: settings (PROFILE, email smtp/testinbox, blob, queue), Postgres
+      rate limits / idempotency / test inbox (migration 0002), Redis optional in `PROFILE=vercel`
 - [ ] Finish the rest of M1 (web app, Makefile, CI, traceability script, edge-case IDs)
 - [ ] Gate: `make lint test` green
 
@@ -41,30 +41,32 @@ IDs: DATA-01, SYNC-25, SYNC-26, SEC-11, PWA-10, A11Y-05
 - [ ] Next.js app: tokens.css (both themes + kitchen tokens), light/dark/system theming, manifest stub, fonts
 - [ ] §14B base components + `/dev/components` (both themes)
 - [ ] Multi-roommate Playwright fixture `roommates(n)` + `expectEverywhere`
-- [ ] Makefile (every CLAUDE.md target, `PROFILE=vercel`, `TARGET=`), GitHub Actions CI
-- [ ] `scripts/check_traceability.py` + `docs/traceability/edge_cases.yaml`
+- [x] Makefile (every CLAUDE.md target, `PROFILE=vercel`, `TARGET=`), GitHub Actions CI
+- [x] `scripts/check_traceability.py` + `docs/traceability/edge_cases.yaml` (self-tested)
 - [ ] Gate (lint, test, review)
 
 ## Milestone 2: Money core
 IDs: MONEY-01, MONEY-02, MONEY-03, MONEY-04, MONEY-05, MONEY-06, MONEY-10, FR-23
 
-- [ ] `app/domain/money.py` and `apps/web/lib/money/` pass `money_cases.json` (incl. adjustment cases)
-- [ ] Property test 10,000 bills; Python == TS; tie-breaks; no-float lint rule
+- [x] `app/domain/money.py` passes `money_cases.json` (incl. adjustment cases); 100% branch coverage
+- [x] Python property tests: 10,000-bill corpus digest == reference; hypothesis invariant; tie-breaks; no-float scan
+- [ ] `apps/web/lib/money/` (TS mirror) + corpus digest + fast-check; TS no-float lint
 - [ ] Gate
 
 ## Milestone 3: Auth and houses
 IDs: FR-01..FR-09, AUTH-01..16, HOUSE-01..10, LINK-01..06 · Screens A–D
 
-- [ ] Email codes (C3: smtp / testinbox / Mailpit), phone + Google behind fakes, buttons hidden without keys
-- [ ] Sessions, CSRF, houses, placeholders, invite links, join + claim
+- [x] Email codes (C3: smtp / testinbox / Mailpit), phone + Google behind fakes, buttons hidden without keys
+- [x] Sessions, CSRF, houses, placeholders, invite links (derived tokens, ADR-0018), join + claim (API, 32 tests)
 - [ ] Screens A–D
 - [ ] Gate
 
 ## Milestone 4: Bills without OCR
 IDs: FR-10, FR-13..FR-17, FR-20..FR-27, FR-30, FR-31, FR-60 (tag), BILL-01..07, SPLIT-01..07, SPLIT-09, SPLIT-10, LINK-05 · Screens 2–4, E
 
-- [ ] Manual entry, item CRUD, storage tags, split grid, review, send, link page + OG, share card
-- [ ] Reconciliation override with adjustment line (ADR-0002)
+- [x] API: manual entry, item CRUD/merge/split/reorder, storage tags, allocations, fill-rest, exclusions, guests, send, bill link + claim (18 tests)
+- [x] Reconciliation override with adjustment line (ADR-0002)
+- [ ] Screens 2-4, E, link page + OG image, share card
 - [ ] Gate
 
 ## Milestone 5: Receipt extraction (C1: local, no API key)
@@ -132,6 +134,11 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 18. `share_snapshots.bill_version` added to compute "changed since you last looked" deltas against `seen_markers`.
 19. apt4b scenario clock is 2026-10-03 19:00 EDT; kitchen use-soon states that the §19.5 rules can't produce from the purchase date use explicit `stocked_on` / `shelf_life_days` overrides.
 20. Commit-order proof for SYNC-25 uses Postgres `track_commit_timestamp=on` (compose and Testcontainers).
+21. Drafts: the uploader and the payer can both edit; once open only the payer (policy `_decide_bill`).
+22. `bills.receipt_total_cents` holds the printed total that review reconciles against (migration 0003).
+23. Link tokens are derived (ADR-0018) so members can see invite/bill links again.
+24. `tzdata` added (zoneinfo on Windows dev machines); `joserfc` declared (Authlib's own dependency).
+25. Fake SMS codes live in Postgres (`test_inbox`, subject `sms`) so no profile needs Redis for tests.
 
 ## Waivers
 
