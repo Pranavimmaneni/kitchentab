@@ -1103,5 +1103,307 @@
         "meera": 3
       }
     }
+  },
+  {
+    "name": "reconciliation_adjustment",
+    "note": "FR-13 override: receipt prints $96.38 but items + tax = $95.18; payer uses the receipt total, so a +$1.20 adjustment is allocated like tax",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        },
+        {
+          "id": "meera",
+          "sort_order": 2
+        },
+        {
+          "id": "kabir",
+          "sort_order": 3
+        }
+      ],
+      "items": [
+        {
+          "id": "milk",
+          "line_total_cents": 429,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "eggs",
+          "line_total_cents": 549,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "rice",
+          "line_total_cents": 1499,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "yogurt",
+          "line_total_cents": 679,
+          "allocations": [
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bananas",
+          "line_total_cents": 132,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "towels",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "soap",
+          "line_total_cents": 349,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "chicken",
+          "line_total_cents": 1137,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "oatmilk",
+          "line_total_cents": 459,
+          "allocations": [
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "spinach",
+          "line_total_cents": 399,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bars",
+          "line_total_cents": 1799,
+          "allocations": [
+            {
+              "participant": "arjun",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "coffee",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "tax_cents": 89,
+      "fees": [
+        {
+          "label": "Receipt adjustment",
+          "kind": "adjustment",
+          "amount_cents": 120
+        }
+      ],
+      "total_cents": 9638
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 2329,
+        "arjun": 3359,
+        "meera": 1870,
+        "kabir": 1871
+      },
+      "shares": {
+        "pranav": 2380,
+        "arjun": 3434,
+        "meera": 1911,
+        "kabir": 1913
+      }
+    }
+  },
+  {
+    "name": "reconciliation_adjustment_negative",
+    "note": "FR-13 override with a printed total below the items: -$0.07 adjustment, rounded on its absolute value then negated",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        },
+        {
+          "id": "meera",
+          "sort_order": 2
+        }
+      ],
+      "items": [
+        {
+          "id": "pizza",
+          "line_total_cents": 1000,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "tax_cents": 0,
+      "fees": [
+        {
+          "label": "Receipt adjustment",
+          "kind": "adjustment",
+          "amount_cents": -7
+        }
+      ],
+      "total_cents": 993
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 334,
+        "arjun": 333,
+        "meera": 333
+      },
+      "shares": {
+        "pranav": 331,
+        "arjun": 331,
+        "meera": 331
+      }
+    }
   }
 ]

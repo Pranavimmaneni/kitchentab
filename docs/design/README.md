@@ -54,5 +54,8 @@ by opening them in a browser. Read them as annotated markup:
 - **Food icons:** the 15 icons drawn in `Fridge.dc.html` (`ICONS` object) are final; draw the rest of the set in PRD §19.8 in the same style.
 - **The "G" sign-in button is a placeholder.** Use Google's official sign-in button.
 - **`kitchentab.app` is a placeholder domain.**
+- **Contrast fixes after approval (PRD §14):** the violet member color is #6A4CFF (white initial),
+  not the mockups' #7B61FF, and empty controls (unchecked split boxes, empty OTP boxes) use a
+  `--muted` border instead of `--faint`. The renders in `renders/` predate this change.
 - **Screens with no mockup** (pay sheet, settings, house settings, dialogs, error and
   offline states) are specified in words in PRD §14A. Build them in the same style.

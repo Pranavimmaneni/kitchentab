@@ -4,6 +4,7 @@ This file is the executable spec. The production `apps/api/app/domain/money.py`
 and `apps/web/lib/money/` must produce identical output for every case in
 `packages/fixtures/money_cases.json`. Run this file to regenerate and verify
 the fixtures:  python3 docs/reference/compute_shares_reference.py
+Verify without rewriting (CI):  python3 docs/reference/compute_shares_reference.py --check
 
 Rules encoded here:
 - All money is integer cents. No floats touch money.
@@ -13,6 +14,10 @@ Rules encoded here:
   at a time by each participant's item subtotal clipped at 0. If every clipped
   subtotal is 0, they are split equally among participants with any allocation.
 - Negative amounts are rounded on their absolute value, then negated.
+- A reconciliation override (PRD FR-13) stores the printed receipt total as the
+  bill total and adds one signed `adjustment` bill-level amount for the
+  difference, allocated like tax. Adjustments are stored signed; order
+  discounts are stored positive and negated here.
 - Invariant: sum(shares) == bill total. Violations raise.
 """
 from __future__ import annotations
@@ -61,7 +66,7 @@ def compute_shares(bill: dict) -> dict:
         clipped = {pid: Fraction(1) for pid in allocated_any}
 
     bill_level = [("tax", bill.get("tax_cents", 0))]
-    for f in bill.get("fees", []):  # kind: fee | tip | order_discount
+    for f in bill.get("fees", []):  # kind: fee | tip | order_discount | adjustment (signed)
         amt = -f["amount_cents"] if f["kind"] == "order_discount" else f["amount_cents"]
         bill_level.append((f["label"], amt))
     for _, amt in bill_level:
@@ -131,19 +136,37 @@ CASES = [
     {"name": "all_zero_subtotals", "note": "Only a free item, but a bag fee: fee splits equally",
      "bill": {"participants": P[:3], "items": [item("freebie", 0, ["pranav", "arjun", "meera"])], "tax_cents": 0,
               "fees": [{"label": "Bag fee", "kind": "fee", "amount_cents": 10}], "total_cents": 10}},
+    {"name": "reconciliation_adjustment", "note": "FR-13 override: receipt prints $96.38 but items + tax = $95.18; payer uses the receipt total, so a +$1.20 adjustment is allocated like tax",
+     "bill": {"participants": P, "items": SHOPRITE_ITEMS, "tax_cents": 89,
+              "fees": [{"label": "Receipt adjustment", "kind": "adjustment", "amount_cents": 120}], "total_cents": 9638}},
+    {"name": "reconciliation_adjustment_negative", "note": "FR-13 override with a printed total below the items: -$0.07 adjustment, rounded on its absolute value then negated",
+     "bill": {"participants": P[:3], "items": [item("pizza", 1000, ["pranav", "arjun", "meera"])], "tax_cents": 0,
+              "fees": [{"label": "Receipt adjustment", "kind": "adjustment", "amount_cents": -7}], "total_cents": 993}},
 ]
 
 
-def main() -> None:
+def main(argv: list[str]) -> int:
     out = []
     for case in CASES:
         result = compute_shares(case["bill"])
         out.append({**case, "expected": result})
         print(f"{case['name']:40s} {result['shares']}")
     path = Path(__file__).resolve().parents[2] / "packages" / "fixtures" / "money_cases.json"
-    path.write_text(json.dumps(out, indent=2) + "\n")
+    text = json.dumps(out, indent=2) + "\n"
+    if "--check" in argv:
+        current = path.read_bytes().decode("utf-8") if path.exists() else ""
+        if current != text:
+            print(f"FAIL: {path} is stale or not LF; run without --check to regenerate")
+            return 1
+        print(f"ok: {path} matches the reference")
+        return 0
+    # newline="\n" keeps the fixture LF on Windows as well.
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
     print(f"wrote {path}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    raise SystemExit(main(sys.argv[1:]))

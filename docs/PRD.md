@@ -170,7 +170,7 @@ Each requirement is testable; "Must" ships in MVP, "Should" ships in MVP if time
 | FR-10 | Must | Upload JPEG, PNG, HEIC, WEBP or PDF up to 15 MB, via camera or file picker | HEIC converted server-side; PDF first 3 pages processed |
 | FR-11 | Must | Extract store name, purchase date, line items (name, quantity, unit price, line total), discounts, subtotal, tax, fees, total | Result returned in under 15 s at p90 |
 | FR-12 | Must | Flag low-confidence fields (confidence < 0.8) for review | Flagged rows show a "Check?" chip |
-| FR-13 | Must | Show reconciliation: sum of items + tax + fees − discounts vs receipt total | Mismatch shows the difference and blocks Next until resolved or overridden with a reason |
+| FR-13 | Must | Show reconciliation: sum of items + tax + fees − discounts vs receipt total | Mismatch shows the difference and blocks Next until resolved or overridden with a reason. An override stores the printed total in `bills.printed_total_cents` (which becomes `total_cents`) and adds one signed `bill_fees` row of kind `adjustment` for the difference, allocated like tax (section 6); the reason is logged |
 | FR-14 | Must | Edit any field, add, delete, merge or split items | Changes saved as draft every 2 s |
 | FR-15 | Must | Manual entry without a photo | Same review screen, empty list |
 | FR-16 | Must | Set "Paid by" (default: uploader) and purchase date (default: extracted, else today) | Payer must be a house member |
@@ -214,7 +214,7 @@ Each requirement is testable; "Must" ships in MVP, "Should" ships in MVP if time
 | ID | Priority | Requirement | Acceptance criteria |
 | --- | --- | --- | --- |
 | FR-50 | Must | Home shows the signed-in user's net position: owed, owing, credits | Matches sum across open bills plus carried balances |
-| FR-51 | Must | Per-pair balances ("Arjun owes you $33.91") | Pairwise, not simplified, in MVP |
+| FR-51 | Must | Per-pair balances ("Arjun owes you $33.91") | Pairwise: each pair is netted across all open bills and ledger entries (Meera owes you $22.24 on ShopRite, you owe her $14.10 on H Mart → "MEERA → YOU $8.14"); no simplification across three or more people in MVP |
 | FR-52 | Must | Lists of open bills (newest first) and settled bills (paginated, 20 per page) | Each card shows store, date, payer, total, payment progress |
 | FR-53 | Should | Search bills by store or item name | Results in under 500 ms |
 | FR-54 | Should | Export a bill as CSV | One row per item × member allocation |
@@ -229,26 +229,28 @@ All money is stored and computed as integer cents; floats never touch money. One
 
 1. For each item, split `line_total_cents` across its allocated members in proportion to weight using the largest-remainder method: give each member `floor(total × w / W)`, then hand out the leftover cents one at a time to members with the largest fractional remainders; break ties by member `sort_order`, then `id`.
 2. Sum each member's item cents into `item_subtotal[m]`.
-3. Allocate each bill-level amount (tax, each fee, each order-level discount as a negative amount) proportionally to `item_subtotal[m]`, again with largest-remainder.
-4. `share[m] = item_subtotal[m] + allocated_tax[m] + allocated_fees[m] − allocated_discounts[m]`.
+3. Allocate each bill-level amount (tax, each fee or tip, each order-level discount as a negative amount, and the reconciliation adjustment if any) proportionally to `item_subtotal[m]`, again with largest-remainder. Each amount is rounded on its own, in that order; they are never summed first.
+4. `share[m] = item_subtotal[m] + allocated_tax[m] + allocated_fees[m] − allocated_discounts[m] + allocated_adjustment[m]`.
 5. Invariant check: `Σ share[m] == bill.total_cents`. If it fails, refuse to save and log an error; never silently adjust.
+
+**Reconciliation override (FR-13).** When the payer chooses "Use receipt total anyway", the printed total is stored as `bills.printed_total_cents` and becomes `total_cents`, and one `bill_fees` row of kind `adjustment` holds the signed difference (printed total − items − tax − fees + discounts). It is allocated in step 3 like tax, so the invariant in step 5 still holds. Fixtures `reconciliation_adjustment` and `reconciliation_adjustment_negative` cover it.
 
 Largest-remainder replaces the mockup's "leftover cent goes to the payer" rule: it is fairer and deterministic. The UI shows no rounding note unless a member asks via the info icon.
 
 ```latex
-\text{share}_m = \sum_{i \in \text{items}(m)} \text{LR}\!\left(c_i \cdot \frac{w_{i,m}}{\sum_k w_{i,k}}\right) + \text{LR}\!\left((T + F - D) \cdot \frac{\text{sub}_m}{\sum_k \text{sub}_k}\right)
+\text{share}_m = \sum_{i \in \text{items}(m)} \text{LR}\!\left(c_i \cdot \frac{w_{i,m}}{\sum_k w_{i,k}}\right) + \sum_{a \in \text{billLevel}} \text{LR}\!\left(a \cdot \frac{\text{sub}^{+}_m}{\sum_k \text{sub}^{+}_k}\right)
 ```
 
-LR = largest-remainder rounding to whole cents; c = item line total, w = weight, T = tax, F = fees, D = order-level discounts, sub = item subtotal.
+LR = largest-remainder rounding to whole cents; c = item line total, w = weight, billLevel = tax, each fee or tip, each order discount (negative) and the adjustment (signed), each rounded separately; sub⁺ = item subtotal clipped at 0. `docs/reference/compute_shares_reference.py` is the executable definition and wins over this formula.
 
 **Payment and balance rules**
 
 - `owed[m] = share[m] − confirmed_payments[m]` for every non-payer member; the payer's own share is never owed to anyone.
-- If `owed[m] < 0` after an edit (paid more than the new share), the bill shows a credit: "Payer owes Kabir $1.68". The credit stays on the bill until the payer records a refund or the bill is settled, at which point it carries into house balances.
+- If `owed[m] < 0` after an edit (paid more than the new share), the bill shows a credit: "Payer owes Kabir $1.68". The credit stays on the bill until the payer records a refund or the bill is settled, at which point it carries into house balances. A refund is a `payments` row in the other direction (`direction = refund`: from the payer to the member), not a status.
 - Pending (unconfirmed) payments show as "paid, awaiting confirmation" but do not reduce `owed`.
 - Settling with nonzero `owed` moves each remaining amount into the pairwise house ledger as a `carryover` entry, so nothing is lost.
 - House balance between A and B = Σ open-bill owed amounts between them + Σ carryover entries − Σ cross-bill settle-up payments (v1.1).
-- Voided bills contribute nothing; their payments become credits to the payer's counterparty.
+- Voided bills contribute nothing; their confirmed payments become credits to the payer's counterparty, recorded as `ledger_entries` with source `void_credit` (from the payer to the member who paid).
 
 **Edge rules**
 
@@ -344,7 +346,7 @@ Tokens are never sequential, never contain IDs, and are compared in constant tim
 
 - Email only goes to members with a verified email. Every email carries one-click unsubscribe (List-Unsubscribe header) and a footer link to notification settings.
 - SMS is used only for sign-in codes in v1.
-- Web Push is MVP: section 20.2 has the full channel matrix, permission flow, payloads and delivery rules, and it overrides this table where they differ.
+- Web Push is MVP: section 20.2 has the full channel matrix, permission flow, payloads and delivery rules, and it overrides this table where they differ. Batching is per channel: share-changed email keeps the 6 h digest above, while share-changed push coalesces over 10 minutes (section 20.2).
 
 **Payment deep links**
 
@@ -402,35 +404,36 @@ Use a vision-capable LLM with a strict JSON schema as the extractor, behind a pr
 
 ## 10. Data model
 
-Postgres 16. All primary keys are UUIDv7; all timestamps are `timestamptz` in UTC; all money is `bigint` cents plus a `currency char(3)` on the bill. Soft-delete with `deleted_at` where noted.
+Postgres 16. All primary keys are UUIDv7 generated by the application; all timestamps are `timestamptz` in UTC and are set from the injected `Clock`, never from database `now()` defaults (so tests can control time); all money is `bigint` cents plus a `currency char(3)` on the bill. Soft-delete with `deleted_at` where noted.
 
 | Table | Key columns | Notes |
 | --- | --- | --- |
-| `users` | id, display\_name, email (citext, unique, nullable), email\_verified\_at, phone\_e164 (unique, nullable), phone\_verified\_at, avatar\_url, theme (`system`/`light`/`dark`), notify\_email bool, created\_at, deleted\_at | One per person |
+| `users` | id, display\_name, email (citext, unique, nullable), email\_verified\_at, phone\_e164 (unique, nullable), phone\_verified\_at, avatar\_url, theme (`system`/`light`/`dark`), notify\_email bool, timezone (IANA, default from the browser at sign-up), created\_at, deleted\_at | One per person; `timezone` drives quiet hours and reminders (section 20.2) |
 | `auth_identities` | id, user\_id, provider (`google`/`email`/`phone`), provider\_subject, created\_at | Unique (provider, provider\_subject) |
 | `sessions` | id, user\_id, token\_hash, user\_agent, ip\_hash, created\_at, last\_seen\_at, expires\_at, revoked\_at | Opaque cookie token |
 | `otp_codes` | id, channel, destination\_hash, code\_hash, attempts, expires\_at, consumed\_at | Purge after 24 h |
 | `houses` | id, name, invite\_token\_hash, invite\_rotated\_at, created\_by, created\_at, archived\_at |  |
-| `members` | id, house\_id, user\_id (nullable), display\_name, color, sort\_order, role (`admin`/`member`), status (`placeholder`/`active`/`left`/`removed`), joined\_at | Unique (house\_id, lower(display\_name)) among non-removed; unique (house\_id, user\_id) |
+| `members` | id, house\_id, user\_id (nullable), display\_name, color, sort\_order, role (`admin`/`member`), status (`placeholder`/`active`/`left`/`removed`), anonymized\_at, joined\_at | Unique (house\_id, lower(display\_name)) among non-removed, non-anonymized members (several "Former roommate" rows may exist); unique (house\_id, user\_id): a user who leaves and rejoins reactivates the same row |
 | `payment_handles` | id, user\_id, method (`venmo`/`cashapp`/`paypal`/`zelle`), handle |  |
-| `bills` | id, house\_id, payer\_member\_id, created\_by, store\_name, purchase\_date, currency, subtotal\_cents, tax\_cents, total\_cents, state (`draft`/`open`/`settled`/`voided`), extraction\_status, link\_token\_hash, sent\_at, settled\_at, settled\_by, void\_reason, version int, created\_at, updated\_at, deleted\_at | `version` for optimistic locking |
-| `bill_fees` | id, bill\_id, kind (`fee`/`tip`/`order_discount`), label, amount\_cents | Discount stored positive, kind says sign |
+| `bills` | id, house\_id, payer\_member\_id, created\_by, store\_name, purchase\_date, currency, subtotal\_cents, tax\_cents, total\_cents, printed\_total\_cents null, reconcile\_override\_reason null, state (`draft`/`open`/`settled`/`voided`), extraction\_status, link\_token\_hash, sent\_at, settled\_at, settled\_by, void\_reason, version int, created\_at, updated\_at, deleted\_at | `version` for optimistic locking |
+| `bill_fees` | id, bill\_id, kind (`fee`/`tip`/`order_discount`/`adjustment`), label, amount\_cents, position | Discount stored positive, kind says sign; `adjustment` is stored signed and at most one per bill (FR-13 override) |
 | `receipts` | id, bill\_id, storage\_key, mime, bytes, page\_index, uploaded\_by, created\_at | Private bucket |
 | `receipt_extractions` | id, bill\_id, model, prompt\_version, raw\_json jsonb, latency\_ms, cost\_usd numeric, status, error, created\_at |  |
 | `items` | id, bill\_id, position, raw\_text, name, quantity numeric(10,3), unit\_price\_cents, discount\_cents, line\_total\_cents, taxable bool, confidence numeric(3,2), flagged bool, created\_at, updated\_at |  |
-| `guests` | id, bill\_id, display\_name, user\_id (nullable), link\_token\_hash | Bill-scoped participants |
-| `allocations` | id, item\_id, participant\_type (`member`/`guest`), participant\_id, weight numeric(6,3) default 1, quantity numeric(10,3) null, created\_by, created\_at | Unique (item\_id, participant\_type, participant\_id); quantity reserved for v1.1 |
+| `guests` | id, bill\_id, display\_name, user\_id (nullable), link\_token\_hash, sort\_order | Bill-scoped participants; `sort_order` continues after the house's members (creation order) for rounding tie-breaks |
+| `allocations` | id, item\_id, member\_id null, guest\_id null, weight numeric(6,3) default 1, quantity numeric(10,3) null, created\_by, created\_at | Exactly one of member\_id / guest\_id (CHECK); partial unique (item\_id, member\_id) and (item\_id, guest\_id); quantity reserved for v1.1 |
 | `bill_exclusions` | bill\_id, member\_id | FR-26 |
-| `share_snapshots` | id, bill\_id, participant, share\_cents, computed\_at, reason | Written on send and on each change; powers "changed" deltas |
-| `payments` | id, bill\_id, from\_participant, to\_member\_id, amount\_cents, method, note, status (`pending_confirmation`/`confirmed`/`rejected`/`refund`), recorded\_by, confirmed\_by, created\_at, confirmed\_at |  |
-| `ledger_entries` | id, house\_id, from\_member\_id, to\_member\_id, amount\_cents, source (`carryover`/`settle_up`), bill\_id null, created\_at | House balances |
+| `share_snapshots` | id, bill\_id, member\_id null, guest\_id null, share\_cents, computed\_at, reason | Written on send and on each change; powers "changed" deltas |
+| `payments` | id, bill\_id, member\_id null, guest\_id null, to\_member\_id, direction (`to_payer`/`refund`), amount\_cents, method, note, status (`pending_confirmation`/`confirmed`/`rejected`), recorded\_by, confirmed\_by, created\_at, confirmed\_at | member\_id / guest\_id is the non-payer participant (exactly one, CHECK); `refund` runs from the payer back to them |
+| `ledger_entries` | id, house\_id, from\_member\_id, to\_member\_id, amount\_cents, source (`carryover`/`settle_up`/`void_credit`), bill\_id null, created\_at | House balances |
 | `activity_events` | id, house\_id, bill\_id null, actor\_user\_id, actor\_member\_id, type, payload jsonb, created\_at | Append-only audit log |
-| `notifications` | id, user\_id, type, payload jsonb, channel, sent\_at, read\_at | In-app badge + email log |
+| `notifications` | id, user\_id, type, payload jsonb, channel, dedupe\_key (unique), status (`pending`/`held`/`sent`/`failed`/`suppressed`), attempts, next\_attempt\_at, last\_error, created\_at, sent\_at, read\_at | In-app badge, email and push log; one row per recipient × channel (section 20.2) |
 | `seen_markers` | user\_id, bill\_id, last\_seen\_version | Clears "changed" badges |
 
 **Integrity rules enforced in the database**
 
-- Foreign keys with `ON DELETE RESTRICT` on money tables; nothing financial is hard-deleted.
+- Foreign keys with `ON DELETE RESTRICT` on money tables; nothing financial is hard-deleted. A column that can point at a member or a guest is two nullable foreign keys (`member_id`, `guest_id`) with a CHECK that exactly one is set; never a polymorphic id.
+- Exactly one admin per active house: the partial unique index guarantees at most one, and the service layer requires transferring admin before the admin leaves, is removed or deletes their account.
 - Check constraints: `total_cents >= 0`, `weight > 0`, `state` enums, one admin per house (partial unique index on `members(house_id) where role = 'admin' and status = 'active'`).
 - All writes that change shares run in one transaction: update allocations → recompute shares → write `share_snapshots` → write `activity_events` → bump `bills.version`.
 - Indexes: `bills(house_id, state, purchase_date desc)`, `items(bill_id, position)`, `allocations(item_id)`, `activity_events(bill_id, created_at desc)`, `payments(bill_id)`, trigram index on `items.name` and `bills.store_name` for search.
@@ -442,8 +445,8 @@ REST over JSON at `/api/v1`, documented by FastAPI's generated OpenAPI; the fron
 **Conventions**
 
 - Auth: session cookie; link-scoped reads accept `X-Link-Token` instead.
-- Concurrency: every bill mutation sends `If-Match: <bill.version>`; mismatch returns 409 with the current bill so the client can merge and retry.
-- Idempotency: `POST` that creates money records (payments, send, settle) requires `Idempotency-Key` header; replays return the original response for 24 h.
+- Concurrency and write kinds follow section 21.3, which wins over anything in this section: ticks and other set-state writes are `PUT` with no `If-Match`; guarded edits (bill header, item, house, member) send `If-Match: <version of that row>` and get 409 `VERSION_CONFLICT` with the current row, or 428 when it is missing.
+- Idempotency: every `POST` that creates something or changes state (not only money records) requires `Idempotency-Key`, and creates also send `X-Client-Mutation-Id`; replays return the original response for 24 h; a missing key is 400 (section 21.8). Sign-in endpoints (`/auth/*`) are exempt.
 - Pagination: cursor-based, `?cursor=&limit=` (max 50).
 - Rate limits: 60 writes/min per user, 300 reads/min per IP; 429 with `Retry-After`.
 - All responses include money as integer cents plus `currency`.
@@ -488,7 +491,7 @@ REST over JSON at `/api/v1`, documented by FastAPI's generated OpenAPI; the fron
 | GET | `/b/{token}/og.png` | Link-preview image |
 | GET | `/notifications`, POST `/notifications/read` | In-app badges |
 
-**Realtime:** `GET /bills/{id}/events` (SSE) pushes `allocation_changed`, `payment_recorded`, `state_changed` so two roommates editing at once see each other's ticks within 2 s. Clients fall back to 15 s polling if SSE drops.
+**Realtime:** one stream per house, `GET /houses/{id}/events` (SSE, section 21.5), carries every event for that house, including `allocation_changed`, `payment_recorded` and `state_changed` for bills, so two roommates editing at once see each other's ticks within 2 s. There is no per-bill stream. Clients fall back to polling `?after=` every 15 s after 3 failed connects.
 
 ## 12. Architecture and tech stack
 
@@ -561,7 +564,8 @@ The look is a till receipt with a modern, flashy twist: monospace type, dashed t
 | `--paper` | #FBFAF6 | #1A1A17 | Cards, sheets, bars |
 | `--ink` | #121210 | #F1EFE7 | Text, borders |
 | `--muted` | #5A5850 | #A9A699 | Secondary text (≥ 4.5:1 on paper) |
-| `--faint` | #C9C6BB | #3A3933 | Dashed rules, empty boxes |
+| `--faint` | #C9C6BB | #3A3933 | Dashed rules and dividers only (decorative; below 3:1, so never the only edge of a control) |
+| `--control-edge` | = `--muted` | = `--muted` | Border of empty controls: unchecked SplitCheckbox, empty OTP boxes, empty inputs (≥ 3:1, WCAG 1.4.11) |
 | `--shadow` | #121210 | #7B61FF | Offset sticker shadow |
 | `--accent` | #C6F432 | #C6F432 | Lime highlights; text on it is always #121210 |
 | `--accent-2` | #6A4CFF | #C6F432 | Primary button fill |
@@ -569,7 +573,7 @@ The look is a till receipt with a modern, flashy twist: monospace type, dashed t
 | `--warn` | #C23A1E | #FF7A5C | Owing, errors |
 | `--good` | #3E6B00 | #C6F432 | Credits, confirmations |
 
-Member colors, assigned in join order and always paired with the initial: #C6F432, #7B61FF, #FF8A65, #7FD3F7, then #F7D046, #FF6FB5, #4FD1A5, #B0A6FF.
+Member colors, assigned in join order (cycling after 8) and always paired with the initial: #C6F432, #6A4CFF, #FF8A65, #7FD3F7, then #F7D046, #FF6FB5, #4FD1A5, #B0A6FF. Initials are real text and must reach 4.5:1: #121210 on every color except #6A4CFF, which uses #FFFFFF (5.1:1). The violet was #7B61FF in the mockups (4.2:1 with white) and was darkened for contrast; the dark-theme `--shadow` stays #7B61FF because it is not text.
 
 **Type:** Space Mono 400/700 for headings, labels, money and receipt text; Work Sans 400–700 for body and names. Self-host both (WOFF2, `font-display: swap`). Money always uses Space Mono with tabular figures.
 
@@ -624,7 +628,7 @@ Every screen below must match its mockup in `docs/design/` (file named in bracke
 | --- | --- |
 | Header | Back to `/start` · theme toggle |
 | Title | "Check your inbox" (email) or "Check your texts" (phone); sub: "We sent a 6-digit code to {masked destination}. It works for 10 minutes." |
-| Code boxes | 6 boxes, 60 px tall, mono 26 bold; one `input` with `autocomplete=one-time-code`, `inputmode=numeric`; paste fills all; auto-advance; Backspace moves back. Active box = lime fill + 3 px shadow; filled = paper; empty = faint border |
+| Code boxes | 6 boxes, 60 px tall, mono 26 bold; one `input` with `autocomplete=one-time-code`, `inputmode=numeric`; paste fills all; auto-advance; Backspace moves back. Active box = lime fill + 3 px shadow; filled = paper; empty = `--control-edge` (muted) border |
 | Resend | Mono 12 "RESEND IN 0:30" countdown → "Resend code" link; "Use a different email" / "Use a different number" link |
 | CTA | "Verify →"; auto-submits when 6 digits entered |
 | States | Wrong code → boxes shake 200 ms (none under reduced motion), warn border, "That code didn't match. {n} tries left." · Expired → "Code expired." + "Send a new one" · Locked → "Too many tries. Get a new code." |
@@ -659,7 +663,7 @@ Every screen below must match its mockup in `docs/design/` (file named in bracke
 | Element | Spec |
 | --- | --- |
 | Top row | Mono 12 muted "KITCHENTAB \*\* {HOUSE}" (tap → house switcher sheet when user has 2+ houses) · title mono 26 bold "Hey, {first name}." · theme toggle (no shadow; shadows are for primary actions only) |
-| Balance card | Paper, 2 px border, 5 px shadow, mono. Row "BALANCE" / today "MMM DD YYYY". Big amount mono 40 bold on lime highlight: "+$54.47" + "coming to you"; if net negative "−$X" in warn + "you owe"; if zero an "ALL SQUARE" stamp. Dashed rule. Up to 4 pair rows: "ARJUN → YOU $33.91" (ink), "YOU → MEERA $14.10" (warn), "KABIR CREDIT $1.68" (muted); "See all" link if more |
+| Balance card | Paper, 2 px border, 5 px shadow, mono. Row "BALANCE" / today "MMM DD YYYY". Big amount mono 40 bold on lime highlight: "+$40.37" + "coming to you"; if net negative "−$X" in warn + "you owe"; if zero an "ALL SQUARE" stamp. Dashed rule. Up to 4 pair rows, each pair netted across bills (FR-51): "ARJUN → YOU $33.91" (ink), "MEERA → YOU $8.14" (ink), "YOU → KABIR $1.68" (warn); "See all" link if more. Footnote mono "NETTED ACROSS EVERY OPEN TAB" (matches Main.dc.html and BAL-01) |
 | Primary action | "Snap a receipt" pill (accent-2, 60 px, scan icon) → capture sheet |
 | Drafts | If drafts exist: dashed card at top of list "Draft · {store or 'Untitled'} · finish splitting" |
 | Open tabs | Label "OPEN TABS" + count. Card per bill: store (17 semibold), "{Mon D} · {payer} paid · {n} items", total (mono 17 bold), stamp chip ("1/3 PAID" lime, or "YOU OWE $14.10" warn outline), change note "{name} tweaked it {day}" + unseen dot when version > last seen |
@@ -692,7 +696,7 @@ Every screen below must match its mockup in `docs/design/` (file named in bracke
 | Fill rest | Dashed pill "✦ Split the rest with everyone"; hidden at 100% |
 | Member header | Sticky row on paper: "ITEM" + one 44 px column per member (26 px avatar in member color with initial + 3-letter tag, "YOU" for self). Tap header → toggle that member on all items + Undo toast. "+ Guest" at end (or in ⋯ menu if no room) |
 | Item row | Name 15 semibold, ellipsis. Sub-line mono 11: "$4.29 · $1.43 × 3", "$6.79 · ALL MEERA", or "$3.99 · NOBODY YET" on lime |
-| Checkbox | 44 px target, 30 px box. Off = 2 px faint outline. On = member color fill, ink initial, 2 px ink border, 2 px offset shadow, tilt from set \[−4°, 3°, −2°, 4°\] chosen by (row + column) so it never changes between renders. `aria-pressed`, label "{Name} uses {item}" |
+| Checkbox | 44 px target, 30 px box. Off = 2 px `--control-edge` (muted) outline. On = member color fill, ink initial, 2 px ink border, 2 px offset shadow, tilt from set \[−4°, 3°, −2°, 4°\] chosen by (row + column) so it never changes between renders. `aria-pressed`, label "{Name} uses {item}" |
 | Long-press row | Item detail sheet (name, price, who's on it; weights in v1.1) |
 | Footnote | Mono 11 centered "TAX $0.89 · SPLIT BY EACH PERSON'S SHARE" |
 | Totals bar | Sticky bottom, ink background: grid of tag + amount per member (scrolls horizontally past 5). Under it: incomplete → dashed "{n} ITEMS LOOKING FOR A HOME" (not a button); complete → lime pill "All sorted → review" + one-time confetti |
@@ -1144,7 +1148,7 @@ The Kitchen becomes the default tab at `/`; the old Home (balance card and tabs 
 
 **Tests:** unit tests for `is_open`, grants, `age_ratio` across time zones and the request state machine (every arrow in the 19.4 diagram); a property test that inventory owners always equal the allocation members after any random sequence of open-bill edits; the money fixture `request_add_to_split` (Kabir joins Chicken thighs: Kabir +383, Pranav −192, Arjun −191 cents) passing in both languages; Playwright journeys: stock from a sent bill → open Fridge → ask → owner answers each of the three yes-paths and decline → check shares and balances.
 
-**Build slot:** the storage tag ships with Milestone 4 (review screen), the extractor fields with Milestone 5, and the rest of section 19 is the new Milestone 8, before Hardening and launch (now Milestone 9).
+**Build slot:** the storage tag ships with Milestone 4 (review screen), the extractor fields with Milestone 5, and the rest of section 19 is Milestone 8. Install and notifications is Milestone 9 and Hardening is Milestone 10 (section 17 is the numbering of record).
 
 ## 20. Install as an app and push notifications
 
@@ -1223,7 +1227,7 @@ KitchenTab must install to the home screen from any modern browser and deliver p
 
 - **Preferences:** a type × channel matrix (push, email) per user, defaults as in N2. Turning off a type never hides it in the app.
 - **Quiet hours:** default on, 22:00–08:00 in the user's time zone; anything due inside quiet hours is held and sent at 08:00 as one grouped notification per type. Sign-in codes ignore quiet hours.
-- **Rate limits:** share-changed pushes coalesce per bill per member over 10 minutes (send the latest net change); reminders at most once per bill per 48 h; at most 20 pushes per user per day (the rest go to the inbox only).
+- **Rate limits:** share-changed pushes coalesce per bill per member over 10 minutes (send the latest net change); reminders at most once per member per bill per 48 h (FR-41, PAY-07); at most 20 pushes per user per day (the rest go to the inbox only).
 - **Never notify the actor** about their own action, on any device.
 - **Click handling:** `notificationclick` focuses an open KitchenTab window and navigates it, else opens a new one at the event's URL.
 - **Badge:** `navigator.setAppBadge(n)` where supported, n = pending asks for me + unseen share changes; cleared as they're seen.
