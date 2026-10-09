@@ -106,7 +106,9 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def _http(request: Request, exc: StarletteHTTPException) -> JSONResponse:
-        code = _STATUS_CODES.get(exc.status_code, ErrorCode.INTERNAL if exc.status_code >= 500 else ErrorCode.CONFLICT)
+        code = _STATUS_CODES.get(
+            exc.status_code, ErrorCode.INTERNAL if exc.status_code >= 500 else ErrorCode.CONFLICT
+        )
         title = str(exc.detail) if exc.detail else "Request failed"
         return _response(Problem(exc.status_code, code, title, headers=dict(exc.headers or {})), request)
 
@@ -114,7 +116,8 @@ def install_error_handlers(app: FastAPI) -> None:
     async def _validation(request: Request, exc: RequestValidationError) -> JSONResponse:
         errors = [{"loc": list(e.get("loc", ())), "msg": e.get("msg", "")} for e in exc.errors()]
         return _response(
-            Problem(422, ErrorCode.VALIDATION_FAILED, "Some fields need fixing", extra={"errors": errors}), request
+            Problem(422, ErrorCode.VALIDATION_FAILED, "Some fields need fixing", extra={"errors": errors}),
+            request,
         )
 
     @app.exception_handler(Exception)

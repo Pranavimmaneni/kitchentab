@@ -25,7 +25,9 @@ class Readiness(BaseModel):
 
 @router.get("/health", response_model=Health)
 async def health(request: Request) -> Health:
-    return Health(status="ok", env=request.app.state.settings.app_env, time=request.app.state.clock.now().isoformat())
+    return Health(
+        status="ok", env=request.app.state.settings.app_env, time=request.app.state.clock.now().isoformat()
+    )
 
 
 @router.get("/health/ready", response_model=Readiness)

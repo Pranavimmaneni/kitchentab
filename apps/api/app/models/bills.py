@@ -43,11 +43,13 @@ class Bill(Base):
         CheckConstraint(f"total_cents BETWEEN 0 AND {enums.MAX_BILL_TOTAL_CENTS}", name="total_cents_range"),
         CheckConstraint("tax_cents >= 0", name="tax_nonnegative"),
         CheckConstraint(
-            "printed_total_cents IS NULL OR (printed_total_cents = total_cents AND reconcile_override_reason IS NOT NULL)",
+            "printed_total_cents IS NULL OR "
+            "(printed_total_cents = total_cents AND reconcile_override_reason IS NOT NULL)",
             name="override_has_reason",
         ),
         CheckConstraint(
-            "state <> 'voided' OR coalesce(char_length(void_reason), 0) BETWEEN 3 AND 200", name="void_has_reason"
+            "state <> 'voided' OR coalesce(char_length(void_reason), 0) BETWEEN 3 AND 200",
+            name="void_has_reason",
         ),
         CheckConstraint("state = 'draft' OR sent_at IS NOT NULL", name="sent_bills_have_sent_at"),
         Index("ix_bills_house_id_state_purchase_date", "house_id", "state", text("purchase_date DESC")),
@@ -185,7 +187,9 @@ class Item(Base):
 
 class Guest(Base):
     __tablename__ = "guests"
-    __table_args__ = (CheckConstraint("char_length(display_name) BETWEEN 1 AND 24", name="display_name_length"),)
+    __table_args__ = (
+        CheckConstraint("char_length(display_name) BETWEEN 1 AND 24", name="display_name_length"),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     bill_id: Mapped[uuid.UUID] = fk("bills.id", index=True)

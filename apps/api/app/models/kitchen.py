@@ -92,7 +92,9 @@ class ShareRequest(Base):
         CheckConstraint(
             "(status = 'approved') = (resolution IS NOT NULL)", name="resolution_only_when_approved"
         ),
-        CheckConstraint("(resolution IS NOT DISTINCT FROM 'chip_in') = (chip_in_cents IS NOT NULL)", name="chip_in_amount"),
+        CheckConstraint(
+            "(resolution IS NOT DISTINCT FROM 'chip_in') = (chip_in_cents IS NOT NULL)", name="chip_in_amount"
+        ),
         Index(
             "uq_share_requests_one_pending",
             "inventory_item_id",

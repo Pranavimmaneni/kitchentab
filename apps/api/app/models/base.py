@@ -32,7 +32,9 @@ def uuid_pk() -> Mapped[uuid.UUID]:
     return mapped_column(UUID(as_uuid=True), primary_key=True)
 
 
-def fk(target: str, *, nullable: bool = False, ondelete: str = "RESTRICT", index: bool = False) -> Mapped[uuid.UUID]:
+def fk(
+    target: str, *, nullable: bool = False, ondelete: str = "RESTRICT", index: bool = False
+) -> Mapped[uuid.UUID]:
     return mapped_column(
         UUID(as_uuid=True), ForeignKey(target, ondelete=ondelete), nullable=nullable, index=index
     )
@@ -55,7 +57,9 @@ def version_col() -> Mapped[int]:
     return mapped_column(Integer, nullable=False, server_default=text("1"))
 
 
-def enum_check(column: str, values: Sequence[str], *, name: str | None = None, nullable: bool = False) -> CheckConstraint:
+def enum_check(
+    column: str, values: Sequence[str], *, name: str | None = None, nullable: bool = False
+) -> CheckConstraint:
     allowed = ", ".join(f"'{v}'" for v in values)
     expr = f"{column} IN ({allowed})"
     if nullable:

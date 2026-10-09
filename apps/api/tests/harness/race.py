@@ -12,13 +12,10 @@ import asyncio
 import os
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Generic, TypeVar
-
-T = TypeVar("T")
 
 
 @dataclass(frozen=True)
-class Outcome(Generic[T]):
+class Outcome[T]:
     index: int
     value: T | None
     error: BaseException | None
@@ -28,7 +25,7 @@ class Outcome(Generic[T]):
         return self.error is None
 
 
-async def run_concurrently(
+async def run_concurrently[T](
     n: int, fn: Callable[[int], Awaitable[T]], *, timeout: float = 30.0
 ) -> list[Outcome[T]]:
     barrier = asyncio.Barrier(n)

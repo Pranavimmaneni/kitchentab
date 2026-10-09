@@ -16,8 +16,22 @@ BILL_FEE_KINDS = ("fee", "tip", "order_discount", "adjustment")
 RECEIPT_MIMES = ("image/jpeg", "image/png", "image/heic", "image/webp", "application/pdf")
 STORAGE_TAGS = ("fridge", "freezer", "pantry", "none")
 CATEGORIES = (
-    "produce", "dairy", "eggs", "meat_fish", "plant_protein", "drinks", "frozen", "grains",
-    "bakery", "snacks", "condiments", "canned", "coffee_tea", "prepared", "household", "other",
+    "produce",
+    "dairy",
+    "eggs",
+    "meat_fish",
+    "plant_protein",
+    "drinks",
+    "frozen",
+    "grains",
+    "bakery",
+    "snacks",
+    "condiments",
+    "canned",
+    "coffee_tea",
+    "prepared",
+    "household",
+    "other",
 )
 PAYMENT_METHODS = ("venmo", "cashapp", "paypal", "zelle", "cash", "other")
 PAYMENT_DIRECTIONS = ("to_payer", "refund")
@@ -32,7 +46,18 @@ REQUEST_RESOLUTIONS = ("free", "split", "chip_in")
 
 NOTIFICATION_CHANNELS = ("inapp", "push", "email")
 PREF_CHANNELS = ("push", "email")
-NOTIFICATION_TYPES = ("asks", "answers", "share", "tab", "pay", "remind", "soon", "settled", "joined", "digest")
+NOTIFICATION_TYPES = (
+    "asks",
+    "answers",
+    "share",
+    "tab",
+    "pay",
+    "remind",
+    "soon",
+    "settled",
+    "joined",
+    "digest",
+)
 NOTIFICATION_STATUSES = ("pending", "held", "sent", "failed", "suppressed")
 OUTBOX_STATUSES = ("pending", "processing", "done", "failed")
 

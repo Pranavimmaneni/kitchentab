@@ -153,7 +153,9 @@ def clock() -> ControllableClock:
 
 
 @pytest.fixture
-def writes(sessions: async_sessionmaker[AsyncSession], clock: ControllableClock, redis: Redis) -> WriteContext:
+def writes(
+    sessions: async_sessionmaker[AsyncSession], clock: ControllableClock, redis: Redis
+) -> WriteContext:
     return WriteContext(sessions, clock, RedisBus(redis))
 
 

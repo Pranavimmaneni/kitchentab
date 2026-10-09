@@ -53,7 +53,7 @@ class EventRecorder:
                     self._changed.notify_all()
         finally:
             await pubsub.unsubscribe(self._channel)
-            await pubsub.aclose()
+            await pubsub.aclose()  # type: ignore[no-untyped-call]
 
     async def wait_for(self, count: int, timeout: float = 5.0) -> list[dict[str, Any]]:
         async def _enough() -> None:

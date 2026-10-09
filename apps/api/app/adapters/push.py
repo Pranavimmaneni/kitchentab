@@ -42,13 +42,18 @@ class WebPushSender:
         self._key = vapid_private_key
         self._subject = vapid_subject
 
-    def _send_sync(self, sub: SubscriptionInfo, body: bytes, ttl: int, urgency: Urgency, topic: str | None) -> int:
-        headers = {"Urgency": urgency}
+    def _send_sync(
+        self, sub: SubscriptionInfo, body: bytes, ttl: int, urgency: Urgency, topic: str | None
+    ) -> int:
+        headers: dict[str, str] = {"Urgency": urgency}
         if topic:
             headers["Topic"] = topic
         try:
             resp = webpush(
-                subscription_info={"endpoint": sub.endpoint, "keys": {"p256dh": sub.p256dh, "auth": sub.auth}},
+                subscription_info={
+                    "endpoint": sub.endpoint,
+                    "keys": {"p256dh": sub.p256dh, "auth": sub.auth},
+                },
                 data=body,
                 vapid_private_key=self._key,
                 vapid_claims={"sub": self._subject},
@@ -64,7 +69,13 @@ class WebPushSender:
         return int(resp.status_code)
 
     async def send(
-        self, sub: SubscriptionInfo, payload: dict[str, Any], *, ttl: int, urgency: Urgency, topic: str | None = None
+        self,
+        sub: SubscriptionInfo,
+        payload: dict[str, Any],
+        *,
+        ttl: int,
+        urgency: Urgency,
+        topic: str | None = None,
     ) -> PushResult:
         body = json.dumps(payload, separators=(",", ":")).encode()
         if len(body) > MAX_PAYLOAD_BYTES:

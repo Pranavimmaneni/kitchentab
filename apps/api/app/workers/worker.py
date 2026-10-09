@@ -8,7 +8,7 @@ kitchen jobs (8) are added as their milestones land.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, ClassVar
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -47,15 +47,17 @@ async def sync_clock(ctx: dict[str, Any]) -> None:
 async def poll_outbox(ctx: dict[str, Any]) -> int:
     await sync_clock(ctx)
     async with ctx["sessions"]() as session:
-        pending = await session.scalar(select(func.count()).select_from(OutboxRow).where(OutboxRow.status == "pending"))
+        pending = await session.scalar(
+            select(func.count()).select_from(OutboxRow).where(OutboxRow.status == "pending")
+        )
     if pending:
         log.info("outbox pending", extra={"pending": pending})
     return int(pending or 0)
 
 
 class WorkerSettings:
-    functions = [poll_outbox]
-    cron_jobs = [cron(poll_outbox, second={0, 10, 20, 30, 40, 50}, run_at_startup=True)]
+    functions: ClassVar[list[Any]] = [poll_outbox]
+    cron_jobs: ClassVar[list[Any]] = [cron(poll_outbox, second={0, 10, 20, 30, 40, 50}, run_at_startup=True)]
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = RedisSettings.from_dsn(get_settings().redis_url)

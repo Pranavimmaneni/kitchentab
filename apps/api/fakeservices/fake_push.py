@@ -111,7 +111,9 @@ def verify_vapid(authorization: str, endpoint_origin: str, now: float) -> dict[s
 
 
 def create_app(base_url: str | None = None) -> FastAPI:
-    state = State(base_url=(base_url or os.environ.get("FAKE_PUSH_BASE_URL", "http://localhost:4010")).rstrip("/"))
+    state = State(
+        base_url=(base_url or os.environ.get("FAKE_PUSH_BASE_URL", "http://localhost:4010")).rstrip("/")
+    )
     app = FastAPI(title="KitchenTab fake push service")
     app.state.fake = state
 
@@ -157,7 +159,9 @@ def create_app(base_url: str | None = None) -> FastAPI:
         body = await request.body()
         if len(body) > MAX_RECORD_BYTES:
             raise HTTPException(413, "payload too large")
-        plaintext = http_ece.decrypt(body, private_key=sub.private_key, auth_secret=sub.auth, version="aes128gcm")
+        plaintext = http_ece.decrypt(
+            body, private_key=sub.private_key, auth_secret=sub.auth, version="aes128gcm"
+        )
         try:
             payload: Any = json.loads(plaintext)
         except ValueError:
@@ -180,7 +184,9 @@ def create_app(base_url: str | None = None) -> FastAPI:
         if forced is not None and forced != 201:
             headers = {"Retry-After": "1"} if forced == 429 else {}
             return Response(status_code=forced, headers=headers)
-        return Response(status_code=201, headers={"Location": f"{state.base_url}/messages/{len(state.received)}"})
+        return Response(
+            status_code=201, headers={"Location": f"{state.base_url}/messages/{len(state.received)}"}
+        )
 
     @app.get("/__test/push")
     async def received(user: str | None = None) -> list[dict[str, Any]]:

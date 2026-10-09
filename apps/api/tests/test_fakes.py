@@ -68,7 +68,9 @@ async def test_email_goes_to_mailpit(mailpit: tuple[str, str]) -> None:
     sender = SmtpEmailSender(smtp_url, "KitchenTab <hello@example.com>")
     await sender.send(
         Email(
-            to="arjun@example.test", subject="Pranav split a ShopRite run", text="Your share is $33.91.",
+            to="arjun@example.test",
+            subject="Pranav split a ShopRite run",
+            text="Your share is $33.91.",
             headers={"List-Unsubscribe": "<https://kitchentab.app/u/x>"},
         )
     )

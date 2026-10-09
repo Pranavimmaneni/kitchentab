@@ -19,10 +19,6 @@ AppEnv = Literal["local", "test", "staging", "prod"]
 PLACEHOLDER_PREFIX = "change-me"
 
 
-class SettingsError(ValueError):
-    pass
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(str(REPO_ROOT / ".env"),),
@@ -120,8 +116,14 @@ class Settings(BaseSettings):
                 "EXTRACTOR_PROVIDER": self.extractor_provider,
                 "PUSH_PROVIDER": self.push_provider,
             }
-            problems += [f"{k}=fake is not allowed in {self.app_env}" for k, v in fakes.items() if v == "fake"]
-            if "localhost" in self.google_issuer or not self.google_client_id or not self.google_client_secret:
+            problems += [
+                f"{k}=fake is not allowed in {self.app_env}" for k, v in fakes.items() if v == "fake"
+            ]
+            if (
+                "localhost" in self.google_issuer
+                or not self.google_client_id
+                or not self.google_client_secret
+            ):
                 problems.append("Google OIDC needs a real issuer, GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET")
             if not self.turnstile_secret_key:
                 problems.append("TURNSTILE_SECRET_KEY is required")
@@ -130,19 +132,27 @@ class Settings(BaseSettings):
             (self.email_provider == "resend", "RESEND_API_KEY", self.resend_api_key),
             (self.sms_provider == "twilio_verify", "TWILIO_ACCOUNT_SID", self.twilio_account_sid),
             (self.sms_provider == "twilio_verify", "TWILIO_AUTH_TOKEN", self.twilio_auth_token),
-            (self.sms_provider == "twilio_verify", "TWILIO_VERIFY_SERVICE_SID", self.twilio_verify_service_sid),
+            (
+                self.sms_provider == "twilio_verify",
+                "TWILIO_VERIFY_SERVICE_SID",
+                self.twilio_verify_service_sid,
+            ),
             (self.extractor_provider != "fake", "EXTRACTOR_API_KEY", self.extractor_api_key),
             (self.extractor_provider != "fake", "EXTRACTOR_MODEL", self.extractor_model),
             (self.push_provider == "webpush", "VAPID_PUBLIC_KEY", self.vapid_public_key),
             (self.push_provider == "webpush", "VAPID_PRIVATE_KEY", self.vapid_private_key),
         ]
-        problems += [f"{name} is required by the configured provider" for cond, name, v in required_by_provider if cond and not v]
+        problems += [
+            f"{name} is required by the configured provider"
+            for cond, name, v in required_by_provider
+            if cond and not v
+        ]
 
         if problems:
-            raise SettingsError("Invalid configuration:\n  - " + "\n  - ".join(problems))
+            raise ValueError("Invalid configuration:\n  - " + "\n  - ".join(problems))
         return self
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    return Settings()  # type: ignore[call-arg]  # required values come from the environment
+    return Settings()

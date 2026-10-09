@@ -18,7 +18,9 @@ class User(Base):
     __table_args__ = (
         enum_check("theme", enums.THEMES),
         CheckConstraint("char_length(display_name) BETWEEN 1 AND 60", name="display_name_length"),
-        CheckConstraint("phone_e164 IS NULL OR phone_e164 ~ '^\\+[1-9][0-9]{6,14}$'", name="phone_e164_format"),
+        CheckConstraint(
+            "phone_e164 IS NULL OR phone_e164 ~ '^\\+[1-9][0-9]{6,14}$'", name="phone_e164_format"
+        ),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()

@@ -20,7 +20,10 @@ async def make_house(
     async with sessions() as s, s.begin():
         user = User(id=uuid7(), display_name="Pranav", created_at=now)
         house = House(
-            id=uuid7(), name=name, created_by=user.id, created_at=now,
+            id=uuid7(),
+            name=name,
+            created_by=user.id,
+            created_at=now,
             invite_token_hash=hashlib.sha256(uuid.uuid4().bytes).hexdigest(),
         )
         s.add(user)
@@ -29,10 +32,16 @@ async def make_house(
         await s.flush()
         rows = [
             Member(
-                id=uuid7(), house_id=house.id, user_id=user.id if i == 0 else None,
-                display_name=f"Member{i}", color=MEMBER_COLORS[i % 8], sort_order=i,
-                role="admin" if i == 0 else "member", status="active" if i == 0 else "placeholder",
-                created_at=now, joined_at=now if i == 0 else None,
+                id=uuid7(),
+                house_id=house.id,
+                user_id=user.id if i == 0 else None,
+                display_name=f"Member{i}",
+                color=MEMBER_COLORS[i % 8],
+                sort_order=i,
+                role="admin" if i == 0 else "member",
+                status="active" if i == 0 else "placeholder",
+                created_at=now,
+                joined_at=now if i == 0 else None,
             )
             for i in range(members)
         ]

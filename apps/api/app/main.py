@@ -24,7 +24,7 @@ API_PREFIX = "/api/v1"
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
-    settings = settings or get_settings()  # raises SettingsError on bad config: boot fails
+    settings = settings or get_settings()  # raises ValidationError on bad config: boot fails
     configure_logging(settings.log_level)
 
     @asynccontextmanager
@@ -61,14 +61,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=[
-            "Content-Type", "If-Match", "Idempotency-Key", "X-Client-Mutation-Id",
-            "X-Client-Version", "X-Link-Token", "X-CSRF-Token", "Last-Event-ID",
+            "Content-Type",
+            "If-Match",
+            "Idempotency-Key",
+            "X-Client-Mutation-Id",
+            "X-Client-Version",
+            "X-Link-Token",
+            "X-CSRF-Token",
+            "Last-Event-ID",
         ],
         expose_headers=["ETag", "Retry-After", "X-Request-Id"],
     )
 
     @app.middleware("http")
-    async def request_context(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def request_context(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         rid = request.headers.get("X-Request-Id") or str(uuid7())
         token = request_id_var.set(rid)
         started = time.perf_counter()

@@ -1,8 +1,8 @@
 """Test ID and FR tagging (TEST_PLAN intro; read by scripts/check_traceability.py).
 
-    @tid("SYNC-25")
-    @fr("FR-62")
-    async def test_SYNC_25_gapless_sequence(): ...
+@tid("SYNC-25")
+@fr("FR-62")
+async def test_SYNC_25_gapless_sequence(): ...
 """
 
 from __future__ import annotations

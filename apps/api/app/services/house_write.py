@@ -128,10 +128,11 @@ class HouseWrite:
         if not self._pending:
             return
         n = len(self._pending)
-        version_sql = ", version = version + 1" if self._bump_house_version else ""
+        bump_version = "version = version + 1, " if self._bump_house_version else ""
+        sql = f"UPDATE houses SET {bump_version}event_seq = event_seq + :n WHERE id = :id RETURNING event_seq"  # noqa: S608 - constant fragments only
         row = (
             await self.session.execute(
-                text(f"UPDATE houses SET event_seq = event_seq + :n{version_sql} WHERE id = :id RETURNING event_seq"),
+                text(sql),
                 {"n": n, "id": self.house_id},
             )
         ).first()
@@ -143,25 +144,56 @@ class HouseWrite:
         for offset, ev in enumerate(self._pending):
             seq = first + offset
             committed = CommittedEvent(
-                self.house_id, seq, ev.type, ev.aggregate_type, ev.aggregate_id, ev.version,
-                self.actor_member_id, self.client_mutation_id, ev.data,
+                self.house_id,
+                seq,
+                ev.type,
+                ev.aggregate_type,
+                ev.aggregate_id,
+                ev.version,
+                self.actor_member_id,
+                self.client_mutation_id,
+                ev.data,
             )
             self.committed.append(committed)
-            events.append({
-                "house_id": self.house_id, "seq": seq, "type": ev.type, "aggregate_type": ev.aggregate_type,
-                "aggregate_id": ev.aggregate_id, "version": ev.version, "actor_member_id": self.actor_member_id,
-                "client_mutation_id": self.client_mutation_id, "data": ev.data, "created_at": now,
-            })
-            if ev.activity is not None:
-                activities.append({
-                    "id": uuid7(), "house_id": self.house_id, "bill_id": ev.activity.bill_id,
-                    "actor_user_id": ev.activity.actor_user_id, "actor_member_id": self.actor_member_id,
-                    "type": ev.activity.type, "payload": ev.activity.payload, "house_event_seq": seq,
+            events.append(
+                {
+                    "house_id": self.house_id,
+                    "seq": seq,
+                    "type": ev.type,
+                    "aggregate_type": ev.aggregate_type,
+                    "aggregate_id": ev.aggregate_id,
+                    "version": ev.version,
+                    "actor_member_id": self.actor_member_id,
+                    "client_mutation_id": self.client_mutation_id,
+                    "data": ev.data,
                     "created_at": now,
-                })
+                }
+            )
+            if ev.activity is not None:
+                activities.append(
+                    {
+                        "id": uuid7(),
+                        "house_id": self.house_id,
+                        "bill_id": ev.activity.bill_id,
+                        "actor_user_id": ev.activity.actor_user_id,
+                        "actor_member_id": self.actor_member_id,
+                        "type": ev.activity.type,
+                        "payload": ev.activity.payload,
+                        "house_event_seq": seq,
+                        "created_at": now,
+                    }
+                )
             outbox += [
-                {"id": uuid7(), "house_id": self.house_id, "seq": seq, "kind": kind, "status": "pending",
-                 "attempts": 0, "next_attempt_at": now, "created_at": now}
+                {
+                    "id": uuid7(),
+                    "house_id": self.house_id,
+                    "seq": seq,
+                    "kind": kind,
+                    "status": "pending",
+                    "attempts": 0,
+                    "next_attempt_at": now,
+                    "created_at": now,
+                }
                 for kind in ev.notify
             ]
         await self.session.execute(insert(HouseEvent), events)
@@ -179,11 +211,10 @@ async def house_write(
     actor_member_id: uuid.UUID | None = None,
     client_mutation_id: str | None = None,
 ) -> AsyncIterator[HouseWrite]:
-    async with ctx.sessions() as session:
-        async with session.begin():
-            write = HouseWrite(session, house_id, actor_member_id, client_mutation_id)
-            yield write
-            await write._finish(ctx.clock)
+    async with ctx.sessions() as session, session.begin():
+        write = HouseWrite(session, house_id, actor_member_id, client_mutation_id)
+        yield write
+        await write._finish(ctx.clock)
         # Committed. Publish strictly after commit (§21.5).
     for event in write.committed:
         await publish_safely(ctx.bus, house_channel(house_id), event.wire())

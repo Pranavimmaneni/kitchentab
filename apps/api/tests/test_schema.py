@@ -24,33 +24,57 @@ PEPPER = "test-pepper"
 
 EXPECTED_TABLES = {
     # §10
-    "users", "auth_identities", "sessions", "otp_codes", "houses", "members", "payment_handles", "bills",
-    "bill_fees", "receipts", "receipt_extractions", "items", "guests", "allocations", "bill_exclusions",
-    "share_snapshots", "payments", "ledger_entries", "activity_events", "notifications", "seen_markers",
+    "users",
+    "auth_identities",
+    "sessions",
+    "otp_codes",
+    "houses",
+    "members",
+    "payment_handles",
+    "bills",
+    "bill_fees",
+    "receipts",
+    "receipt_extractions",
+    "items",
+    "guests",
+    "allocations",
+    "bill_exclusions",
+    "share_snapshots",
+    "payments",
+    "ledger_entries",
+    "activity_events",
+    "notifications",
+    "seen_markers",
     # §19.7
-    "inventory_items", "inventory_owners", "inventory_grants", "share_requests",
+    "inventory_items",
+    "inventory_owners",
+    "inventory_grants",
+    "share_requests",
     # §20.2
-    "push_subscriptions", "notification_prefs",
+    "push_subscriptions",
+    "notification_prefs",
     # §21.8
-    "house_events", "outbox", "idempotency_keys",
+    "house_events",
+    "outbox",
+    "idempotency_keys",
 }
 
 EXPECTED_INDEXES = {
-    "uq_members_one_admin_per_house",            # §10 one admin per house
-    "uq_members_house_id_lower_display_name",    # §10 names unique, case-insensitive
-    "ix_bills_house_id_state_purchase_date",     # §10 indexes
+    "uq_members_one_admin_per_house",  # §10 one admin per house
+    "uq_members_house_id_lower_display_name",  # §10 names unique, case-insensitive
+    "ix_bills_house_id_state_purchase_date",  # §10 indexes
     "ix_items_bill_id_position",
     "ix_allocations_item_id",
     "ix_activity_events_bill_id_created_at",
     "ix_payments_bill_id",
     "ix_items_name_trgm",
     "ix_bills_store_name_trgm",
-    "uq_allocations_item_id_member_id",          # ADR-0003 member-or-guest
+    "uq_allocations_item_id_member_id",  # ADR-0003 member-or-guest
     "uq_allocations_item_id_guest_id",
-    "uq_bill_fees_one_adjustment_per_bill",      # ADR-0002 reconciliation override
+    "uq_bill_fees_one_adjustment_per_bill",  # ADR-0002 reconciliation override
     "ix_inventory_items_house_id_status_place",  # §19.7
     "uq_inventory_items_item_id",
-    "uq_share_requests_one_pending",             # §19.7 one pending ask per asker per item
+    "uq_share_requests_one_pending",  # §19.7 one pending ask per asker per item
 }
 
 VERSIONED = {"houses", "members", "bills", "items", "inventory_items", "share_requests", "payments"}  # §21.8
@@ -182,7 +206,8 @@ CASES: list[ConstraintCase] = [
     (
         "two adjustments on one bill",
         "INSERT INTO bill_fees (id, bill_id, kind, label, amount_cents, created_at) VALUES "
-        "(gen_random_uuid(), :b, 'adjustment', 'a', 5, now()), (gen_random_uuid(), :b, 'adjustment', 'b', -5, now())",
+        "(gen_random_uuid(), :b, 'adjustment', 'a', 5, now()), "
+        "(gen_random_uuid(), :b, 'adjustment', 'b', -5, now())",
         lambda ids: {"b": ids["bill:shoprite"]},
         "uq_bill_fees_one_adjustment_per_bill",
     ),
@@ -227,7 +252,8 @@ CASES: list[ConstraintCase] = [
     ),
     (
         "ledger entry to yourself",
-        "INSERT INTO ledger_entries (id, house_id, from_member_id, to_member_id, amount_cents, source, created_at) "
+        "INSERT INTO ledger_entries "
+        "(id, house_id, from_member_id, to_member_id, amount_cents, source, created_at) "
         "VALUES (gen_random_uuid(), :h, :m, :m, 100, 'carryover', now())",
         lambda ids: {"h": ids["house:apt4b"], "m": ids["member:arjun"]},
         "distinct_parties",
@@ -268,7 +294,9 @@ async def test_anonymized_members_may_share_a_name(
         )
 
 
-async def test_adjustment_may_be_negative(seeded: dict[str, uuid.UUID], sessions: async_sessionmaker[AsyncSession]) -> None:
+async def test_adjustment_may_be_negative(
+    seeded: dict[str, uuid.UUID], sessions: async_sessionmaker[AsyncSession]
+) -> None:
     async with sessions() as s, s.begin():
         await s.execute(
             text(
@@ -277,4 +305,3 @@ async def test_adjustment_may_be_negative(seeded: dict[str, uuid.UUID], sessions
             ),
             {"b": seeded["bill:hmart"]},
         )
-

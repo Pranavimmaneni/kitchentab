@@ -45,8 +45,14 @@ def _received(base: str, user: str) -> list[dict[str, Any]]:
 async def test_decrypts_a_real_web_push(fake_push: str, vapid_private_key: str) -> None:
     _, sub = _subscribe(fake_push, "pranav")
     sender = WebPushSender(vapid_private_key, "mailto:hello@example.com")
-    payload = {"title": "Kabir asked for your chicken thighs", "body": "A bit.", "url": "/kitchen/requests?id=r1",
-               "tag": "ask-r1", "badge": 2, "event_id": "1:42"}
+    payload = {
+        "title": "Kabir asked for your chicken thighs",
+        "body": "A bit.",
+        "url": "/kitchen/requests?id=r1",
+        "tag": "ask-r1",
+        "badge": 2,
+        "event_id": "1:42",
+    }
     result = await sender.send(sub, payload, ttl=172800, urgency="high", topic="ask-r1")
     assert result.ok and result.status == 201
     [got] = _received(fake_push, "pranav")
@@ -82,7 +88,9 @@ async def test_sender_refuses_payloads_over_two_kilobytes(fake_push: str, vapid_
 
 def test_vapid_with_wrong_audience_is_rejected(vapid_private_key: str) -> None:
     v = Vapid02.from_raw(vapid_private_key.encode())
-    headers = v.sign({"aud": "https://elsewhere.example", "sub": "mailto:a@b.c", "exp": int(time.time()) + 600})
+    headers = v.sign(
+        {"aud": "https://elsewhere.example", "sub": "mailto:a@b.c", "exp": int(time.time()) + 600}
+    )
     with pytest.raises(Exception, match="aud"):
         verify_vapid(headers["Authorization"], "http://127.0.0.1:1", time.time())
 
@@ -93,8 +101,14 @@ def test_vapid_signed_by_another_key_is_rejected(vapid_private_key: str) -> None
     other.generate_keys()
     claims = {"aud": "http://127.0.0.1:1", "sub": "mailto:a@b.c", "exp": int(time.time()) + 600}
     token = v.sign(claims)["Authorization"].split("t=", 1)[1].split(",", 1)[0]
-    other_k = base64.urlsafe_b64encode(
-        other.public_key.public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
-    ).rstrip(b"=").decode()
+    other_k = (
+        base64.urlsafe_b64encode(
+            other.public_key.public_bytes(
+                serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
+            )
+        )
+        .rstrip(b"=")
+        .decode()
+    )
     with pytest.raises(Exception, match="signature"):
         verify_vapid(f"vapid t={token}, k={other_k}", "http://127.0.0.1:1", time.time())

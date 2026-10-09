@@ -102,12 +102,19 @@ def _item(raw: dict[str, Any]) -> ItemSpec:
         raise ValueError(f"bad category for {raw['key']}: {raw['category']}")
     used = raw.get("used_up") or {}
     return ItemSpec(
-        key=raw["key"], name=raw["name"], cents=int(raw["cents"]), storage=raw["storage"],
-        category=raw.get("category"), icon=raw.get("icon"), who=tuple(raw["who"]),
-        quantity=Decimal(str(raw.get("quantity", "1"))), unit_price_cents=raw.get("unit_price_cents", raw["cents"]),
+        key=raw["key"],
+        name=raw["name"],
+        cents=int(raw["cents"]),
+        storage=raw["storage"],
+        category=raw.get("category"),
+        icon=raw.get("icon"),
+        who=tuple(raw["who"]),
+        quantity=Decimal(str(raw.get("quantity", "1"))),
+        unit_price_cents=raw.get("unit_price_cents", raw["cents"]),
         flagged=bool(raw.get("flagged", False)),
         confidence=Decimal(str(raw["confidence"])) if raw.get("confidence") else None,
-        shelf_life_days=raw.get("shelf_life_days"), used_up_by=used.get("by"),
+        shelf_life_days=raw.get("shelf_life_days"),
+        used_up_by=used.get("by"),
         used_up_at=_dt(used["at"]) if used.get("at") else None,
     )
 
@@ -125,10 +132,17 @@ def load_scenario(name: str, directory: Path = SCENARIO_DIR) -> Scenario:
                 raise ValueError(f"{b['key']}.{it.key}: unknown members {unknown}")
         bills.append(
             BillSpec(
-                key=b["key"], store=b["store"], purchase_date=_date(b["purchase_date"]), payer=b["payer"],
-                state=b["state"], sent_at=_dt(b["sent_at"]) if b.get("sent_at") else None,
-                settled_at=_dt(b["settled_at"]) if b.get("settled_at") else None, link_token=b["link_token"],
-                tax_cents=int(b["tax_cents"]), total_cents=int(b["total_cents"]), items=items,
+                key=b["key"],
+                store=b["store"],
+                purchase_date=_date(b["purchase_date"]),
+                payer=b["payer"],
+                state=b["state"],
+                sent_at=_dt(b["sent_at"]) if b.get("sent_at") else None,
+                settled_at=_dt(b["settled_at"]) if b.get("settled_at") else None,
+                link_token=b["link_token"],
+                tax_cents=int(b["tax_cents"]),
+                total_cents=int(b["total_cents"]),
+                items=items,
                 payments=tuple(
                     PaymentSpec(p["from"], int(p["amount_cents"]), p["method"], p["status"], _dt(p["at"]))
                     for p in b.get("payments", [])

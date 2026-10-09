@@ -89,8 +89,14 @@ def create_app(issuer: str | None = None) -> FastAPI:
             raise HTTPException(400, "PKCE S256 is required")
         code = secrets.token_urlsafe(24)
         state.codes[code] = Grant(
-            params["client_id"], params["redirect_uri"], params["code_challenge"], params.get("nonce"),
-            email, verified, name or email.split("@")[0].title(), time.time(),
+            params["client_id"],
+            params["redirect_uri"],
+            params["code_challenge"],
+            params.get("nonce"),
+            email,
+            verified,
+            name or email.split("@")[0].title(),
+            time.time(),
         )
         query = {"code": code}
         if params.get("state"):
@@ -111,7 +117,8 @@ def create_app(issuer: str | None = None) -> FastAPI:
         if login_hint:
             return issue_code(params, login_hint, email_verified, name)
         hidden = "".join(
-            f'<input type="hidden" name="{html.escape(k)}" value="{html.escape(v)}">' for k, v in params.items()
+            f'<input type="hidden" name="{html.escape(k)}" value="{html.escape(v)}">'
+            for k, v in params.items()
         )
         return HTMLResponse(
             "<!doctype html><title>Mock Google sign-in</title><form method=post action=/authorize>"
@@ -149,22 +156,35 @@ def create_app(issuer: str | None = None) -> FastAPI:
             raise HTTPException(400, "invalid_grant")
         if grant.redirect_uri != redirect_uri or grant.client_id != client_id:
             raise HTTPException(400, "invalid_grant: redirect_uri or client_id mismatch")
-        challenge = base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b"=").decode()
+        challenge = (
+            base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b"=").decode()
+        )
         if challenge != grant.code_challenge:
             raise HTTPException(400, "invalid_grant: PKCE verifier mismatch")
         now = int(time.time())
         claims = {
-            "iss": issuer, "aud": grant.client_id, "azp": grant.client_id, "sub": subject_for(grant.email),
-            "email": grant.email, "email_verified": grant.email_verified, "name": grant.name,
-            "iat": now, "exp": now + 3600,
+            "iss": issuer,
+            "aud": grant.client_id,
+            "azp": grant.client_id,
+            "sub": subject_for(grant.email),
+            "email": grant.email,
+            "email_verified": grant.email_verified,
+            "name": grant.name,
+            "iat": now,
+            "exp": now + 3600,
         }
         if grant.nonce:
             claims["nonce"] = grant.nonce
         id_token = jwt.encode({"alg": "RS256", "kid": KID}, claims, state.key)
         access_token = secrets.token_urlsafe(24)
         state.tokens[access_token] = claims
-        return {"access_token": access_token, "token_type": "Bearer", "expires_in": 3600, "id_token": id_token,
-                "scope": "openid email profile"}
+        return {
+            "access_token": access_token,
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "id_token": id_token,
+            "scope": "openid email profile",
+        }
 
     @app.get("/userinfo")
     async def userinfo(request: Request) -> dict[str, Any]:

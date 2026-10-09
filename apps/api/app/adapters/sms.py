@@ -28,11 +28,11 @@ class FakeSms:
 
     async def send_code(self, phone_e164: str, code: str) -> None:
         entry = json.dumps({"to": phone_e164, "code": code, "sent_at": self._clock.now().isoformat()})
-        await self._redis.rpush(FAKE_SMS_KEY, entry)
+        await self._redis.rpush(FAKE_SMS_KEY, entry)  # type: ignore[misc]
         await self._redis.expire(FAKE_SMS_KEY, 3600)
 
     async def sent(self, to: str | None = None) -> list[dict[str, str]]:
-        raw = await self._redis.lrange(FAKE_SMS_KEY, 0, -1)
+        raw = await self._redis.lrange(FAKE_SMS_KEY, 0, -1)  # type: ignore[misc]
         entries = [json.loads(r) for r in raw]
         return [e for e in entries if to is None or e["to"] == to]
 
