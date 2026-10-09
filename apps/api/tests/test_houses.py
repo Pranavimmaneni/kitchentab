@@ -20,9 +20,11 @@ from tests.harness.tags import fr, tid
 ApiFactory = Callable[[], Api]
 
 
-async def _admin_with_house(api: ApiFactory, roommates: list[str] | None = None) -> tuple[Api, dict[str, Any]]:
+async def _admin_with_house(
+    api: ApiFactory, roommates: list[str] | None = None, email: str = "pranav@example.com"
+) -> tuple[Api, dict[str, Any]]:
     admin = api()
-    await admin.sign_in("pranav@example.com")
+    await admin.sign_in(email)
     return admin, await admin.create_house(roommates=roommates)
 
 
@@ -290,7 +292,7 @@ async def test_SYNC_11_two_people_claim_the_same_placeholder(
     api: ApiFactory, sessions: async_sessionmaker[AsyncSession]
 ) -> None:
     for _ in range(sync_iterations()):
-        _, house = await _admin_with_house(api)
+        _, house = await _admin_with_house(api, email=f"admin-{uuid7()}@example.com")  # 5 codes/h per email
         url = f"/api/v1/join/{house['invite_token']}/claim"
         body = {"member_id": _member(house, "Meera")["id"]}
         claimants = (api(), api())
