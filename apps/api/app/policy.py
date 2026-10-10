@@ -22,6 +22,7 @@ class Action(StrEnum):
     INVITE_ROTATE = "house.invite.rotate"
     MEMBER_ADD = "member.add"
     MEMBER_RENAME = "member.rename"
+    MEMBER_RENAME_SELF = "member.rename_self"  # FR-83: Settings name follows you into the house
     MEMBER_REMOVE = "member.remove"
     MEMBER_UNCLAIM = "member.unclaim"
     ADMIN_TRANSFER = "admin.transfer"
@@ -217,6 +218,10 @@ def decide(
         return ALLOW  # signed-in members of the house (PRD §7, FR-18, EXTRACT-10)
     if action in (Action.HOUSE_READ, Action.INVITE_READ, Action.HOUSE_LEAVE, Action.BILL_CREATE):
         # Leave: business checks (admin hand-over, open bills as payer) live in the service.
+        return ALLOW
+    if action == Action.MEMBER_RENAME_SELF:
+        if target is None or target.member_id != actor.member_id:
+            return Decision(False, ErrorCode.FORBIDDEN, "You can only change your own name")
         return ALLOW
     if action in ADMIN_ONLY:
         return _decide_member_admin(action, actor, target)
