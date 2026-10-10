@@ -1206,7 +1206,7 @@ KitchenTab must install to the home screen from any modern browser and deliver p
 
 **Permission flow (N1):**
 
-1. Never ask on first load. Show the N1 pre-prompt at a moment that explains itself: right after the user's first bill is sent, after they first ask for or receive an ask, or from Settings › Notifications.
+1. Never ask on first load. Show the N1 pre-prompt at a moment that explains itself: right after the user's first bill is sent (once they leave E · Share, so it never covers the Share button), after they first ask for or receive an ask, or from Settings › Notifications.
 2. N1 shows three example notifications and a segmented ON IPHONE / ANDROID · DESKTOP switch, pre-selected from the user agent.
 3. Browser tab on iPhone: show the 3 install steps; the button reads "Show me where Share is" and points at the Share button. Push is offered again on first standalone launch.
 4. Everywhere else, "Turn on notifications" calls `Notification.requestPermission()` from that tap, then `pushManager.subscribe({userVisibleOnly: true, applicationServerKey: VAPID_PUBLIC_KEY})`, then `POST /push/subscriptions`.

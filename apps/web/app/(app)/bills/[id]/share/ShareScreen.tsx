@@ -73,7 +73,9 @@ function ShareScreen({ view }: { view: BillView }) {
   }
 
   return (
-    <div className="kt-screen">
+    // Mid-task: the notifications pre-prompt after a first bill waits until the payer has shared
+    // and left this step, so it never lands on top of the Share button (PUSH-01, E2E-01).
+    <div className="kt-screen" data-kt-busy="">
       <div className="kt-share-top">
         <div className="kt-share-top__titles">
           <StampChip rotate={-3}>{strings.shareScreen.sent}</StampChip>

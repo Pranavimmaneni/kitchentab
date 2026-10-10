@@ -90,6 +90,11 @@ test.describe("N1 and permission", () => {
     await page.goto(`/bills/${billId}/send`);
     await hydrated(page);
     await page.getByRole("button", { name: "Send it to the house ↗" }).click();
+    // Not on top of E · Share (the payer is mid-task there), but as soon as they leave it.
+    await page.waitForURL(/\/share$/);
+    await page.waitForTimeout(2000);
+    await expect(n1).toBeHidden();
+    await page.getByRole("link", { name: "Done → see the tab" }).click();
     await expect(n1).toBeVisible({ timeout: 20_000 });
     await expect(n1.getByRole("tab", { name: "ANDROID · DESKTOP" })).toHaveAttribute(
       "aria-selected",
