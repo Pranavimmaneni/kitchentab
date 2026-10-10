@@ -13,7 +13,7 @@ Failure switches, comma-separated in $FAKE_VERCEL_FAIL:
   integration    `integration add` fails
   promote        `promote` fails
   neon-unlinked  `integration add neon` succeeds but connects nothing
-  blob-unlinked  `blob store add` succeeds but connects nothing
+  blob-unlinked  `blob create-store` succeeds but connects nothing
 Output mimics Vercel CLI 48: data on stdout, chatter on stderr.
 """
 
@@ -204,9 +204,10 @@ def cmd_integration(state: dict, args: list[str]) -> int:
 
 
 def cmd_blob(state: dict, args: list[str]) -> int:
-    if len(args) < 3 or args[:2] != ["store", "add"]:
-        return fail("Usage: vercel blob store add <name>")
-    name = args[2]
+    # CLI 54: `vercel blob create-store <name> --access private --yes`
+    if len(args) < 2 or args[0] != "create-store" or "--access" not in args:
+        return fail("Usage: vercel blob create-store [name] --access <public|private>")
+    name = args[1]
     if name in state["blob_stores"]:
         return fail(f'A Blob store named "{name}" already exists')
     state["blob_stores"].append(name)

@@ -29,7 +29,13 @@ from pathlib import Path
 from urllib.parse import SplitResult, parse_qsl, urlencode, urlsplit, urlunsplit
 
 PROJECT = "kitchentab"
-ENVIRONMENTS = ("production", "preview")
+# Vercel CLI 54 can't add a Preview variable without a Git branch or the value on argv, so a project
+# without Git (deployed from this folder) sets Production only: KT_VERCEL_ENVIRONMENTS=production.
+ENVIRONMENTS = tuple(
+    e.strip()
+    for e in os.environ.get("KT_VERCEL_ENVIRONMENTS", "production,preview").split(",")
+    if e.strip()
+)
 BLOB_STORE = "kitchentab-receipts"
 # Accounts created by launch-check / e2e against production use this reserved (RFC 2606 `.test`)
 # domain; `make prod-clean-test-data` deletes only data reachable from these users (ADR-0022).

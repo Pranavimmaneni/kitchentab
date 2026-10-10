@@ -41,3 +41,6 @@ apps/web/public/sw*.js
 apps/web/public/swe-worker*.js
 apps/web/public/ocr/*
 !apps/web/public/ocr/lang/
+
+.vercel
+.env*

@@ -164,14 +164,15 @@ def setup(console: Console, runner: Runner, postal_arg: str | None = None) -> in
             f"Creating the Blob store '{BLOB_STORE}'. If asked, link it to 'kitchentab'."
         )
         res = vercel.run(
-            ["blob", "store", "add", BLOB_STORE],
+            # CLI 54: `blob create-store`; --yes connects it to every environment of the linked project.
+            ["blob", "create-store", BLOB_STORE, "--access", "private", "--yes"],
             what=f"create the Blob store '{BLOB_STORE}'",
             check=False,
         )
         if res.code != 0 and "already" not in res.text.lower():
             raise runner.failure(
                 "vercel",
-                ["blob", "store", "add"],
+                ["blob", "create-store"],
                 f"create the Blob store '{BLOB_STORE}'",
                 res,
             )

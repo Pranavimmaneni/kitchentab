@@ -44,7 +44,7 @@ def test_vercel10_dry_run_prints_every_command_and_runs_none(harness: Harness) -
         "[dry-run] $ vercel whoami",
         "[dry-run] $ vercel link --yes --project kitchentab",
         "[dry-run] $ vercel integration add neon",
-        "[dry-run] $ vercel blob store add kitchentab-receipts",
+        "[dry-run] $ vercel blob create-store kitchentab-receipts --access private --yes",
         "[dry-run] $ vercel env add SESSION_SECRET production < <generated secret: 86 chars>",
         "[dry-run] $ vercel env add TEST_INBOX_SECRET preview < <generated secret: 86 chars>",
         "[dry-run] $ vercel env add VAPID_PRIVATE_KEY production < <generated P-256 private key: 43 chars>",
@@ -69,7 +69,14 @@ def test_vercel10_happy_path_sets_every_variable_for_production_and_preview(
     assert argvs[0] == ["whoami"]
     assert ["link", "--yes", "--project", "kitchentab"] in argvs
     assert ["integration", "add", "neon"] in argvs
-    assert ["blob", "store", "add", "kitchentab-receipts"] in argvs
+    assert [
+        "blob",
+        "create-store",
+        "kitchentab-receipts",
+        "--access",
+        "private",
+        "--yes",
+    ] in argvs
     assert (
         json.loads((harness.root / ".vercel" / "project.json").read_text())[
             "projectName"
@@ -254,8 +261,12 @@ def test_vercel10_secrets_never_appear_in_output_or_logs(harness: Harness) -> No
     assert run.code == 0
     assert harness.secret_values(), "the fake account holds secrets to look for"
     harness.assert_no_secrets(run)
-    for call in harness.calls("vercel"):
-        assert len(call["argv"]) < 6  # values go on stdin, never argv
+    secrets = harness.secret_values()
+    for call in harness.calls("vercel"):  # values go on stdin, never argv
+        argv = call["argv"]
+        assert not any(value in arg for value in secrets for arg in argv), argv[:3]
+        if argv[:2] == ["env", "add"]:  # env add NAME ENVIRONMENT, the value on stdin
+            assert len(argv) == 4
     assert "<secret: 86 chars>" in run.out
 
 
