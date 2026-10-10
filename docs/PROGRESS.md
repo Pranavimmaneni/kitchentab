@@ -61,6 +61,8 @@ Open, in order (overnight queue):
    passes both here. Vercel profile failed both (7 ticks/s, p95 4 s): every request opened a new DB
    connection and paid per-connection type lookups, some inside the house lock. Fix in a stacked PR
    (connection reuse in the serverless profile, ADR-0032).
+   Branch perf/serverless-pool (stacked on fix/ci-baseline): DB_SERVERLESS_POOL_SIZE (default 10, 0 = old
+   behaviour), VERCEL-11. Needs a real-deployment check before merging (ADR-0032).
    Earlier note: API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
    VERCEL-02, SYNC-25, write-helper load test. Re-measure on a quiet machine before deciding.
 3. Not yet run: `make test-load` (PERF-01/02), three 30-minute `make simulate` seeds plus browser
@@ -247,7 +249,7 @@ IDs: PWA-01..12, OFFLINE-01..04, PUSH-01..19, EMAIL-01..05, VERCEL-04, VERCEL-09
 - [ ] Gate (+ test-push)
 
 ## Milestone 10: Hardening and full verification
-IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08, DATA-01..06, E2E-01..10, VERCEL-06, VERCEL-07, VERCEL-08, VERCEL-10
+IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08, DATA-01..06, E2E-01..10, VERCEL-06, VERCEL-07, VERCEL-08, VERCEL-10, VERCEL-11
 
 - [x] Rate limits: 60 writes/min per user (across devices), 300 reads/min per IP, 429 + Retry-After
       (SEC-05); production refuses to boot with them off; the shared test app turns them off for SYNC x200

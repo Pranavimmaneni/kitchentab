@@ -242,6 +242,7 @@ Additional sync tests:
 | VERCEL-08 | M | Python bundle size under 500 MB; no OCR/image libraries in the API | Size check |
 | VERCEL-09 | M | Daily cron endpoint is idempotent and runs use-soon, retention and export | As stated |
 | VERCEL-10 | M | Morning scripts (deploy-setup, deploy, launch-check, set-email, redeploy, rollback, prod-clean-test-data) pass dry-run and stubbed-CLI tests incl. failures | All pass |
+| VERCEL-11 | M | `PROFILE=vercel` API engine keeps `DB_SERVERLESS_POOL_SIZE` connections (pre-ping, recycle) and never caches prepared statements; 0 and the queue subscriber use no pool (ADR-0032) | Static + engine check |
 
 ### 3.8 Install and offline (PWA, OFFLINE)
 

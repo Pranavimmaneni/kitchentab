@@ -51,7 +51,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         engine = make_engine(
-            settings.database_url, pool_size=settings.db_pool_size, serverless=settings.profile == "vercel"
+            settings.database_url,
+            pool_size=settings.db_pool_size,
+            serverless=settings.profile == "vercel",
+            serverless_pool_size=settings.db_serverless_pool_size,
         )
         redis = (
             Redis.from_url(settings.redis_url, decode_responses=True)
