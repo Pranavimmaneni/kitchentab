@@ -4,17 +4,34 @@ Checkpoint for every session. Read `CLAUDE.md`, this file and `docs/BUILD_ALL.md
 continue from the first unchecked item. A box is checked only when its tests pass, not when code
 is written. Branch: `build/all`. No git remote is configured (nothing is pushed).
 
-**Status line (2026-10-09, session paused by usage limit):** committed through 873c813 (extraction core).
-EVERYTHING BELOW IS UNCOMMITTED in the working tree and was last verified only file-by-file:
-M5 receipts backend (storage adapters incl. Vercel Blob via `vercel` Python SDK, routes, fake blob, 26
-tests), M9 notification backend (notify service, queue, cron, email, 25 tests), hardening (policy moves,
-rate limits, headers, backup/restore drill, invariants, SYNC-24 fixes ADR-0023, PAY-08 migration 0006,
-EDGE-15-25 `long_open` flag, daily export), deploy scripts (ADR-0022), vercel.json, LAUNCH.md and
-DEVICE_QA.md drafts. Four background agents were STOPPED mid-work and their partial files are also in the
-tree: security suite (tests/test_security_*.py, scripts/scan_bundle_secrets.py), chaos/load (Toxiproxy,
-tests/test_chaos.py, load/), M7/M8 screens and M6 sync client (apps/web). FIRST STEPS NEXT SESSION:
-(1) `make lint` and the full API suite in both profiles; fix or finish the stopped agents' partial files;
-(2) finish the fresh-eyes review fixes listed under "Open review findings" below; (3) commit in groups.
+**Status (2026-10-10, end of session 2): LIVE at https://kitchentab.vercel.app** (Vercel team `ed-i-th`,
+project `kitchentab`, Neon Postgres, private Blob store, sign-in codes from a dedicated KitchenTab Gmail via
+SMTP). The household is using it. Everything is committed on `build/all` (working tree clean); see
+docs/LAUNCH.md "Launch log" for what differed at launch (Vercel CLI 54 quirks, all fixed in scripts).
+
+What works (verified): sign-up by email code, house + invite link, manual / PDF / photo (browser OCR)
+bills, split grid, send + share link, payments/confirm/settle, tabs and balances, fridge/pantry, asks,
+in-app notifications; local production-like run `make house` (http://localhost:3100, localhost only).
+Gate before the last deploy: make lint green, web unit 229/229, API 538 passed (slow groups excluded).
+
+Open, in order (overnight queue):
+1. Full browser suite not green: last run 245 passed / 27 failed / 83 skipped, partly machine load.
+   Possibly real: SYNC-32 tick flicker (WebKit), SYNC-31 leader hand-over > 3 s, SYNC-12 (WebKit/Firefox),
+   SYNC-07 flaky, KITCH-07/08, ASK-06, BILL-03, E2E-01; VIS-02 and A11Y-07 need one confirmed run.
+2. API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
+   VERCEL-02, SYNC-25, write-helper load test. Re-measure on a quiet machine before deciding.
+3. Not yet run: `make test-load` (PERF-01/02), three 30-minute `make simulate` seeds plus browser
+   devices, PERF-03..06 (Lighthouse / bundle / extraction / 200 items; mobile perf 84-89 vs 90),
+   E2E-01/02/04-08/10, A11Y-08, EMAIL-04; `make test-all` three times; docs/TEST_REPORT.md via
+   scripts/test_report.py; finalize DEVICE_QA.md; fresh-eyes reviews per milestone; mark milestones [done].
+4. EMAIL_POSTAL_ADDRESS (email footer) still empty: `make deploy-setup ARGS='--postal-address "..."'`
+   then `make redeploy`. Push and install need checking on real phones (DEVICE_QA.md).
+5. `make deploy` still runs its own lint+test gate; the last deploy ran the gate by hand
+   (scratchpad helper). Run deploy scripts from a normal Windows terminal with
+   KT_VERCEL_ENVIRONMENTS=production (the Claude desktop app sandboxes AppData: it can't see the
+   user's global `vercel` or its login).
+
+Never: deploy or change production settings without the user's go-ahead; handle passwords/app passwords.
 
 ### Fresh-eyes review of M8/M9/M10 backend: all 23 findings fixed
 Highs: undo-split locking (#1), foreign owner ids (#2), house time zone + cron isolation (#3), the
