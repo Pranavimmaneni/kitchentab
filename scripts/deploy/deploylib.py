@@ -438,8 +438,15 @@ def parse_dotenv(text: str) -> dict[str, str]:
 
 
 def last_url(text: str) -> str | None:
-    urls = _URL.findall(text)
-    return urls[-1].rstrip("/") if urls else None
+    """The last deployment URL printed. CLI 54 also prints JSON with api.vercel.com links (and a stray
+    quote), which are never the deployment."""
+    urls = [u.rstrip('/"') for u in _URL.findall(text)]
+    deployments = [
+        u
+        for u in urls
+        if not u.startswith(("https://api.vercel.com", "https://vercel.com"))
+    ]
+    return deployments[-1] if deployments else None
 
 
 def parse_inspect(text: str) -> tuple[str | None, list[str]]:
