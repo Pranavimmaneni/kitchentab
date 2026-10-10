@@ -416,8 +416,25 @@ test("VIS-02 at 320 px and 1024 px no screen scrolls sideways, and at 1024 px th
             body: document.body.scrollWidth - document.documentElement.clientWidth,
           }));
           if (overflow.doc > 0 || overflow.body > 0) {
+            // Name the widest offenders so a CI-only failure says what to fix.
+            const culprits = await page.evaluate(() => {
+              const limit = document.documentElement.clientWidth;
+              return [...document.querySelectorAll<HTMLElement>("body *")]
+                .map((el) => ({ el, right: el.getBoundingClientRect().right }))
+                .filter(({ right }) => right > limit + 0.5)
+                .sort((a, b) => b.right - a.right)
+                .slice(0, 3)
+                .map(({ el, right }) => {
+                  const cls =
+                    el.className && typeof el.className === "string"
+                      ? `.${el.className.split(" ")[0]}`
+                      : "";
+                  const text = (el.textContent ?? "").trim().slice(0, 30);
+                  return `${el.tagName.toLowerCase()}${cls} "${text}" +${Math.round(right - limit)}px`;
+                });
+            });
             found.push(
-              `${screen.name} @${width}: ${Math.max(overflow.doc, overflow.body)} px too wide`,
+              `${screen.name} @${width}: ${Math.max(overflow.doc, overflow.body)} px too wide (${culprits.join("; ")})`,
             );
           }
         },
