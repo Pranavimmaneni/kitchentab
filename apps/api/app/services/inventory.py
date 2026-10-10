@@ -13,6 +13,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from math import gcd
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -638,19 +639,104 @@ async def _source_line(db: AsyncSession, item: InventoryItem) -> tuple[Bill | No
     return await db.get(Bill, item.bill_id), await db.get(ItemRow, item.item_id)
 
 
-async def split_preview(db: AsyncSession, req: ShareRequest, item: InventoryItem) -> dict[str, int]:
+@dataclass(frozen=True, slots=True)
+class CustomSplit:
+    """How much of the line the asker takes (FR-81): a percent, or the owner's own value in cents."""
+
+    percent: int | None = None
+    amount_cents: int | None = None
+
+    @property
+    def given(self) -> bool:
+        return self.percent is not None or self.amount_cents is not None
+
+    def share(self, line_total_cents: int) -> tuple[int, int] | None:
+        """The exact fraction stored on the allocation (ADR-0030), reduced; None = equal share."""
+        if self.percent is not None:
+            num, den = self.percent, 100
+        elif self.amount_cents is not None:
+            if line_total_cents <= 0 or not 1 <= self.amount_cents <= line_total_cents:
+                raise Problem(422, ErrorCode.VALIDATION_FAILED, "Between $0.01 and the item's price")
+            num, den = self.amount_cents, line_total_cents
+        else:
+            return None
+        g = gcd(num, den)
+        return num // g, den // g
+
+    def chip_in_cents(self, line_total_cents: int) -> int | None:
+        """Settled tab: that percent of the line (largest-remainder against the owners' part), or
+        the owner's own value; None = no custom amount given."""
+        if self.percent is None:
+            return self.amount_cents
+        if line_total_cents <= 0:
+            return 0
+        if self.percent == 100:
+            return line_total_cents
+        parts = {"asker": self.percent, "owners": 100 - self.percent}
+        return largest_remainder(line_total_cents, parts, {"asker": (0, "asker"), "owners": (1, "owners")})["asker"]
+
+    def label(self) -> str | None:
+        if self.percent is not None:
+            return f"{self.percent}%"
+        if self.amount_cents is not None:
+            return f"${self.amount_cents // 100}.{self.amount_cents % 100:02d}"
+        return None
+
+
+EQUAL = CustomSplit()
+
+
+def _with_requester(
+    rows: bill_math.BillRows, line: ItemRow, requester: uuid.UUID, share: tuple[int, int] | None
+) -> None:
+    if not any(a.item_id == line.id and a.member_id == requester for a in rows.allocations):
+        rows.allocations.append(
+            Allocation(
+                id=uuid7(),
+                item_id=line.id,
+                member_id=requester,
+                weight=Decimal(1),
+                share_num=share[0] if share else None,
+                share_den=share[1] if share else None,
+            )
+        )
+
+
+async def split_preview(
+    db: AsyncSession, req: ShareRequest, item: InventoryItem, custom: CustomSplit = EQUAL
+) -> dict[str, int]:
     """FR-72: exact share deltas if the requester joins the line (compute_shares, nothing saved)."""
+    deltas: dict[str, int] = (await answer_preview(db, req, item, "split", custom))["deltas"]
+    return deltas
+
+
+async def answer_preview(
+    db: AsyncSession, req: ShareRequest, item: InventoryItem, decision: str, custom: CustomSplit = EQUAL
+) -> dict[str, Any]:
+    """FR-81: what a yes costs before it is said. `split`: the share deltas and the asker's part of
+    the line on the open tab; `chip_in`: the amount owed on a settled tab. Nothing is saved."""
     bill, line = await _source_line(db, item)
-    if bill is None or line is None or bill.state != "open":
-        return {}
+    total = line.line_total_cents if line else (item.price_cents or 0)
+    out: dict[str, Any] = {"decision": decision, "line_total_cents": total, "asker_cents": None, "deltas": {}}
+    if bill is None or line is None:
+        return out
+    if decision == "chip_in":
+        if bill.state != "open":
+            given = custom.chip_in_cents(total)
+            if given is not None and not 1 <= given <= total:
+                raise Problem(422, ErrorCode.VALIDATION_FAILED, "Between $0.01 and the item's price")
+            owners = await _active_owner_ids(db, item.id)
+            out["asker_cents"] = given if given is not None else await chip_in_suggestion(db, item, owners)
+        return out
+    if bill.state != "open":
+        return out
     rows = await bill_math.load(db, bill)
     before = bill_math.shares(rows).shares
-    if not any(a.item_id == line.id and a.member_id == req.requester_member_id for a in rows.allocations):
-        rows.allocations.append(
-            Allocation(id=uuid7(), item_id=line.id, member_id=req.requester_member_id, weight=Decimal(1))
-        )
-    after = bill_math.shares(rows).shares
-    return {k: after[k] - before.get(k, 0) for k in after if after[k] != before.get(k, 0)}
+    _with_requester(rows, line, req.requester_member_id, custom.share(total))
+    result = bill_math.shares(rows)
+    out["asker_cents"] = result.by_item[str(line.id)].get(mkey(req.requester_member_id))
+    out["deltas"] = {k: v - before.get(k, 0) for k, v in result.shares.items() if v != before.get(k, 0)}
+    return out
 
 
 async def chip_in_suggestion(db: AsyncSession, item: InventoryItem, owners: list[uuid.UUID]) -> int:
@@ -673,8 +759,10 @@ async def answer(
     now: datetime,
     idem: Idempotency,
     cmid: str | None,
+    custom: CustomSplit = EQUAL,
 ) -> dict[str, Any]:
-    """FR-72..FR-74: first owner to answer decides (row lock; ALREADY_ANSWERED for the second)."""
+    """FR-72..FR-74: first owner to answer decides (row lock; ALREADY_ANSWERED for the second).
+    FR-81: `custom` sets how much the asker pays: a percent of the line or the owner's own value."""
     async with writes.sessions() as db:
         house_id = await request_house(db, request_id)
     async with house_write(writes, house_id, client_mutation_id=cmid, idempotency=idem) as w:
@@ -716,7 +804,7 @@ async def answer(
                 raise Problem(
                     409, ErrorCode.BILL_SETTLED, "That tab is settled now", extra={"options": ["free", "chip_in"]}
                 )
-            deltas = await _join_line(w, bill, line, req.requester_member_id, me.member_id, user_id, now)
+            deltas = await _join_line(w, bill, line, req.requester_member_id, me.member_id, user_id, now, custom)
             req.status, req.resolution = "approved", "split"
             split_delta = deltas.get(mkey(req.requester_member_id), 0)
         elif decision == "chip_in":
@@ -725,7 +813,8 @@ async def answer(
             bill = (await w.session.scalars(select(Bill).where(Bill.id == bill.id).with_for_update(read=True))).one()
             if bill.state == "open":
                 raise Problem(409, ErrorCode.CONFLICT, "The tab is still open: add them to the split instead")
-            amount = chip_in_cents if chip_in_cents is not None else await chip_in_suggestion(w.session, item, owners)
+            given = chip_in_cents if chip_in_cents is not None else custom.chip_in_cents(line.line_total_cents)
+            amount = given if given is not None else await chip_in_suggestion(w.session, item, owners)
             if not 1 <= amount <= line.line_total_cents:
                 raise Problem(422, ErrorCode.VALIDATION_FAILED, "Chip in between $0.01 and the item's price")
             split = largest_remainder(amount, {str(o): 1 for o in owners}, {str(o): (0, str(o)) for o in owners})
@@ -776,7 +865,12 @@ async def answer(
                 "ask_answered",
                 bill_id=bill.id if decision == "split" and bill else None,
                 actor_user_id=user_id,
-                payload={"item": item.name, "decision": decision, "requester": str(req.requester_member_id)},
+                payload={
+                    "item": item.name,
+                    "decision": decision,
+                    "requester": str(req.requester_member_id),
+                    **({"custom": custom.label()} if custom.given and decision in ("split", "chip_in") else {}),
+                },
             ),
             notify=["answers"],
         )
@@ -793,13 +887,16 @@ async def _join_line(
     approver: uuid.UUID,
     user_id: uuid.UUID,
     now: datetime,
+    custom: CustomSplit = EQUAL,
 ) -> dict[str, int]:
-    """FR-73: weight-1 allocation, shares recomputed with the invariant, snapshot, owners synced."""
+    """FR-73: weight-1 allocation, shares recomputed with the invariant, snapshot, owners synced.
+    FR-81: with a custom split the allocation holds that fixed fraction of the line instead."""
     from app.services.bills import _after_money_change
 
     locked = (await w.session.scalars(select(Bill).where(Bill.id == bill.id).with_for_update(key_share=True))).one()
     if locked.state != "open":
         raise Problem(409, ErrorCode.BILL_SETTLED, "That tab is settled now", extra={"options": ["free", "chip_in"]})
+    share = custom.share(line.line_total_cents)
     exists = await w.session.scalar(
         select(Allocation.id).where(Allocation.item_id == line.id, Allocation.member_id == requester)
     )
@@ -810,6 +907,8 @@ async def _join_line(
                 item_id=line.id,
                 member_id=requester,
                 weight=Decimal(1),
+                share_num=share[0] if share else None,
+                share_den=share[1] if share else None,
                 created_by=user_id,
                 created_at=now,
                 updated_by_member_id=approver,
@@ -835,7 +934,11 @@ async def _join_line(
             "allocation_changed",
             bill_id=locked.id,
             actor_user_id=user_id,
-            payload={"text": f"{names[requester]} joined {short_name(line.name)}, approved by {names[approver]}"},
+            payload={
+                "text": f"{names[requester]} joined {short_name(line.name)}"
+                + (f" ({custom.label()})" if custom.given else "")
+                + f", approved by {names[approver]}"
+            },
         ),
     )
     return deltas

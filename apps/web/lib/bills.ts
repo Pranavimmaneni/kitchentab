@@ -3,19 +3,30 @@
  * always come from the server (CLAUDE.md rule 5); `previewShares` only fills the gap while a tick
  * is in flight, mirroring the server's `bill_math.preview`.
  */
-import { computeShares, weightToMilli, type BillInput } from "./money";
+import { computeShares, weightToMilli, type Allocation, type BillInput } from "./money";
 import { formatMoney } from "./format";
 import { MEMBER_COLOR_COUNT } from "./members";
 import { strings } from "./strings";
 import type { BillItem, BillView, Participant, Reconciliation } from "./api/types";
 
 /** Member colors in join order (apps/api MEMBER_COLORS, PRD §14). */
-const MEMBER_HEX = ["#C6F432", "#6A4CFF", "#FF8A65", "#7FD3F7", "#F7D046", "#FF6FB5", "#4FD1A5", "#B0A6FF"];
+const MEMBER_HEX = [
+  "#C6F432",
+  "#6A4CFF",
+  "#FF8A65",
+  "#7FD3F7",
+  "#F7D046",
+  "#FF6FB5",
+  "#4FD1A5",
+  "#B0A6FF",
+];
 
 /** 0-based color slot for a member: from the server's hex color, else the sort order. */
 export function colorIndexOf(p: { color: string; sort_order: number }): number {
   const index = MEMBER_HEX.indexOf(p.color.toUpperCase());
-  return index >= 0 ? index : ((p.sort_order % MEMBER_COLOR_COUNT) + MEMBER_COLOR_COUNT) % MEMBER_COLOR_COUNT;
+  return index >= 0
+    ? index
+    : ((p.sort_order % MEMBER_COLOR_COUNT) + MEMBER_COLOR_COUNT) % MEMBER_COLOR_COUNT;
 }
 
 /** "2026-10-02" → "10/02". */
@@ -31,12 +42,18 @@ export function longDate(iso: string): string {
 }
 
 /** Column tag: "YOU" for the signed-in member, else the first three letters. */
-export function participantTag(p: Pick<Participant, "id" | "display_name">, meId: string | null): string {
+export function participantTag(
+  p: Pick<Participant, "id" | "display_name">,
+  meId: string | null,
+): string {
   if (meId && p.id === meId) return strings.people.youTag;
   return p.display_name.replace(/\s+/g, "").slice(0, 3).toUpperCase();
 }
 
-export function displayName(p: Pick<Participant, "id" | "display_name">, meId: string | null): string {
+export function displayName(
+  p: Pick<Participant, "id" | "display_name">,
+  meId: string | null,
+): string {
   return meId && p.id === meId ? strings.people.you : p.display_name;
 }
 
@@ -115,15 +132,25 @@ export function assignedMap(
 
 /**
  * Instant, non-authoritative totals while a tick is in flight: only assigned items count and
- * bill-level amounts follow them (mirror of `bill_math.preview`). Weights default to 1.
+ * bill-level amounts follow them (mirror of `bill_math.preview`). Weights default to 1; a custom
+ * split's fixed share (ADR-0030) is kept.
  */
-export function previewShares(view: BillView, assigned: Record<string, string[]>): Record<string, number> {
+export function previewShares(
+  view: BillView,
+  assigned: Record<string, string[]>,
+): Record<string, number> {
   const participants = view.participants.map((p) => ({ id: p.key, sortOrder: p.sort_order }));
   const zero = Object.fromEntries(participants.map((p) => [p.id, 0]));
   const known = new Set(participants.map((p) => p.id));
-  const weightOf = new Map<string, number>();
+  const allocationOf = new Map<string, Allocation>();
   for (const item of view.items) {
-    for (const a of item.allocations) weightOf.set(`${item.id}|${a.participant}`, weightToMilli(a.weight));
+    for (const a of item.allocations) {
+      allocationOf.set(`${item.id}|${a.participant}`, {
+        participant: a.participant,
+        weightMilli: weightToMilli(a.weight),
+        ...(a.share_num && a.share_den ? { share: [a.share_num, a.share_den] } : {}),
+      });
+    }
   }
   const assignedItems = view.items
     .map((item) => ({
@@ -131,7 +158,7 @@ export function previewShares(view: BillView, assigned: Record<string, string[]>
       lineTotalCents: item.line_total_cents,
       allocations: (assigned[item.id] ?? [])
         .filter((p) => known.has(p))
-        .map((p) => ({ participant: p, weightMilli: weightOf.get(`${item.id}|${p}`) ?? 1000 })),
+        .map((p) => allocationOf.get(`${item.id}|${p}`) ?? { participant: p, weightMilli: 1000 }),
     }))
     .filter((item) => item.allocations.length > 0);
   if (assignedItems.length === 0) return zero;
@@ -159,13 +186,15 @@ export function previewShares(view: BillView, assigned: Record<string, string[]>
 
 /** Sub-line note on a split row: "$1.43 × 3" or "ALL MEERA" (display only). */
 export function itemNote(
-  item: Pick<BillItem, "line_total_cents">,
+  item: Pick<BillItem, "line_total_cents"> & { allocations?: BillItem["allocations"] },
   on: readonly string[],
   nameOf: (key: string) => string,
   currency = "USD",
 ): string | undefined {
   if (on.length === 0) return undefined;
   if (on.length === 1) return strings.split.allOne(nameOf(on[0]!).toUpperCase());
+  const custom = item.allocations?.find((a) => a.share_num && on.includes(a.participant));
+  if (custom) return strings.split.customShare(nameOf(custom.participant).toUpperCase());
   const each = Math.trunc(item.line_total_cents / on.length);
   return `${formatMoney(each, currency)} × ${on.length}`;
 }

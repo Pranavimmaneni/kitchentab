@@ -68,11 +68,20 @@ async def reload_allocations(db: AsyncSession, rows: BillRows) -> BillRows:
     found = (
         await db.execute(
             select(
-                Allocation.id, Allocation.item_id, Allocation.member_id, Allocation.guest_id, Allocation.weight
+                Allocation.id,
+                Allocation.item_id,
+                Allocation.member_id,
+                Allocation.guest_id,
+                Allocation.weight,
+                Allocation.share_num,
+                Allocation.share_den,
             ).where(Allocation.item_id.in_(item_ids))
         )
     ).all()
-    rows.allocations = [Allocation(id=a, item_id=i, member_id=m, guest_id=g, weight=w) for a, i, m, g, w in found]
+    rows.allocations = [
+        Allocation(id=a, item_id=i, member_id=m, guest_id=g, weight=w, share_num=sn, share_den=sd)
+        for a, i, m, g, w, sn, sd in found
+    ]
     return rows
 
 
@@ -126,7 +135,14 @@ def _input(rows: BillRows, items: list[ItemRow], total: int) -> BillInput:
             Item(
                 str(i.id),
                 i.line_total_cents,
-                tuple(MAlloc(key(a), weight_to_milli(Decimal(a.weight))) for a in by_item[i.id]),
+                tuple(
+                    MAlloc(
+                        key(a),
+                        weight_to_milli(Decimal(a.weight)),
+                        (a.share_num, a.share_den) if a.share_num and a.share_den else None,
+                    )
+                    for a in by_item[i.id]
+                ),
             )
             for i in items
         ),

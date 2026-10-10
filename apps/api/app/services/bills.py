@@ -202,7 +202,12 @@ def item_view(i: ItemRow, allocations: list[Allocation]) -> dict[str, Any]:
         "shelf_life_days": i.shelf_life_days,
         "version": i.version,
         "allocations": [
-            {"participant": mkey(a.member_id) if a.member_id else gkey(a.guest_id), "weight": str(a.weight)}  # type: ignore[arg-type]
+            {
+                "participant": mkey(a.member_id) if a.member_id else gkey(a.guest_id),  # type: ignore[arg-type]
+                "weight": str(a.weight),
+                "share_num": a.share_num,
+                "share_den": a.share_den,
+            }
             for a in allocations
         ],
     }
@@ -869,6 +874,8 @@ async def split_item(
                         member_id=a.member_id,
                         guest_id=a.guest_id,
                         weight=a.weight,
+                        share_num=a.share_num,
+                        share_den=a.share_den,
                         created_by=user_id,
                         created_at=now,
                         updated_by_member_id=me.member_id,
