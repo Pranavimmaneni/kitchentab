@@ -28,6 +28,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // Node.js, not Edge: Vercel Services can't deploy Edge output (Next 15.5 Node middleware is stable).
+  runtime: "nodejs",
   matcher: [
     {
       // Pages only: not /api, Next's assets, or files with an extension (icons, sw.js, /ocr/…).

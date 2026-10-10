@@ -1,0 +1,47 @@
+# What `vercel deploy` must not upload (it does not read .gitignore). Vercel builds from source:
+# dependencies are installed, the web app is built and the OCR assets are copied there.
+
+# Secrets and local state
+.env
+.env.*
+.vercel
+.claude/
+.git/
+
+# Local environments, caches and build output
+.venv/
+**/.venv/
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+.next-*/
+**/.next-*/
+test-results/
+**/test-results/
+playwright-report/
+**/playwright-report/
+coverage/
+**/coverage/
+.cache/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache/
+*.tsbuildinfo
+
+# Generated at build time (see .gitignore); the committed OCR language model stays
+apps/web/public/sw*.js
+apps/web/public/swe-worker*.js
+
+# Not part of the running app
+docs/
+infra/
+load/
+packages/fixtures/receipts/
+apps/api/tests/
+scripts/tests/
