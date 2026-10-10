@@ -717,6 +717,921 @@
     }
   },
   {
+    "name": "request_custom_split_quarter",
+    "note": "Custom split (PRD 19.4, ADR-0030): Pranav approves Kabir's ask for chicken thighs at 25%: Kabir pays a quarter of the $11.37 line, Pranav and Arjun split the rest",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        },
+        {
+          "id": "meera",
+          "sort_order": 2
+        },
+        {
+          "id": "kabir",
+          "sort_order": 3
+        }
+      ],
+      "items": [
+        {
+          "id": "milk",
+          "line_total_cents": 429,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "eggs",
+          "line_total_cents": 549,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "rice",
+          "line_total_cents": 1499,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "yogurt",
+          "line_total_cents": 679,
+          "allocations": [
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bananas",
+          "line_total_cents": 132,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "towels",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "soap",
+          "line_total_cents": 349,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "chicken",
+          "line_total_cents": 1137,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "share_num": 1,
+              "share_den": 4
+            }
+          ]
+        },
+        {
+          "id": "oatmilk",
+          "line_total_cents": 459,
+          "allocations": [
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "spinach",
+          "line_total_cents": 399,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bars",
+          "line_total_cents": 1799,
+          "allocations": [
+            {
+              "participant": "arjun",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "coffee",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "tax_cents": 89,
+      "fees": [],
+      "total_cents": 9518
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 2020,
+        "arjun": 3217,
+        "meera": 2203,
+        "kabir": 1989
+      },
+      "shares": {
+        "pranav": 2039,
+        "arjun": 3247,
+        "meera": 2224,
+        "kabir": 2008
+      }
+    }
+  },
+  {
+    "name": "request_custom_split_amount",
+    "note": "Custom split by value: Pranav types $5.00 of the $11.37 line, stored as the exact fraction 500/1137 so Kabir's line share is exactly 500",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        },
+        {
+          "id": "meera",
+          "sort_order": 2
+        },
+        {
+          "id": "kabir",
+          "sort_order": 3
+        }
+      ],
+      "items": [
+        {
+          "id": "milk",
+          "line_total_cents": 429,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "eggs",
+          "line_total_cents": 549,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "rice",
+          "line_total_cents": 1499,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "yogurt",
+          "line_total_cents": 679,
+          "allocations": [
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bananas",
+          "line_total_cents": 132,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "towels",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "soap",
+          "line_total_cents": 349,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "chicken",
+          "line_total_cents": 1137,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "share_num": 500,
+              "share_den": 1137
+            }
+          ]
+        },
+        {
+          "id": "oatmilk",
+          "line_total_cents": 459,
+          "allocations": [
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "spinach",
+          "line_total_cents": 399,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bars",
+          "line_total_cents": 1799,
+          "allocations": [
+            {
+              "participant": "arjun",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "coffee",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "tax_cents": 89,
+      "fees": [],
+      "total_cents": 9518
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 1912,
+        "arjun": 3109,
+        "meera": 2203,
+        "kabir": 2205
+      },
+      "shares": {
+        "pranav": 1930,
+        "arjun": 3138,
+        "meera": 2224,
+        "kabir": 2226
+      }
+    }
+  },
+  {
+    "name": "request_custom_split_all",
+    "note": "Custom split at 100%: Kabir pays the whole chicken line; Pranav and Arjun stay ticked at $0.00",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        },
+        {
+          "id": "meera",
+          "sort_order": 2
+        },
+        {
+          "id": "kabir",
+          "sort_order": 3
+        }
+      ],
+      "items": [
+        {
+          "id": "milk",
+          "line_total_cents": 429,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "eggs",
+          "line_total_cents": 549,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "rice",
+          "line_total_cents": 1499,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "yogurt",
+          "line_total_cents": 679,
+          "allocations": [
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bananas",
+          "line_total_cents": 132,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "towels",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "soap",
+          "line_total_cents": 349,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "chicken",
+          "line_total_cents": 1137,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "share_num": 1,
+              "share_den": 1
+            }
+          ]
+        },
+        {
+          "id": "oatmilk",
+          "line_total_cents": 459,
+          "allocations": [
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "spinach",
+          "line_total_cents": 399,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "bars",
+          "line_total_cents": 1799,
+          "allocations": [
+            {
+              "participant": "arjun",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "id": "coffee",
+          "line_total_cents": 999,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            },
+            {
+              "participant": "kabir",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "tax_cents": 89,
+      "fees": [],
+      "total_cents": 9518
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 1593,
+        "arjun": 2791,
+        "meera": 2203,
+        "kabir": 2842
+      },
+      "shares": {
+        "pranav": 1608,
+        "arjun": 2817,
+        "meera": 2224,
+        "kabir": 2869
+      }
+    }
+  },
+  {
+    "name": "custom_share_over_the_whole_line",
+    "note": "Two fixed shares adding up past 100% (3/4 + 1/2): they split the line 3:2 and the weighted owner gets 0",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        },
+        {
+          "id": "meera",
+          "sort_order": 2
+        }
+      ],
+      "items": [
+        {
+          "id": "cheese",
+          "line_total_cents": 1001,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "share_num": 3,
+              "share_den": 4
+            },
+            {
+              "participant": "meera",
+              "share_num": 1,
+              "share_den": 2
+            }
+          ]
+        }
+      ],
+      "tax_cents": 50,
+      "fees": [],
+      "total_cents": 1051
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 0,
+        "arjun": 601,
+        "meera": 400
+      },
+      "shares": {
+        "pranav": 0,
+        "arjun": 631,
+        "meera": 420
+      }
+    }
+  },
+  {
+    "name": "custom_share_nobody_weighted",
+    "note": "Only a 1/4 fixed share left on the line (the owners were unticked later): it takes the whole line",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        }
+      ],
+      "items": [
+        {
+          "id": "milk",
+          "line_total_cents": 429,
+          "allocations": [
+            {
+              "participant": "arjun",
+              "share_num": 1,
+              "share_den": 4
+            }
+          ]
+        },
+        {
+          "id": "eggs",
+          "line_total_cents": 549,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "tax_cents": 0,
+      "fees": [],
+      "total_cents": 978
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 549,
+        "arjun": 429
+      },
+      "shares": {
+        "pranav": 549,
+        "arjun": 429
+      }
+    }
+  },
+  {
+    "name": "custom_share_negative_line_and_weights",
+    "note": "A 1/3 fixed share on a deposit return next to weighted 2:1 owners; rounded on the absolute value, then negated",
+    "bill": {
+      "participants": [
+        {
+          "id": "pranav",
+          "sort_order": 0
+        },
+        {
+          "id": "arjun",
+          "sort_order": 1
+        },
+        {
+          "id": "meera",
+          "sort_order": 2
+        }
+      ],
+      "items": [
+        {
+          "id": "deposit_return",
+          "line_total_cents": -100,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 2
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "share_num": 1,
+              "share_den": 3
+            }
+          ]
+        },
+        {
+          "id": "water",
+          "line_total_cents": 700,
+          "allocations": [
+            {
+              "participant": "pranav",
+              "weight": 1
+            },
+            {
+              "participant": "arjun",
+              "weight": 1
+            },
+            {
+              "participant": "meera",
+              "weight": 1
+            }
+          ]
+        }
+      ],
+      "tax_cents": 0,
+      "fees": [],
+      "total_cents": 600
+    },
+    "expected": {
+      "item_subtotals": {
+        "pranav": 189,
+        "arjun": 211,
+        "meera": 200
+      },
+      "shares": {
+        "pranav": 189,
+        "arjun": 211,
+        "meera": 200
+      }
+    }
+  },
+  {
     "name": "three_way_remainder",
     "note": "$10.00 over 3: extra cent goes to lowest sort_order on tie",
     "bill": {
