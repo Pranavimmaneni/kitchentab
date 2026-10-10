@@ -18,17 +18,18 @@ in-app notifications; local production-like run `make house` (http://localhost:3
 Gate before the last deploy: make lint green, web unit 229/229, API 538 passed (slow groups excluded).
 
 NEW FEATURES REQUESTED BY THE USER (2026-10-10), do these FIRST, before the queue below:
-A. Requests screen (kitchen/requests, RequestsScreen.tsx; API routes/kitchen.py + services/inventory.py):
-   - Show the item's full price (its bill line total; "no price" for leftovers/manual items) under the
-     item icon on every request card, both tabs.
-   - Custom split when answering an ask: quick choices 25% / 50% / 100% plus "Custom %" (1-100). Today
-     "Add to split" adds weight 1 (an equal share) and "Chip in" is a free amount with a suggestion.
-     Proposed meaning (confirm with the user before building; PRD §6/§19 money rule change, needs an ADR):
-     the asker pays that percentage of the item's line total. Open bill: allocation weight for the asker
-     w = p*W/(1-p), W = the owners' total weight on that line; 100% = asker takes the whole line (owners'
-     allocations removed). Closed bill: chip-in amount = round(p * line total) through the existing
-     ledger path. Integer cents, largest remainder (compute_shares). Preview before confirming; Undo works.
-     Tests first (money, policy, sync), new TEST_PLAN IDs, FR in PRD §19.
+A. Requests screen: DONE on branch feat/ask-custom-split (PR open; needs `make migrate-prod`, migration 0007).
+   - FR-82: every request card (FOR YOU and YOU ASKED) shows the item's line total under its icon,
+     "NO PRICE" for leftovers (ASK-18).
+   - FR-81: answering with Add to split or Chip in offers Equal share (or Suggested) / 25% / 50% / 100% /
+     Custom; Custom takes a whole percent (1-100) or the owner's own dollar value ($0.01 up to the price).
+     The user's rule: "split either by percentage or add their own value". Open tab: the asker's
+     allocation holds a fixed share of the line (share_num/share_den; p/100, or X/L for a value, so a
+     value lands on the exact cent), PRD §6 + ADR-0030; owners split the rest by weight; 100% leaves the
+     owners ticked at $0.00. Settled tab: chip-in = that part of the line. Server preview
+     (GET /requests/{id}/answer-preview) shows the asker's part and every share delta before Say yes;
+     Undo removes it. Tests: MONEY-11 (fixtures + Python==reference property + TS), ASK-15..ASK-18
+     (API, unit, Playwright on WebKit and Chromium).
 B. Settings (SettingsScreen.tsx): one place for
    - your name (exists: Profile → Save name; check it also renames you in every house you're in),
    - notification preferences (exists at /settings/notifications: make it a clear row on Settings),
@@ -41,6 +42,10 @@ Ship both behind the usual gate; ask the user before redeploying production.
 
 Open, in order (overnight queue):
 1. Full browser suite not green: last run 245 passed / 27 failed / 83 skipped, partly machine load.
+   Found 2026-10-10: a helper loop from an earlier session kept restarting an API on :8010 with
+   WEB_ORIGIN=http://localhost:3010, and Playwright reused it (reuseExistingServer), so every browser
+   write got 403 "Cross-site request blocked". The loop is stopped; reuse is now opt-in (KT_E2E_REUSE=1)
+   and the test web server binds 127.0.0.1. Rerun the full suite before chasing the failures below.
    Possibly real: SYNC-32 tick flicker (WebKit), SYNC-31 leader hand-over > 3 s, SYNC-12 (WebKit/Firefox),
    SYNC-07 flaky, KITCH-07/08, ASK-06, BILL-03, E2E-01; VIS-02 and A11Y-07 need one confirmed run.
 2. API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
