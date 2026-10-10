@@ -134,10 +134,10 @@ def test_vercel10_set_email_dry_run_runs_nothing_and_asks_nothing(
     assert run.code == 0, run.text
     assert harness.calls() == []
     for line in (
-        "[dry-run] $ vercel env add SMTP_HOST production < smtp.gmail.com",
-        "[dry-run] $ vercel env add SMTP_PORT preview < 587",
+        "[dry-run] $ vercel env add SMTP_HOST production --no-sensitive < smtp.gmail.com",
+        "[dry-run] $ vercel env add SMTP_PORT preview --no-sensitive < 587",
         "[dry-run] $ vercel env add SMTP_PASSWORD production < <app password: 16 chars>",
-        "[dry-run] $ vercel env add EMAIL_PROVIDER production < smtp",
+        "[dry-run] $ vercel env add EMAIL_PROVIDER production --no-sensitive < smtp",
         "[dry-run] $ vercel env rm TEST_INBOX_SECRET production --yes",
         "[dry-run] $ vercel redeploy https://<current-production-deployment>.vercel.app",
         "[dry-run] POST https://kitchentab.vercel.app/api/v1/auth/otp/send",

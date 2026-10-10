@@ -37,10 +37,10 @@ def test_vercel10_dry_run_prints_the_whole_pipeline_and_runs_nothing(
         "[dry-run] $ (cd apps/api && DATABASE_DIRECT_URL=<Neon direct URL> uv run alembic upgrade head)",
         "[dry-run] $ vercel deploy --prod",
         "[dry-run] $ vercel inspect https://<new-deployment>.vercel.app",
-        "[dry-run] $ vercel env add WEB_ORIGIN production < https://kitchentab.vercel.app",
-        "[dry-run] $ vercel env add PUBLIC_LINK_BASE production < https://kitchentab.vercel.app",
+        "[dry-run] $ vercel env add WEB_ORIGIN production --no-sensitive < https://kitchentab.vercel.app",
+        "[dry-run] $ vercel env add PUBLIC_LINK_BASE production --no-sensitive < https://kitchentab.vercel.app",
         (
-            "[dry-run] $ vercel env add GOOGLE_REDIRECT_URI production < "
+            "[dry-run] $ vercel env add GOOGLE_REDIRECT_URI production --no-sensitive < "
             "https://kitchentab.vercel.app/api/v1/auth/google/callback"
         ),
         "[dry-run] $ vercel redeploy https://<new-deployment>.vercel.app",

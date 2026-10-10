@@ -599,9 +599,15 @@ class Vercel:
         *,
         note: str | None = None,
     ) -> None:
+        # Production and Preview values are sensitive by default (CLI 54) and then read back empty
+        # from `vercel env pull`. Only secrets stay sensitive; plain settings (APP_ENV, providers,
+        # the public VAPID key, origins) stay readable so the scripts can check them.
+        argv = ["env", "add", name, environment]
+        if not isinstance(value, Secret):
+            argv.append("--no-sensitive")
         try:
             self.run(
-                ["env", "add", name, environment],
+                argv,
                 what=f"set {name} for {environment}",
                 stdin=value,
                 stdin_note=note

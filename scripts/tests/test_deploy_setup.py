@@ -48,9 +48,9 @@ def test_vercel10_dry_run_prints_every_command_and_runs_none(harness: Harness) -
         "[dry-run] $ vercel env add SESSION_SECRET production < <generated secret: 86 chars>",
         "[dry-run] $ vercel env add TEST_INBOX_SECRET preview < <generated secret: 86 chars>",
         "[dry-run] $ vercel env add VAPID_PRIVATE_KEY production < <generated P-256 private key: 43 chars>",
-        "[dry-run] $ vercel env add APP_ENV production < prod",
-        "[dry-run] $ vercel env add APP_ENV preview < staging",
-        "[dry-run] $ vercel env add EMAIL_PROVIDER production < testinbox",
+        "[dry-run] $ vercel env add APP_ENV production --no-sensitive < prod",
+        "[dry-run] $ vercel env add APP_ENV preview --no-sensitive < staging",
+        "[dry-run] $ vercel env add EMAIL_PROVIDER production --no-sensitive < testinbox",
         "Framework Preset -> Services",
         "Queues",
     ):
@@ -265,8 +265,11 @@ def test_vercel10_secrets_never_appear_in_output_or_logs(harness: Harness) -> No
     for call in harness.calls("vercel"):  # values go on stdin, never argv
         argv = call["argv"]
         assert not any(value in arg for value in secrets for arg in argv), argv[:3]
-        if argv[:2] == ["env", "add"]:  # env add NAME ENVIRONMENT, the value on stdin
-            assert len(argv) == 4
+        if argv[:2] == [
+            "env",
+            "add",
+        ]:  # env add NAME ENVIRONMENT [--no-sensitive], value on stdin
+            assert len(argv) == 4 or argv[4:] == ["--no-sensitive"]
     assert "<secret: 86 chars>" in run.out
 
 

@@ -145,6 +145,9 @@ def cmd_env(state: dict, args: list[str], stdin: str) -> int:
         if not stdin:
             return fail("No value given (stdin was empty)")
         state["env"][environment][name] = stdin
+        sensitive = state.setdefault("sensitive", {}).setdefault(environment, [])
+        if environment in ("production", "preview") and "--no-sensitive" not in rest:
+            sensitive.append(name)  # CLI 54: sensitive by default, pulled back empty
         err(f"Added Environment Variable {name} to Project kitchentab [94ms]")
         return 0
     if sub == "rm":
@@ -163,7 +166,9 @@ def cmd_env(state: dict, args: list[str], stdin: str) -> int:
             "development",
         )
         lines = ["# Created by Vercel CLI"]
+        hidden = set(state.get("sensitive", {}).get(environment, []))
         for name, value in sorted(state["env"][environment].items()):
+            value = "" if name in hidden else value
             escaped = (
                 value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
             )

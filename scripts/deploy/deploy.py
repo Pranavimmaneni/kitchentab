@@ -55,13 +55,14 @@ REQUIRED = (
 
 
 def missing_settings(env: dict[str, str]) -> list[str]:
-    missing = [k for k in REQUIRED if not env.get(k)]
+    # A sensitive secret is listed by `vercel env pull` with an empty value: present means listed.
+    missing = [k for k in REQUIRED if k not in env]
     provider = env.get("EMAIL_PROVIDER")
-    if provider == "testinbox" and not env.get("TEST_INBOX_SECRET"):
+    if provider == "testinbox" and "TEST_INBOX_SECRET" not in env:
         missing.append("TEST_INBOX_SECRET")
     if provider == "smtp":
         missing += [
-            k for k in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD") if not env.get(k)
+            k for k in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD") if k not in env
         ]
     return missing
 
