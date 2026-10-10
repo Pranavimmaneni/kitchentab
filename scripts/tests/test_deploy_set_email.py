@@ -168,7 +168,7 @@ def test_vercel10_set_email_stores_gmail_redeploys_and_confirms_a_real_code(
     assert prod.sent == [ADDRESS]
     assert "Test inbox is off" in run.out
     assert (
-        "Signed in with the emailed code (this also created your account). Gmail delivery works."
+        "Signed in with the emailed code (this also created your account). Email delivery works."
         in run.out
     )
     # The app password and the full address never reach the terminal or the call log.
@@ -328,3 +328,37 @@ def test_vercel10_set_email_local_end_to_end_through_mailpit(
         in text
     )
     assert password not in text and address not in text
+
+
+@pytest.mark.id("VERCEL-10")
+def test_vercel10_brevo_relay_logs_in_with_its_own_login_and_keeps_the_key_secret() -> (
+    None
+):
+    sys.path.insert(0, str(DEPLOY))
+    from deploylib import Secret
+    from set_email import PROVIDERS, smtp_values
+
+    host, port = PROVIDERS["brevo"]
+    values = {
+        name: (value, shown)
+        for name, value, shown in smtp_values(
+            "me@example.com",
+            Secret("xsmtpsib-key-1234567890"),
+            host,
+            port,
+            "8a1b2c001@smtp-brevo.com",
+        )
+    }
+    assert (
+        values["SMTP_HOST"][0] == "smtp-relay.brevo.com"
+        and values["SMTP_PORT"][0] == "587"
+    )
+    assert values["SMTP_USER"][0] == "8a1b2c001@smtp-brevo.com"  # login, not the sender
+    assert values["EMAIL_FROM"][0] == "KitchenTab <me@example.com>"
+    assert isinstance(
+        values["SMTP_PASSWORD"][0], Secret
+    )  # stored sensitive, never echoed
+    assert "xsmtpsib" not in values["SMTP_PASSWORD"][1]
+    assert (
+        list(values)[-1] == "EMAIL_PROVIDER"
+    )  # switched only after the credentials exist

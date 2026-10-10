@@ -53,6 +53,12 @@ TARGET = "set-email"
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]+\.[A-Za-z]{2,}$")
 APP_PASSWORD_RE = re.compile(r"^[a-z]{16}$")
 APP_PASSWORDS_URL = "https://myaccount.google.com/apppasswords"
+# Any STARTTLS relay works; Brevo's free plan (300 emails/day) needs no new Gmail account: verify your
+# own address as a sender there and use the SMTP login and key from Settings -> SMTP & API.
+PROVIDERS = {
+    "gmail": ("smtp.gmail.com", 587),
+    "brevo": ("smtp-relay.brevo.com", 587),
+}
 MAX_CODE_TRIES = 3
 
 
@@ -68,6 +74,36 @@ def ask_address(given: str | None) -> str:
             hint="Run `make set-email` again.",
         )
     return address
+
+
+def ask_secret(prompt: str) -> Secret:
+    """An SMTP key or password from a non-Gmail relay: read without echo, at least 8 characters."""
+    if sys.stdin.isatty():
+        raw = getpass.getpass(prompt)
+    else:
+        print(prompt, flush=True)
+        raw = sys.stdin.readline()
+    value = raw.strip()
+    if len(value) < 8 or any(c.isspace() for c in value):
+        raise DeployError(
+            "That doesn't look like an SMTP key.", hint="Copy it again and re-run."
+        )
+    return Secret(value)
+
+
+def ask_login(given: str | None, provider: str) -> str:
+    example = (
+        "e.g. 8a1b2c001@smtp-brevo.com"
+        if provider == "brevo"
+        else "the relay's user name"
+    )
+    raw = given if given is not None else input(f"SMTP login ({example}): ")
+    login = raw.strip()
+    if not login or any(c.isspace() for c in login):
+        raise DeployError(
+            "The SMTP login is empty.", hint="Copy it from the provider and re-run."
+        )
+    return login
 
 
 def ask_app_password() -> Secret:
@@ -192,7 +228,7 @@ def check_sign_in(
         )
         if status == 200:
             new = " (this also created your account)" if body.get("is_new") else ""
-            console.say(f"Signed in with the emailed code{new}. Gmail delivery works.")
+            console.say(f"Signed in with the emailed code{new}. Email delivery works.")
             return
         console.say(str(body.get("detail") or body.get("title") or f"HTTP {status}"))
         if body.get("code") == "CODE_LOCKED" or attempt == MAX_CODE_TRIES:
@@ -206,14 +242,26 @@ def check_sign_in(
 # ---------------------------------------------------------------------------- production
 
 
-def smtp_values(address: str, password: Secret) -> list[tuple[str, str | Secret, str]]:
+def smtp_values(
+    address: str,
+    password: Secret,
+    host: str = "smtp.gmail.com",
+    port: int = 587,
+    login: str | None = None,
+) -> list[tuple[str, str | Secret, str]]:
     """(name, value, how to show it). EMAIL_PROVIDER goes last so a half-finished run never
-    leaves production pointing at Gmail without credentials."""
+    leaves production pointing at a relay without credentials. `login` defaults to the address
+    (Gmail); relays such as Brevo log in with their own user name."""
     shown = mask_email(address)
+    user = login or address
     return [
-        ("SMTP_HOST", "smtp.gmail.com", "smtp.gmail.com"),
-        ("SMTP_PORT", "587", "587"),
-        ("SMTP_USER", address, f"<email: {shown}>"),
+        ("SMTP_HOST", host, host),
+        ("SMTP_PORT", str(port), str(port)),
+        (
+            "SMTP_USER",
+            user,
+            f"<email: {mask_email(user)}>" if "@" in user else "<smtp login>",
+        ),
         ("SMTP_PASSWORD", password, f"<app password: {len(password)} chars>"),
         ("EMAIL_FROM", f"KitchenTab <{address}>", f"KitchenTab <{shown}>"),
         ("EMAIL_PROVIDER", "smtp", "smtp"),
@@ -241,20 +289,39 @@ def production(console: Console, runner: Runner, args: argparse.Namespace) -> in
         origin = "https://kitchentab.vercel.app"
     _check_origin(origin)
 
+    provider = args.provider
+    host, port = PROVIDERS.get(provider, (args.smtp_host, args.smtp_port))
+    if args.smtp_host:
+        host = args.smtp_host
+    if args.smtp_port:
+        port = args.smtp_port
+    if not host:
+        raise DeployError(
+            "--provider other needs --smtp-host (and usually --smtp-port)."
+        )
+    login: str | None = None
     if dry:
         address, password = "gmail-address@gmail.com", Secret("x" * 16)
-    else:
+    elif provider == "gmail":
         console.say(
             f"Gmail sign-in codes for {origin}. You need the address and an app password ({APP_PASSWORDS_URL})."
         )
         address = ask_address(args.address)
         password = ask_app_password()
+    else:
+        console.say(
+            f"Sign-in codes for {origin} through {host}:{port}. You need the sender address you "
+            "verified with the provider, its SMTP login and its SMTP key."
+        )
+        address = ask_address(args.address)
+        login = ask_login(args.smtp_login, provider)
+        password = ask_secret("SMTP key (typing is hidden): ")
     console.register(password)
 
     console.step("1. Store the Gmail settings (production and preview)")
     for env in ENVIRONMENTS:
         names = set() if dry else vercel.env_names(env)
-        for name, value, shown in smtp_values(address, password):
+        for name, value, shown in smtp_values(address, password, host, port, login):
             if name in names:
                 vercel.env_rm(name, env)
             vercel.env_add(name, env, value, note=shown)
@@ -276,9 +343,9 @@ def production(console: Console, runner: Runner, args: argparse.Namespace) -> in
             console.say(f"[dry-run] {line}")
         return EXIT_OK
     check_sign_in(
-        console, origin, address, ask_code, where="Check that Gmail inbox (and Spam)."
+        console, origin, address, ask_code, where="Check that inbox (and Spam)."
     )
-    console.say("\nDone: production now sends sign-in codes from Gmail.")
+    console.say(f"\nDone: production now sends sign-in codes through {host}.")
     return EXIT_OK
 
 
@@ -420,7 +487,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--dry-run", action="store_true", help="print every command, run none"
     )
-    parser.add_argument("--address", help="Gmail address (asked for if missing)")
+    parser.add_argument("--address", help="sender address (asked for if missing)")
+    parser.add_argument(
+        "--provider",
+        choices=[*PROVIDERS, "other"],
+        default="gmail",
+        help="gmail (app password), brevo (free 300/day, no Gmail needed) or other (--smtp-host)",
+    )
+    parser.add_argument("--smtp-host", help="relay host (other providers)")
+    parser.add_argument(
+        "--smtp-port", type=int, help="relay port, STARTTLS (default 587)"
+    )
+    parser.add_argument(
+        "--smtp-login", help="relay login if it isn't the address (asked for)"
+    )
     parser.add_argument(
         "--url", help="production origin (default: the one `make deploy` recorded)"
     )
