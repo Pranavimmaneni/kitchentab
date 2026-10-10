@@ -75,7 +75,7 @@ export default defineConfig({
           stderr: "pipe",
         },
         {
-          command: `pnpm run build && pnpm exec next start -H 127.0.0.1 --port ${PORT}`,
+          command: `pnpm run build && pnpm exec next start -H localhost --port ${PORT}`,
           url: `${BASE_URL}/dev/components`,
           reuseExistingServer: REUSE,
           timeout: 300_000,
