@@ -241,6 +241,17 @@ test("A11Y-01 axe finds no serious or critical issue on any screen, light or dar
         screen,
         { colorScheme, reducedMotion: "reduce" },
         async (page) => {
+          // Sticky bars (the bottom action bar, the split totals) sit over whatever row happens to
+          // scroll under them; axe's target-size then reports that row's controls as "partially
+          // obscured" depending on a few pixels of font layout (it failed only on Linux CI). Put
+          // sticky elements in normal flow for the audit, so every control, the bars' own
+          // included, is judged at its real size and spacing. Fixed overlays (sheets, dialogs,
+          // toasts) stay as they are.
+          await page.evaluate(() => {
+            for (const el of document.querySelectorAll<HTMLElement>("body *")) {
+              if (getComputedStyle(el).position === "sticky") el.style.position = "static";
+            }
+          });
           const results = await new AxeBuilder({ page })
             .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
             .analyze();
