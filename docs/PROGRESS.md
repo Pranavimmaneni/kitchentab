@@ -6,7 +6,10 @@ is written. Branch: `build/all`. No git remote is configured (nothing is pushed)
 
 **Status (2026-10-10, end of session 2): LIVE at https://kitchentab.vercel.app** (Vercel team `ed-i-th`,
 project `kitchentab`, Neon Postgres, private Blob store, sign-in codes from a dedicated KitchenTab Gmail via
-SMTP). The household is using it. Everything is committed on `build/all` (working tree clean); see
+SMTP). The household is using it. Code: https://github.com/Pranavimmaneni/kitchentab (private; the owner
+invites collaborators). The Vercel project is connected to it: every push to `main` deploys production;
+migrations are not run by Git deploys (`make migrate-prod`, see CONTRIBUTING.md). Vercel Hobby only deploys
+private-repo commits authored by the owner: collaborators need a public repo, Vercel Pro, or owner merges. Everything is committed on `build/all` (working tree clean); see
 docs/LAUNCH.md "Launch log" for what differed at launch (Vercel CLI 54 quirks, all fixed in scripts).
 
 What works (verified): sign-up by email code, house + invite link, manual / PDF / photo (browser OCR)
