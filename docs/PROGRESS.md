@@ -196,7 +196,7 @@ IDs: FR-50..FR-54, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · 
 - [ ] Gate
 
 ## Milestone 8: Fridge and pantry
-IDs: FR-60..FR-80, KITCH-01..16, ASK-01..14, MONEY-09 · Screens K1–K4
+IDs: FR-60..FR-82, KITCH-01..16, ASK-01..18, MONEY-09, MONEY-11 · Screens K1–K4
 
 - [x] API: kitchen panels, fridge/pantry views with filter counts, sharing consent (OPEN only when every
       active owner says yes), use-soon/still-there in house tz, still good +3 d, used up + 60 s restore,
