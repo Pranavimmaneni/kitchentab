@@ -51,7 +51,9 @@ export function clockLabel(hhmm: string): string {
 }
 
 function sinceLabel(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase();
+  return new Date(iso)
+    .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    .toUpperCase();
 }
 
 type Notify = (message: string, retry?: () => void) => void;
@@ -59,7 +61,10 @@ type Notify = (message: string, retry?: () => void) => void;
 /** N2 · Settings › Notifications (NotifySettings.dc.html, PRD §20.2). */
 export function NotifySettingsScreen() {
   const me = useMe();
-  const prefs = useQuery({ queryKey: prefsKey, queryFn: () => api.get<Prefs>("/me/notification-prefs") });
+  const prefs = useQuery({
+    queryKey: prefsKey,
+    queryFn: () => api.get<Prefs>("/me/notification-prefs"),
+  });
   const [toast, setToast] = useState<{ message: string; retry?: () => void } | null>(null);
   const notify: Notify = (message, retry) => setToast({ message, retry });
   const admin = me.data?.houses.some((h) => h.role === "admin") ?? false;
@@ -72,11 +77,17 @@ export function NotifySettingsScreen() {
       />
       <main className="kt-screen__main">
         <PushStatus notify={notify} />
-        {prefs.isError ? <ErrorCard error={prefs.error} onRetry={() => void prefs.refetch()} /> : null}
+        {prefs.isError ? (
+          <ErrorCard error={prefs.error} onRetry={() => void prefs.refetch()} />
+        ) : null}
         {prefs.isPending ? <Skeleton variant="card" lines={8} /> : null}
         {prefs.data ? (
           <>
-            <Matrix prefs={prefs.data} types={admin ? [...TYPES, "joined"] : TYPES} notify={notify} />
+            <Matrix
+              prefs={prefs.data}
+              types={admin ? [...TYPES, "joined"] : TYPES}
+              notify={notify}
+            />
             <QuietAndPrivate prefs={prefs.data} notify={notify} />
           </>
         ) : null}
@@ -101,9 +112,18 @@ export function NotifySettingsScreen() {
 
 function PushStatus({ notify }: { notify: Notify }) {
   const online = useOnline();
-  const devices = useQuery({ queryKey: devicesKey, queryFn: () => api.get<Device[]>("/push/subscriptions") });
+  const devices = useQuery({
+    queryKey: devicesKey,
+    queryFn: () => api.get<Device[]>("/push/subscriptions"),
+  });
   const [hash, setHash] = useState<string | null | undefined>(undefined);
-  const [env, setEnv] = useState<{ permission: string; supported: boolean; ios: boolean; standalone: boolean; name: string } | null>(null);
+  const [env, setEnv] = useState<{
+    permission: string;
+    supported: boolean;
+    ios: boolean;
+    standalone: boolean;
+    name: string;
+  } | null>(null);
   const [sending, setSending] = useState(false);
   const { n1 } = usePrompts();
 
@@ -171,7 +191,11 @@ function PushStatus({ notify }: { notify: Notify }) {
           size={44}
           disabled={!online}
           onClick={() =>
-            openN1({ platform: env.ios ? "ios" : "android", countsAsInstall: false, fromSettings: true })
+            openN1({
+              platform: env.ios ? "ios" : "android",
+              countsAsInstall: false,
+              fromSettings: true,
+            })
           }
         >
           {iosTab || !env.supported ? S.showMe : S.turnOnShort}
@@ -183,7 +207,9 @@ function PushStatus({ notify }: { notify: Notify }) {
 
 function usePrefWrite(notify: Notify) {
   const client = useQueryClient();
-  return async function write(change: Partial<Prefs> & { push?: Record<string, boolean>; email?: Record<string, boolean> }) {
+  return async function write(
+    change: Partial<Prefs> & { push?: Record<string, boolean>; email?: Record<string, boolean> },
+  ) {
     const before = client.getQueryData<Prefs>(prefsKey);
     // Set-state write (PRD §21.3): the desired value, optimistic, rolled back on failure.
     client.setQueryData<Prefs>(prefsKey, (old) =>
@@ -201,12 +227,25 @@ function usePrefWrite(notify: Notify) {
       client.setQueryData(prefsKey, saved);
     } catch (error) {
       client.setQueryData(prefsKey, before);
-      notify(isApiError(error) && error.status !== 0 ? error.title : strings.sync.couldntSaveRetry, () => void write(change));
+      notify(
+        isApiError(error) && error.status !== 0 ? error.title : strings.sync.couldntSaveRetry,
+        () => void write(change),
+      );
     }
   };
 }
 
-function Toggle({ on, label, disabled, onChange }: { on: boolean; label: string; disabled: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  on,
+  label,
+  disabled,
+  onChange,
+}: {
+  on: boolean;
+  label: string;
+  disabled: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <button
       type="button"
@@ -316,7 +355,10 @@ function QuietAndPrivate({ prefs, notify }: { prefs: Prefs; notify: Notify }) {
 function Devices({ notify }: { notify: Notify }) {
   const client = useQueryClient();
   const online = useOnline();
-  const devices = useQuery({ queryKey: devicesKey, queryFn: () => api.get<Device[]>("/push/subscriptions") });
+  const devices = useQuery({
+    queryKey: devicesKey,
+    queryFn: () => api.get<Device[]>("/push/subscriptions"),
+  });
   const [hash, setHash] = useState<string | null>(null);
   const [standalone, setStandalone] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -331,7 +373,10 @@ function Devices({ notify }: { notify: Notify }) {
     try {
       await api.del(`/push/subscriptions/${device.id}`);
     } catch (error) {
-      notify(isApiError(error) ? error.title : strings.error.couldntSave, () => void remove(device));
+      notify(
+        isApiError(error) ? error.title : strings.error.couldntSave,
+        () => void remove(device),
+      );
     } finally {
       setRemoving(null);
       await client.invalidateQueries({ queryKey: devicesKey });
@@ -344,7 +389,9 @@ function Devices({ notify }: { notify: Notify }) {
         {S.devices}
       </h2>
       {devices.isPending ? <Skeleton lines={2} /> : null}
-      {devices.data && devices.data.length === 0 ? <p className="kt-n2__empty">{S.noDevices}</p> : null}
+      {devices.data && devices.data.length === 0 ? (
+        <p className="kt-n2__empty">{S.noDevices}</p>
+      ) : null}
       {devices.data && devices.data.length > 0 ? (
         <ul className="kt-n2__devices">
           {devices.data.map((d) => {
@@ -386,9 +433,14 @@ function Devices({ notify }: { notify: Notify }) {
 /** Settings › Install app: where the install card goes after it was shown twice (PRD §20.1). */
 function Install() {
   const { canInstall } = usePrompts();
-  const [env, setEnv] = useState<{ standalone: boolean; ios: boolean; safari: boolean } | null>(null);
+  const [env, setEnv] = useState<{ standalone: boolean; ios: boolean; safari: boolean } | null>(
+    null,
+  );
   const headingId = useId();
-  useEffect(() => setEnv({ standalone: isStandalone(), ios: isIos(), safari: isDesktopSafari() }), [canInstall]);
+  useEffect(
+    () => setEnv({ standalone: isStandalone(), ios: isIos(), safari: isDesktopSafari() }),
+    [canInstall],
+  );
   if (!env) return null;
   return (
     <section className="kt-field" aria-labelledby={headingId}>
@@ -402,7 +454,9 @@ function Install() {
           {S.installButton}
         </PillButton>
       ) : (
-        <p className="kt-n2__hint">{env.ios ? S.iosHint : env.safari ? S.safariHint : S.otherHint}</p>
+        <p className="kt-n2__hint">
+          {env.ios ? S.iosHint : env.safari ? S.safariHint : S.otherHint}
+        </p>
       )}
     </section>
   );

@@ -59,6 +59,14 @@ async function fakePushManager(context: BrowserContext): Promise<void> {
 }
 
 async function worker(page: Page): Promise<Worker> {
+  // Installing precaches the whole shell; on a busy machine that can take a while.
+  await page.waitForFunction(async () => Boolean(await navigator.serviceWorker.ready), undefined, {
+    timeout: 90_000,
+  });
+  if (!(await page.evaluate(() => Boolean(navigator.serviceWorker.controller)))) {
+    await page.reload();
+    await hydrated(page);
+  }
   await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller), undefined, {
     timeout: 30_000,
   });

@@ -19,7 +19,11 @@ vi.mock("@/lib/receipts/prepare", () => ({
   },
   preparePhoto: vi.fn(async (file: Blob) => {
     calls.push("prepare");
-    return { blob: new Blob([await file.arrayBuffer()], { type: "image/jpeg" }), mime: "image/jpeg", source: { width: 10, height: 10 } };
+    return {
+      blob: new Blob([await file.arrayBuffer()], { type: "image/jpeg" }),
+      mime: "image/jpeg",
+      source: { width: 10, height: 10 },
+    };
   }),
   renderPdfPages: vi.fn(async () => {
     calls.push("render");
@@ -37,14 +41,23 @@ vi.mock("@/lib/receipts/upload", () => ({
     }
     return `receipts/b/${calls.length}.jpg`;
   }),
-  attach: vi.fn(async (_bill: string, _key: string, _mime: string, _bytes: number, idem: string) => {
-    calls.push(`attach:${idem}`);
-    return { receipt: { id: `r${calls.length}` }, extraction: state.attachExtraction, result: null, bill: {} };
-  }),
-  postOcr: vi.fn(async (_bill: string, receiptId: string | undefined, parts: unknown[], idem: string) => {
-    calls.push(`ocr:${receiptId}:${parts.length}:${idem}`);
-    return { extraction: state.ocrExtraction, result: null };
-  }),
+  attach: vi.fn(
+    async (_bill: string, _key: string, _mime: string, _bytes: number, idem: string) => {
+      calls.push(`attach:${idem}`);
+      return {
+        receipt: { id: `r${calls.length}` },
+        extraction: state.attachExtraction,
+        result: null,
+        bill: {},
+      };
+    },
+  ),
+  postOcr: vi.fn(
+    async (_bill: string, receiptId: string | undefined, parts: unknown[], idem: string) => {
+      calls.push(`ocr:${receiptId}:${parts.length}:${idem}`);
+      return { extraction: state.ocrExtraction, result: null };
+    },
+  ),
 }));
 
 vi.mock("@/lib/receipts/ocr", () => ({
@@ -61,10 +74,18 @@ vi.mock("@/lib/receipts/ocr", () => ({
   })),
 }));
 
-const { getScanJob, resetScanJobs, retryScan, startScan, dismissScan } = await import("@/lib/receipts/scan-job");
+const { getScanJob, resetScanJobs, retryScan, startScan, dismissScan } =
+  await import("@/lib/receipts/scan-job");
 
-const jpeg = () => ({ file: new File([new Uint8Array([0xff, 0xd8, 0xff, 1])], "r.jpg"), mime: "image/jpeg" as const });
-const pdf = () => ({ file: new File(["%PDF-1.4"], "r.pdf"), mime: "application/pdf" as const, pages: 1 });
+const jpeg = () => ({
+  file: new File([new Uint8Array([0xff, 0xd8, 0xff, 1])], "r.jpg"),
+  mime: "image/jpeg" as const,
+});
+const pdf = () => ({
+  file: new File(["%PDF-1.4"], "r.pdf"),
+  mime: "application/pdf" as const,
+  pages: 1,
+});
 
 async function settled(billId: string) {
   await vi.waitFor(() => {
@@ -76,7 +97,12 @@ async function settled(billId: string) {
 
 beforeEach(() => {
   calls.length = 0;
-  Object.assign(state, { attachExtraction: "needs_ocr", ocrExtraction: "done", failOcrOnce: false, failUploadOnce: false });
+  Object.assign(state, {
+    attachExtraction: "needs_ocr",
+    ocrExtraction: "done",
+    failOcrOnce: false,
+    failUploadOnce: false,
+  });
   resetScanJobs();
 });
 afterEach(() => resetScanJobs());
@@ -109,7 +135,10 @@ describe("receipt scan job", () => {
     state.failOcrOnce = true;
     startScan("b4", [jpeg()]);
     const failed = await settled("b4");
-    expect(failed).toMatchObject({ phase: "failed", error: "No items we could trust on it. The file is still attached." });
+    expect(failed).toMatchObject({
+      phase: "failed",
+      error: "No items we could trust on it. The file is still attached.",
+    });
     const attachKey = calls.find((c) => c.startsWith("attach:"));
     calls.length = 0;
     expect(retryScan("b4")).toBe(true);
@@ -129,7 +158,7 @@ describe("receipt scan job", () => {
     expect(calls.filter((c) => c.startsWith("attach:"))).toHaveLength(1);
   });
 
-  it("EXTRACT-06 the parser finding nothing is a failure: \"Couldn't read that one.\" [FR-10]", async () => {
+  it('EXTRACT-06 the parser finding nothing is a failure: "Couldn\'t read that one." [FR-10]', async () => {
     state.ocrExtraction = "failed";
     startScan("b6", [jpeg()]);
     expect(await settled("b6")).toMatchObject({ phase: "failed", outcome: "failed" });

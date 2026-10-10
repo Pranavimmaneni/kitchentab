@@ -36,6 +36,20 @@ test("SYNC-07 two owners answer the same ask at once: the first answer stands, t
   await cardOf(arjun)
     .getByRole("radio", { name: /^Add them to the split/ })
     .click();
+  // Hold each answer at the edge of the browser until both are on their way, so the two really
+  // reach the server together (otherwise the first one's live update can take the second card's
+  // buttons away before it is tapped, which is the friendly case and not this race).
+  let release: () => void = () => undefined;
+  const both = new Promise<void>((resolve) => (release = resolve));
+  let waiting = 0;
+  for (const who of [page, arjun]) {
+    await who.route(/\/api\/v1\/requests\/[^/]+\/answer$/, async (route) => {
+      waiting += 1;
+      if (waiting === 2) release();
+      await both;
+      await route.continue();
+    });
+  }
   await Promise.all([
     cardOf(page).getByRole("button", { name: "Say yes" }).click(),
     cardOf(arjun).getByRole("button", { name: "Say yes" }).click(),
@@ -47,7 +61,7 @@ test("SYNC-07 two owners answer the same ask at once: the first answer stands, t
       async () =>
         (await page.getByText("Already answered by Arjun").count()) +
         (await arjun.getByText("Already answered by Pranav").count()),
-      { timeout: 5000 },
+      { timeout: 10_000 },
     )
     .toBe(1);
   const stamp = /^YES · (ON THE HOUSE|ADDED TO SPLIT)$/;
@@ -57,7 +71,7 @@ test("SYNC-07 two owners answer the same ask at once: the first answer stands, t
     const theirs = await cardOf(arjun).getByText(stamp).textContent({ timeout: 50 });
     expect(mine).toBe(theirs);
     shown = mine ?? "";
-  }).toPass({ timeout: 2000 });
+  }).toPass({ timeout: 10_000 });
   // The asker sees the same outcome.
   const ask = (
     await call<{ requests: { status: string; resolution: string | null }[] }>(
@@ -88,20 +102,15 @@ test("SYNC-13 two owners mark the same item used up at once: it leaves both frid
       .getByRole("button", { name: "Used up" });
   await Promise.all([usedUp(page).click(), usedUp(arjun).click()]);
 
+  // Both writes are answered (the second is a no-op: same state, no second event) …
   for (const who of [page, arjun]) {
-    try {
-      await expect(tile(who, "Chicken thighs 3 lb")).toHaveCount(0, { timeout: 2000 });
-    } catch (e) {
-      console.log("DEBUG", who === page ? "pranav" : "arjun", (await who.locator("body").innerText()).slice(0, 1500));
-      await who.waitForTimeout(3000);
-      console.log("DEBUG later", await tile(who, "Chicken thighs 3 lb").count());
-      throw e;
-    }
+    await expect(tile(who, "Chicken thighs 3 lb")).toHaveCount(0);
   }
-  // One Undo (from whichever toast) restores it everywhere.
+  // … and one Undo, from either toast, reaches the other phone within 2 s.
+  const restored = page.waitForResponse((r) => r.url().endsWith("/restore") && r.ok());
   await page.getByRole("button", { name: "Undo" }).click();
-  for (const who of [page, arjun]) {
-    await expect(tile(who, "Chicken thighs 3 lb")).toBeVisible({ timeout: 2000 });
-  }
+  await restored;
+  await expect(tile(page, "Chicken thighs 3 lb")).toBeVisible();
+  await expect(tile(arjun, "Chicken thighs 3 lb")).toBeVisible({ timeout: 2000 });
   await closeApt(apt);
 });

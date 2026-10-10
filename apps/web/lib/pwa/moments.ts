@@ -32,14 +32,24 @@ export type Decision =
   | { kind: "install" }
   | null;
 
-export function pushOfferable(device: DeviceState, memory: PromptMemory, now: number, fromSettings = false): boolean {
+export function pushOfferable(
+  device: DeviceState,
+  memory: PromptMemory,
+  now: number,
+  fromSettings = false,
+): boolean {
   if (memory.pushDenied || device.permission === "denied") return false;
   if (device.permission === "granted" && device.subscribed) return fromSettings;
   if (fromSettings) return true;
   return memory.n1NotNow < MAX_NOT_NOW && now >= memory.n1SnoozedUntil;
 }
 
-export function decide(moment: Moment, device: DeviceState, memory: PromptMemory, now: number): Decision {
+export function decide(
+  moment: Moment,
+  device: DeviceState,
+  memory: PromptMemory,
+  now: number,
+): Decision {
   const iosTab = device.ios && !device.standalone;
   const installLeft = memory.installShown < MAX_INSTALL_CARDS;
   if (moment === "settings") {
@@ -58,7 +68,12 @@ export function decide(moment: Moment, device: DeviceState, memory: PromptMemory
   ) {
     return { kind: "n1", platform: device.ios ? "ios" : "android", countsAsInstall: false };
   }
-  if ((moment === "bill" || moment === "visit") && !device.standalone && device.canPrompt && installLeft) {
+  if (
+    (moment === "bill" || moment === "visit") &&
+    !device.standalone &&
+    device.canPrompt &&
+    installLeft
+  ) {
     return { kind: "install" };
   }
   return null;

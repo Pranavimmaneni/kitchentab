@@ -11,7 +11,12 @@ export function blobToken(): string | null {
 }
 
 /** RFC 9457 problem details, the same shape as the API's errors. */
-export function blobProblem(status: number, code: string, title: string, extra: Record<string, unknown> = {}) {
+export function blobProblem(
+  status: number,
+  code: string,
+  title: string,
+  extra: Record<string, unknown> = {},
+) {
   return Response.json(
     { type: "about:blank", title, status, code, ...extra },
     {

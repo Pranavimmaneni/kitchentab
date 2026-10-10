@@ -25,9 +25,16 @@ export async function GET(request: Request): Promise<Response> {
     Math.floor(Date.now() / 1000),
   );
   if (check !== "ok" || !VIEWABLE.test(pathname)) {
-    return blobProblem(403, "FORBIDDEN", check === "expired" ? "This link expired" : "This link doesn't work");
+    return blobProblem(
+      403,
+      "FORBIDDEN",
+      check === "expired" ? "This link expired" : "This link doesn't work",
+    );
   }
-  const validUntil = Math.min(Number(url.searchParams.get("expires")) * 1000, Date.now() + VIEW_TTL_MS);
+  const validUntil = Math.min(
+    Number(url.searchParams.get("expires")) * 1000,
+    Date.now() + VIEW_TTL_MS,
+  );
   try {
     const signed = await issueSignedToken({ token, pathname, operations: ["get"], validUntil });
     const { presignedUrl } = await presignUrl(signed, {

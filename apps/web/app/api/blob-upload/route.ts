@@ -30,11 +30,16 @@ export async function POST(request: Request): Promise<Response> {
       token,
       request,
       body,
-      onBeforeGenerateToken: (pathname, clientPayload) => authorizeBlobUpload(request, pathname, clientPayload),
+      onBeforeGenerateToken: (pathname, clientPayload) =>
+        authorizeBlobUpload(request, pathname, clientPayload),
     });
     return Response.json(result, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
-    if (error instanceof BlobRefusal) return Response.json(error.body, { status: error.status, headers: { "Content-Type": "application/problem+json" } });
+    if (error instanceof BlobRefusal)
+      return Response.json(error.body, {
+        status: error.status,
+        headers: { "Content-Type": "application/problem+json" },
+      });
     return blobProblem(503, "INTERNAL", "Couldn't reach file storage");
   }
 }

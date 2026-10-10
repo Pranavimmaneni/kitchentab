@@ -18,13 +18,21 @@ const out = path.join(web, "public", "ocr");
 const require = createRequire(path.join(web, "package.json"));
 
 const tesseractDir = path.dirname(require.resolve("tesseract.js/package.json"));
-const coreDir = path.dirname(createRequire(path.join(tesseractDir, "package.json")).resolve("tesseract.js-core/package.json"));
+const coreDir = path.dirname(
+  createRequire(path.join(tesseractDir, "package.json")).resolve("tesseract.js-core/package.json"),
+);
 const pdfjsDir = path.dirname(require.resolve("pdfjs-dist/package.json"));
 
 const copies = [
   [path.join(tesseractDir, "dist", "worker.min.js"), path.join(out, "worker.min.js")],
-  [path.join(coreDir, "tesseract-core-simd-lstm.wasm.js"), path.join(out, "core", "tesseract-core-simd-lstm.wasm.js")],
-  [path.join(coreDir, "tesseract-core-lstm.wasm.js"), path.join(out, "core", "tesseract-core-lstm.wasm.js")],
+  [
+    path.join(coreDir, "tesseract-core-simd-lstm.wasm.js"),
+    path.join(out, "core", "tesseract-core-simd-lstm.wasm.js"),
+  ],
+  [
+    path.join(coreDir, "tesseract-core-lstm.wasm.js"),
+    path.join(out, "core", "tesseract-core-lstm.wasm.js"),
+  ],
   [path.join(pdfjsDir, "build", "pdf.min.mjs"), path.join(out, "pdf.min.mjs")],
   [path.join(pdfjsDir, "build", "pdf.worker.min.mjs"), path.join(out, "pdf.worker.min.mjs")],
 ];
@@ -32,7 +40,12 @@ const copies = [
 mkdirSync(path.join(out, "core"), { recursive: true });
 for (const [from, to] of copies) {
   if (!existsSync(from)) throw new Error(`missing OCR asset ${from}`);
-  if (existsSync(to) && statSync(to).size === statSync(from).size && statSync(to).mtimeMs >= statSync(from).mtimeMs) continue;
+  if (
+    existsSync(to) &&
+    statSync(to).size === statSync(from).size &&
+    statSync(to).mtimeMs >= statSync(from).mtimeMs
+  )
+    continue;
   copyFileSync(from, to);
 }
 if (!existsSync(path.join(out, "lang", "eng.traineddata.gz"))) {

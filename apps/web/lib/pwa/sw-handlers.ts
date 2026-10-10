@@ -22,13 +22,20 @@ export const NOTIFICATION_ICON = "/icons/icon-192.png";
 
 /** Only paths on this origin: a payload can never send people elsewhere. */
 export function safePath(value: unknown): string {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\")
+  ) {
     return "/";
   }
   return value;
 }
 
-export function parsePush(data: { json(): unknown; text(): string } | null | undefined): PushPayload {
+export function parsePush(
+  data: { json(): unknown; text(): string } | null | undefined,
+): PushPayload {
   let raw: Record<string, unknown> = {};
   try {
     const parsed = data?.json();
@@ -43,7 +50,10 @@ export function parsePush(data: { json(): unknown; text(): string } | null | und
     body: str(raw.body) ?? "",
     url: safePath(raw.url),
     tag: str(raw.tag),
-    badge: typeof raw.badge === "number" && Number.isFinite(raw.badge) ? Math.max(0, Math.floor(raw.badge)) : null,
+    badge:
+      typeof raw.badge === "number" && Number.isFinite(raw.badge)
+        ? Math.max(0, Math.floor(raw.badge))
+        : null,
     event_id: str(raw.event_id),
   };
 }
@@ -77,12 +87,17 @@ export type PushDeps = {
 };
 
 export async function handlePush(payload: PushPayload, deps: PushDeps): Promise<void> {
-  const tasks: Promise<unknown>[] = [deps.showNotification(payload.title, notificationOptions(payload))];
+  const tasks: Promise<unknown>[] = [
+    deps.showNotification(payload.title, notificationOptions(payload)),
+  ];
   if (payload.badge !== null) {
-    if (payload.badge > 0 && deps.setAppBadge) tasks.push(deps.setAppBadge(payload.badge).catch(() => undefined));
-    if (payload.badge === 0 && deps.clearAppBadge) tasks.push(deps.clearAppBadge().catch(() => undefined));
+    if (payload.badge > 0 && deps.setAppBadge)
+      tasks.push(deps.setAppBadge(payload.badge).catch(() => undefined));
+    if (payload.badge === 0 && deps.clearAppBadge)
+      tasks.push(deps.clearAppBadge().catch(() => undefined));
   }
-  for (const client of await deps.windows()) client.postMessage({ type: "kt:push", url: payload.url });
+  for (const client of await deps.windows())
+    client.postMessage({ type: "kt:push", url: payload.url });
   await Promise.all(tasks);
 }
 
@@ -93,7 +108,10 @@ export type ClickDeps = {
 };
 
 /** Focus a KitchenTab window and take it to `path`; with none open, open one there (PUSH-15). */
-export async function handleNotificationClick(path: string, deps: ClickDeps): Promise<"focused" | "opened"> {
+export async function handleNotificationClick(
+  path: string,
+  deps: ClickDeps,
+): Promise<"focused" | "opened"> {
   const target = new URL(safePath(path), deps.origin).href;
   const ours = (await deps.windows()).filter((c) => {
     try {
@@ -138,7 +156,8 @@ export type ResubscribeDeps = {
 };
 
 export function base64UrlToBytes(value: string): Uint8Array {
-  const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
+  const padded =
+    value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
   const raw = atob(padded);
   const out = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
@@ -157,9 +176,12 @@ export async function handleSubscriptionChange(
 ): Promise<boolean> {
   let next = change.newSubscription ?? null;
   if (!next) {
-    let key: ArrayBuffer | Uint8Array | null | undefined = change.oldSubscription?.options?.applicationServerKey;
+    let key: ArrayBuffer | Uint8Array | null | undefined =
+      change.oldSubscription?.options?.applicationServerKey;
     if (!key) {
-      const res = await deps.fetch(`${deps.origin}/api/v1/push/config`, { credentials: "same-origin" });
+      const res = await deps.fetch(`${deps.origin}/api/v1/push/config`, {
+        credentials: "same-origin",
+      });
       if (!res.ok) return false;
       key = base64UrlToBytes(((await res.json()) as { vapid_public_key: string }).vapid_public_key);
     }
@@ -167,7 +189,9 @@ export async function handleSubscriptionChange(
   }
   const json = next.toJSON();
   if (!json.keys?.p256dh || !json.keys.auth) return false;
-  const csrfRes = await deps.fetch(`${deps.origin}/api/v1/auth/csrf`, { credentials: "same-origin" });
+  const csrfRes = await deps.fetch(`${deps.origin}/api/v1/auth/csrf`, {
+    credentials: "same-origin",
+  });
   if (!csrfRes.ok) return false;
   const { token } = (await csrfRes.json()) as { token: string };
   const res = await deps.fetch(`${deps.origin}/api/v1/push/subscriptions`, {

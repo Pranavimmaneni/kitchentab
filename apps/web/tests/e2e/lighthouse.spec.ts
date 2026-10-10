@@ -37,12 +37,18 @@ test("PWA-12 Lighthouse mobile: performance, accessibility, best practices ≥ 9
       `--output-path=${out}`,
       "--quiet",
     ],
-    { env: { ...process.env, CHROME_PATH: chromium.executablePath() }, stdio: "inherit", shell: process.platform === "win32" },
+    {
+      env: { ...process.env, CHROME_PATH: chromium.executablePath() },
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    },
   );
   const report = JSON.parse(readFileSync(`${out}.report.json`, "utf8")) as {
     categories: Record<string, { score: number }>;
   };
-  const scores = Object.fromEntries(Object.entries(report.categories).map(([k, v]) => [k, v.score]));
+  const scores = Object.fromEntries(
+    Object.entries(report.categories).map(([k, v]) => [k, v.score]),
+  );
   expect(scores.performance).toBeGreaterThanOrEqual(0.9);
   expect(scores.accessibility).toBeGreaterThanOrEqual(0.9);
   expect(scores["best-practices"]).toBeGreaterThanOrEqual(0.9);

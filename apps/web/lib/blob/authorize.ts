@@ -30,9 +30,18 @@ function parsePayload(raw: string | null): BlobClientPayload {
     !Number.isInteger(p.bytes) ||
     (p.pages !== undefined && (typeof p.pages !== "number" || !Number.isInteger(p.pages)))
   ) {
-    throw new BlobRefusal(422, { title: "Bad upload request", status: 422, code: "VALIDATION_FAILED" });
+    throw new BlobRefusal(422, {
+      title: "Bad upload request",
+      status: 422,
+      code: "VALIDATION_FAILED",
+    });
   }
-  return { bill_id: p.bill_id, mime: p.mime, bytes: p.bytes, ...(p.pages ? { pages: p.pages } : {}) };
+  return {
+    bill_id: p.bill_id,
+    mime: p.mime,
+    bytes: p.bytes,
+    ...(p.pages ? { pages: p.pages } : {}),
+  };
 }
 
 export type TokenLimits = {
@@ -63,7 +72,11 @@ export async function authorizeBlobUpload(
       cache: "no-store",
     });
   } catch {
-    throw new BlobRefusal(503, { title: "Couldn't reach the server", status: 503, code: "INTERNAL" });
+    throw new BlobRefusal(503, {
+      title: "Couldn't reach the server",
+      status: 503,
+      code: "INTERNAL",
+    });
   }
   if (!res.ok) {
     let body: Record<string, unknown> = { title: "Not allowed", status: res.status };
@@ -76,7 +89,11 @@ export async function authorizeBlobUpload(
   }
   const ticket = (await res.json()) as UploadTicket;
   if (ticket.storage_key !== pathname) {
-    throw new BlobRefusal(422, { title: "That upload doesn't belong to this tab", status: 422, code: "VALIDATION_FAILED" });
+    throw new BlobRefusal(422, {
+      title: "That upload doesn't belong to this tab",
+      status: 422,
+      code: "VALIDATION_FAILED",
+    });
   }
   return {
     allowedContentTypes: [ticket.content_type],

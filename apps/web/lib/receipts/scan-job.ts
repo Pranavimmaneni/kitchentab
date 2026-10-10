@@ -100,7 +100,11 @@ export function startScan(billId: string, files: readonly (Checked & { pages?: n
       dismissed: false,
       fileCount: files.length,
     },
-    parts: files.map((f) => ({ checked: { file: f.file, mime: f.mime }, pages: f.pages, attachKey: newId() })),
+    parts: files.map((f) => ({
+      checked: { file: f.file, mime: f.mime },
+      pages: f.pages,
+      attachKey: newId(),
+    })),
     ocrKey: null,
     run: 0,
   };
@@ -191,7 +195,8 @@ async function run(job: Internal): Promise<void> {
     for (const part of job.parts) {
       if (part.checked.mime !== PDF && !part.prepared) {
         part.prepared = await preparePhoto(part.checked.file, part.checked.mime);
-        if (part.prepared.blob.size > MAX_BYTES) throw new PrepareError("encode", "too large after encoding");
+        if (part.prepared.blob.size > MAX_BYTES)
+          throw new PrepareError("encode", "too large after encoding");
       }
     }
     if (!live()) return;

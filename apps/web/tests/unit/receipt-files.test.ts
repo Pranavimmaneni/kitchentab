@@ -8,10 +8,18 @@ import {
   isRefusal,
   sniffMime,
 } from "@/lib/receipts/files";
-import { hasMetadata, jpegSegments, stripJpegMetadata, stripMetadata, stripPngMetadata } from "@/lib/receipts/exif";
+import {
+  hasMetadata,
+  jpegSegments,
+  stripJpegMetadata,
+  stripMetadata,
+  stripPngMetadata,
+} from "@/lib/receipts/exif";
 
 const bytes = (...parts: (number[] | string)[]) =>
-  new Uint8Array(parts.flatMap((p) => (typeof p === "string" ? [...p].map((c) => c.charCodeAt(0)) : p)));
+  new Uint8Array(
+    parts.flatMap((p) => (typeof p === "string" ? [...p].map((c) => c.charCodeAt(0)) : p)),
+  );
 
 const JPEG_HEAD = [0xff, 0xd8, 0xff, 0xe0];
 const PNG_HEAD = "\x89PNG\r\n\x1a\n";
@@ -36,7 +44,10 @@ describe("receipt files are checked on the device", () => {
     expect(checkBytes(bytes("plain text"), 10)).toMatchObject({ code: "type" });
     expect(checkBytes(bytes(), 0)).toMatchObject({ code: "empty" });
     expect(checkPages(10)).toBeNull();
-    expect(checkPages(11)).toMatchObject({ code: "pages", message: "That PDF has more than 10 pages." });
+    expect(checkPages(11)).toMatchObject({
+      code: "pages",
+      message: "That PDF has more than 10 pages.",
+    });
   });
 
   it("EXTRACT-01 a pick is up to 10 photos or one PDF, never a mix [FR-10]", () => {
@@ -51,7 +62,9 @@ describe("receipt files are checked on the device", () => {
     const ok = await checkFiles([new File([bytes(JPEG_HEAD, "rest")], "r.heic")]);
     expect(isRefusal(ok)).toBe(false);
     expect(ok).toMatchObject([{ mime: "image/jpeg" }]);
-    const renamed = await checkFiles([new File(["just text"], "receipt.jpg", { type: "image/jpeg" })]);
+    const renamed = await checkFiles([
+      new File(["just text"], "receipt.jpg", { type: "image/jpeg" }),
+    ]);
     expect(renamed).toMatchObject({ code: "type" });
     expect(await checkFiles([])).toMatchObject({ code: "empty" });
   });
@@ -65,7 +78,8 @@ function jpegWithMetadata(): Uint8Array {
     return [0xff, marker, len >> 8, len & 0xff, ...payload];
   };
   return new Uint8Array([
-    0xff, 0xd8,
+    0xff,
+    0xd8,
     ...seg(0xe0, "JFIF\0\x01\x01\0\0\x01\0\x01\0\0"),
     ...seg(0xe1, "Exif\0\0MM\0*\0\0\0\x08GPSLatitude40.7128N"),
     ...seg(0xe1, "http://ns.adobe.com/xap/1.0/\0<x:xmpmeta/>"),
@@ -73,8 +87,13 @@ function jpegWithMetadata(): Uint8Array {
     ...seg(0xe2, "ICC_PROFILE\0\x01\x01profile"),
     ...seg(0xdb, [0, ...Array(64).fill(1)]),
     ...seg(0xda, [1, 1, 0, 0, 63, 0]),
-    0x12, 0x34, 0xff, 0x00, 0x56,
-    0xff, 0xd9,
+    0x12,
+    0x34,
+    0xff,
+    0x00,
+    0x56,
+    0xff,
+    0xd9,
   ]);
 }
 
@@ -101,7 +120,17 @@ describe("photo metadata never leaves the device", () => {
   it("EXTRACT-02 PNG eXIf and text chunks are dropped [FR-10]", () => {
     const chunk = (type: string, data: string) => {
       const len = data.length;
-      return [len >>> 24, (len >> 16) & 255, (len >> 8) & 255, len & 255, ...bytes(type, data), 0, 0, 0, 0];
+      return [
+        len >>> 24,
+        (len >> 16) & 255,
+        (len >> 8) & 255,
+        len & 255,
+        ...bytes(type, data),
+        0,
+        0,
+        0,
+        0,
+      ];
     };
     const png = new Uint8Array([
       ...bytes(PNG_HEAD),
@@ -121,7 +150,11 @@ describe("photo metadata never leaves the device", () => {
   it("EXTRACT-02 malformed or unknown files come back unchanged [FR-10]", () => {
     const junk = bytes("not an image");
     expect(stripMetadata(junk)).toBe(junk);
-    expect(stripJpegMetadata(new Uint8Array([0xff, 0xd8, 0x00]))).toEqual(new Uint8Array([0xff, 0xd8, 0x00]));
-    expect(hasMetadata(bytes("RIFF", [0, 0, 0, 0], "WEBP", "EXIF", [4, 0, 0, 0], "abcd"))).toBe(true);
+    expect(stripJpegMetadata(new Uint8Array([0xff, 0xd8, 0x00]))).toEqual(
+      new Uint8Array([0xff, 0xd8, 0x00]),
+    );
+    expect(hasMetadata(bytes("RIFF", [0, 0, 0, 0], "WEBP", "EXIF", [4, 0, 0, 0], "abcd"))).toBe(
+      true,
+    );
   });
 });

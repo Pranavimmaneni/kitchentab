@@ -61,13 +61,19 @@ async function register(sub: PushSubscription, replaces: string | null): Promise
   setString(KEYS.endpoint, sub.endpoint);
 }
 
-async function subscription(reg: ServiceWorkerRegistration, key: Uint8Array): Promise<PushSubscription> {
+async function subscription(
+  reg: ServiceWorkerRegistration,
+  key: Uint8Array,
+): Promise<PushSubscription> {
   let sub = await reg.pushManager.getSubscription();
   if (sub && !sameKey(sub.options?.applicationServerKey, key)) {
     await sub.unsubscribe().catch(() => false);
     sub = null;
   }
-  return sub ?? reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key as BufferSource });
+  return (
+    sub ??
+    reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key as BufferSource })
+  );
 }
 
 /**
@@ -88,7 +94,8 @@ export async function enablePush(): Promise<EnableResult> {
   }
   if (permission !== "granted") return "default";
   try {
-    const reg = await swRegistration();
+    // The first visit may still be installing the worker (it precaches the whole shell).
+    const reg = await swRegistration(30_000);
     if (!reg) return "error";
     const sub = await subscription(reg, await vapidKey());
     await register(sub, getString(KEYS.endpoint));
@@ -113,7 +120,8 @@ export async function syncSubscription(): Promise<SyncResult> {
     const previous = getString(KEYS.endpoint);
     const devices = await api.get<Device[]>("/push/subscriptions");
     const hash = await endpointHash(sub.endpoint);
-    if (previous === sub.endpoint && devices.some((d) => d.endpoint_hash === hash)) return "unchanged";
+    if (previous === sub.endpoint && devices.some((d) => d.endpoint_hash === hash))
+      return "unchanged";
     await register(sub, previous);
     return previous && previous !== sub.endpoint ? "replaced" : "registered";
   } catch (error) {

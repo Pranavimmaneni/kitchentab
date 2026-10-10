@@ -16,12 +16,40 @@ const data = (v: unknown) => ({ json: () => v, text: () => JSON.stringify(v) });
 
 describe("push in the service worker (PRD §20.2)", () => {
   it("PUSH-15 a payload becomes a notification collapsed by tag, opening a path on this origin [FR-42]", () => {
-    const p = parsePush(data({ title: "Kabir paid $18.89", body: "Tap to confirm.", url: "/bills/b1", tag: "pay-1", badge: 3, event_id: "e1" }));
-    expect(p).toEqual({ title: "Kabir paid $18.89", body: "Tap to confirm.", url: "/bills/b1", tag: "pay-1", badge: 3, event_id: "e1" });
-    expect(notificationOptions(p)).toMatchObject({ body: "Tap to confirm.", tag: "pay-1", renotify: true, data: { url: "/bills/b1" } });
+    const p = parsePush(
+      data({
+        title: "Kabir paid $18.89",
+        body: "Tap to confirm.",
+        url: "/bills/b1",
+        tag: "pay-1",
+        badge: 3,
+        event_id: "e1",
+      }),
+    );
+    expect(p).toEqual({
+      title: "Kabir paid $18.89",
+      body: "Tap to confirm.",
+      url: "/bills/b1",
+      tag: "pay-1",
+      badge: 3,
+      event_id: "e1",
+    });
+    expect(notificationOptions(p)).toMatchObject({
+      body: "Tap to confirm.",
+      tag: "pay-1",
+      renotify: true,
+      data: { url: "/bills/b1" },
+    });
     expect(parsePush(data({ url: "https://evil.example/x" })).url).toBe("/");
     expect(parsePush(data({ url: "//evil.example" })).url).toBe("/");
-    expect(parsePush({ json: () => { throw new Error("not json"); }, text: () => "hello" })).toMatchObject({ title: "KitchenTab", body: "hello" });
+    expect(
+      parsePush({
+        json: () => {
+          throw new Error("not json");
+        },
+        text: () => "hello",
+      }),
+    ).toMatchObject({ title: "KitchenTab", body: "hello" });
     expect(safePath("/\\evil")).toBe("/");
   });
 
@@ -29,7 +57,11 @@ describe("push in the service worker (PRD §20.2)", () => {
     const shown: unknown[] = [];
     const badges: number[] = [];
     const posted: unknown[] = [];
-    const win = { url: "https://kt.test/", focus: vi.fn(), postMessage: (m: unknown) => posted.push(m) } as unknown as WindowClientLike;
+    const win = {
+      url: "https://kt.test/",
+      focus: vi.fn(),
+      postMessage: (m: unknown) => posted.push(m),
+    } as unknown as WindowClientLike;
     await handlePush(parsePush(data({ title: "T", body: "B", url: "/", badge: 2 })), {
       showNotification: async (title, o) => void shown.push([title, o.tag ?? null]),
       setAppBadge: async (n) => void badges.push(n),
@@ -61,17 +93,40 @@ describe("push in the service worker (PRD §20.2)", () => {
     const other = make("https://elsewhere.test/");
     const mine = make("https://kt.test/tabs", { visibilityState: "visible" });
     const openWindow = vi.fn(async () => null);
-    expect(await handleNotificationClick("/bills/b1", { origin: "https://kt.test", windows: async () => [other, mine], openWindow })).toBe("focused");
+    expect(
+      await handleNotificationClick("/bills/b1", {
+        origin: "https://kt.test",
+        windows: async () => [other, mine],
+        openWindow,
+      }),
+    ).toBe("focused");
     expect(mine.focus).toHaveBeenCalled();
     expect(mine.navigate).toHaveBeenCalledWith("https://kt.test/bills/b1");
     expect(other.focus).not.toHaveBeenCalled();
     expect(openWindow).not.toHaveBeenCalled();
 
-    const uncontrolled = make("https://kt.test/", { navigate: vi.fn(async () => { throw new TypeError("not controlled"); }) });
-    await handleNotificationClick("/kitchen/requests?id=a1", { origin: "https://kt.test", windows: async () => [uncontrolled], openWindow });
-    expect(uncontrolled.postMessage).toHaveBeenCalledWith({ type: "kt:navigate", url: "/kitchen/requests?id=a1" });
+    const uncontrolled = make("https://kt.test/", {
+      navigate: vi.fn(async () => {
+        throw new TypeError("not controlled");
+      }),
+    });
+    await handleNotificationClick("/kitchen/requests?id=a1", {
+      origin: "https://kt.test",
+      windows: async () => [uncontrolled],
+      openWindow,
+    });
+    expect(uncontrolled.postMessage).toHaveBeenCalledWith({
+      type: "kt:navigate",
+      url: "/kitchen/requests?id=a1",
+    });
 
-    expect(await handleNotificationClick("/bills/b2", { origin: "https://kt.test", windows: async () => [other], openWindow })).toBe("opened");
+    expect(
+      await handleNotificationClick("/bills/b2", {
+        origin: "https://kt.test",
+        windows: async () => [other],
+        openWindow,
+      }),
+    ).toBe("opened");
     expect(openWindow).toHaveBeenCalledWith("https://kt.test/bills/b2");
   });
 
@@ -125,9 +180,19 @@ const NOW = 1_800_000_000_000;
 describe("when install and push are offered", () => {
   it("PUSH-01 the pre-prompt never shows on a visit; after the first bill, an ask, or from Settings [FR-42]", () => {
     expect(decide("visit", device(), memory(), NOW)).toBeNull();
-    expect(decide("bill", device(), memory(), NOW)).toMatchObject({ kind: "n1", platform: "android" });
+    expect(decide("bill", device(), memory(), NOW)).toMatchObject({
+      kind: "n1",
+      platform: "android",
+    });
     expect(decide("ask", device(), memory(), NOW)).toMatchObject({ kind: "n1" });
-    expect(decide("settings", device({ permission: "granted", subscribed: true }), memory({ n1NotNow: 2 }), NOW)).toMatchObject({ kind: "n1" });
+    expect(
+      decide(
+        "settings",
+        device({ permission: "granted", subscribed: true }),
+        memory({ n1NotNow: 2 }),
+        NOW,
+      ),
+    ).toMatchObject({ kind: "n1" });
     expect(momentForWrite("POST", "/bills/b1/send")).toBe("bill");
     expect(momentForWrite("POST", "/inventory/i1/requests")).toBe("ask");
     expect(momentForWrite("PUT", "/bills/b1/send")).toBeNull();
@@ -138,9 +203,15 @@ describe("when install and push are offered", () => {
     expect(pushOfferable(device({ permission: "denied" }), memory(), NOW)).toBe(false);
     expect(pushOfferable(device(), memory({ pushDenied: true }), NOW, true)).toBe(false);
     expect(pushOfferable(device(), memory({ n1NotNow: 2 }), NOW)).toBe(false);
-    expect(pushOfferable(device(), memory({ n1NotNow: 1, n1SnoozedUntil: NOW + 1 }), NOW)).toBe(false);
-    expect(pushOfferable(device(), memory({ n1NotNow: 1, n1SnoozedUntil: NOW - 1 }), NOW)).toBe(true);
-    expect(pushOfferable(device({ permission: "granted", subscribed: true }), memory(), NOW)).toBe(false);
+    expect(pushOfferable(device(), memory({ n1NotNow: 1, n1SnoozedUntil: NOW + 1 }), NOW)).toBe(
+      false,
+    );
+    expect(pushOfferable(device(), memory({ n1NotNow: 1, n1SnoozedUntil: NOW - 1 }), NOW)).toBe(
+      true,
+    );
+    expect(pushOfferable(device({ permission: "granted", subscribed: true }), memory(), NOW)).toBe(
+      false,
+    );
     expect(decide("bill", device({ permission: "denied" }), memory(), NOW)).toBeNull();
   });
 
@@ -150,17 +221,31 @@ describe("when install and push are offered", () => {
     expect(decide("bill", can, memory({ installShown: 1 }), NOW)).toEqual({ kind: "install" });
     expect(decide("visit", can, memory({ installShown: 2 }), NOW)).toBeNull();
     expect(decide("visit", device({ canPrompt: false }), memory(), NOW)).toBeNull();
-    expect(decide("visit", device({ canPrompt: true, standalone: true }), memory(), NOW)).toBeNull();
+    expect(
+      decide("visit", device({ canPrompt: true, standalone: true }), memory(), NOW),
+    ).toBeNull();
     // Push first at the bill moment; the card waits for the next moment.
-    expect(decide("bill", device({ canPrompt: true }), memory(), NOW)).toMatchObject({ kind: "n1" });
+    expect(decide("bill", device({ canPrompt: true }), memory(), NOW)).toMatchObject({
+      kind: "n1",
+    });
   });
 
   it("PWA-06 an iPhone tab gets N1 with the install steps instead of a push prompt [FR-42]", () => {
     const iosTab = device({ ios: true, pushSupported: false, permission: "unsupported" });
-    expect(decide("visit", iosTab, memory(), NOW)).toEqual({ kind: "n1", platform: "ios", countsAsInstall: true });
-    expect(decide("ask", iosTab, memory(), NOW)).toEqual({ kind: "n1", platform: "ios", countsAsInstall: false });
+    expect(decide("visit", iosTab, memory(), NOW)).toEqual({
+      kind: "n1",
+      platform: "ios",
+      countsAsInstall: true,
+    });
+    expect(decide("ask", iosTab, memory(), NOW)).toEqual({
+      kind: "n1",
+      platform: "ios",
+      countsAsInstall: false,
+    });
     expect(decide("visit", iosTab, memory({ installShown: 2 }), NOW)).toBeNull();
     // From the Home Screen, push is offered again on the first standalone launch.
-    expect(decide("standalone", device({ ios: true, standalone: true }), memory(), NOW)).toMatchObject({ kind: "n1", platform: "ios" });
+    expect(
+      decide("standalone", device({ ios: true, standalone: true }), memory(), NOW),
+    ).toMatchObject({ kind: "n1", platform: "ios" });
   });
 });

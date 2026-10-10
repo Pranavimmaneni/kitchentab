@@ -24,7 +24,11 @@ const S = strings.scan;
 function Frame({ children }: { children: React.ReactNode }) {
   return (
     <div className="kt-screen">
-      <AppHeader stepLabel={strings.review.step} title={strings.review.title} back={{ href: "/" }} />
+      <AppHeader
+        stepLabel={strings.review.step}
+        title={strings.review.title}
+        back={{ href: "/" }}
+      />
       <main className="kt-screen__main">{children}</main>
     </div>
   );
@@ -81,7 +85,11 @@ export function ScanFailed({
     <Frame>
       <ReceiptCard heading={S.failedTitle}>
         <div className="kt-scan" data-phase="failed">
-          <p className="kt-scan__title" role="alert" aria-describedby={message ? detailId : undefined}>
+          <p
+            className="kt-scan__title"
+            role="alert"
+            aria-describedby={message ? detailId : undefined}
+          >
             {S.failedTitle}
           </p>
           {message ? (
@@ -151,9 +159,13 @@ export function OfferBanner({
     // One key per decision on this offer, so a retried tap returns the first answer.
     const key = (keyRef.current[`${offer.extraction_id}:${action}`] ??= newId());
     try {
-      await api.post(`/bills/${view.bill.id}/extractions/${offer.extraction_id}/${action}`, undefined, {
-        idempotencyKey: key,
-      });
+      await api.post(
+        `/bills/${view.bill.id}/extractions/${offer.extraction_id}/${action}`,
+        undefined,
+        {
+          idempotencyKey: key,
+        },
+      );
       await client.invalidateQueries({ queryKey: keys.bill(view.bill.id) });
       onDone(kind === "use" ? S.offer.used : S.offer.kept);
     } catch (err) {
@@ -223,14 +235,24 @@ export function ReceiptPhoto({ billId }: { billId: string }) {
   if (!first || !view.data) return null;
   if (first.mime === "application/pdf") {
     return (
-      <a className="kt-photo-thumb kt-photo-thumb--pdf" href={view.data.url} target="_blank" rel="noreferrer noopener">
+      <a
+        className="kt-photo-thumb kt-photo-thumb--pdf"
+        href={view.data.url}
+        target="_blank"
+        rel="noreferrer noopener"
+      >
         {S.photo.openPdf}
       </a>
     );
   }
   return (
     <>
-      <button type="button" className="kt-photo-thumb" onClick={() => setOpen(true)} aria-label={S.photo.open}>
+      <button
+        type="button"
+        className="kt-photo-thumb"
+        onClick={() => setOpen(true)}
+        aria-label={S.photo.open}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL on storage's origin */}
         <img src={view.data.url} alt="" width={56} height={72} />
       </button>
@@ -250,8 +272,19 @@ function PhotoViewer({ url, onClose }: { url: string; onClose: () => void }) {
     };
   }, []);
   return (
-    <div ref={ref} className="kt-photo-viewer" role="dialog" aria-modal="true" aria-label={S.photo.alt}>
-      <button type="button" className="kt-icon-button kt-photo-viewer__close" aria-label={S.photo.close} onClick={onClose}>
+    <div
+      ref={ref}
+      className="kt-photo-viewer"
+      role="dialog"
+      aria-modal="true"
+      aria-label={S.photo.alt}
+    >
+      <button
+        type="button"
+        className="kt-icon-button kt-photo-viewer__close"
+        aria-label={S.photo.close}
+        onClick={onClose}
+      >
         <XIcon size={20} />
       </button>
       {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL on storage's origin */}

@@ -10,8 +10,11 @@ Status: accepted · Milestone 5 (web) · Builds on ADR-0010, ADR-0015, ADR-0024
    `@tesseract.js-data/eng`) is **committed**: it is data, the accuracy report was measured with
    exactly this file, and committing it avoids a new dependency. The tesseract worker is loaded
    from its own URL (`workerBlobURL: false`) and pdfjs with a runtime `import()` of
-   `/ocr/pdf.min.mjs`, so no request leaves the origin (EXTRACT-12) and a future CSP needs
-   `worker-src 'self'` and `'wasm-unsafe-eval'`, not `blob:`.
+   `/ocr/pdf.min.mjs`, so no request leaves the origin (EXTRACT-12). Verified under the nonce CSP
+   from middleware.ts (`'strict-dynamic' 'wasm-unsafe-eval'`, `worker-src 'self' blob:`) on WebKit,
+   Chromium and Firefox: photo OCR, scanned-PDF rendering, text-PDF upload and the service worker
+   raise no CSP violation. The offline page is rendered per request (not static) so its scripts
+   carry the nonce of the response the worker precaches.
 2. **Same pipeline as the fixtures.** `lib/receipts/preprocess.ts` is a typed copy of
    `scripts/receipts/preprocess.js`; OCR runs PSM 6, `preserve_interword_spaces=1`, 300 dpi, one
    part per photo, all PDF pages in one part, exactly as `scripts/receipts/ocr.mjs` wrote the

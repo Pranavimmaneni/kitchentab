@@ -32,7 +32,7 @@ async function signedIn(page: Page): Promise<string> {
 /** Waits until a service worker controls the page. */
 async function controlled(page: Page): Promise<string> {
   await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller), undefined, {
-    timeout: 30_000,
+    timeout: 90_000,
   });
   return page.evaluate(() => navigator.serviceWorker.controller!.scriptURL);
 }

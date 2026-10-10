@@ -64,7 +64,10 @@ export function registerServiceWorker(): Promise<ServiceWorkerRegistration | nul
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
     if (process.env.NODE_ENV !== "production") return null;
     try {
-      const reg = await navigator.serviceWorker.register(SW_URL, { scope: "/", updateViaCache: "none" });
+      const reg = await navigator.serviceWorker.register(SW_URL, {
+        scope: "/",
+        updateViaCache: "none",
+      });
       watch(reg);
       return reg;
     } catch {
@@ -74,7 +77,8 @@ export function registerServiceWorker(): Promise<ServiceWorkerRegistration | nul
   return registering;
 }
 
-const EDITABLE = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]), textarea, select, [contenteditable="true"]';
+const EDITABLE =
+  'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]), textarea, select, [contenteditable="true"]';
 
 /** A sheet, dialog or form field is open, or a write is on its way: don't interrupt (PWA-08). */
 export function busyNow(): boolean {

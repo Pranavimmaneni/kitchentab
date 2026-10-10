@@ -38,7 +38,11 @@ export function getString(key: string, kind: "local" | "session" = "local"): str
   }
 }
 
-export function setString(key: string, value: string | null, kind: "local" | "session" = "local"): void {
+export function setString(
+  key: string,
+  value: string | null,
+  kind: "local" | "session" = "local",
+): void {
   try {
     const s = store(kind);
     if (!s) return;

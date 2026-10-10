@@ -10,7 +10,10 @@ import {
 } from "@/lib/pwa/sw-rules";
 
 const O = "https://kitchentab.test";
-const req = (path: string, init: { method?: string; mode?: string; accept?: string; range?: string } = {}) => ({
+const req = (
+  path: string,
+  init: { method?: string; mode?: string; accept?: string; range?: string } = {},
+) => ({
   url: path.startsWith("http") ? path : `${O}${path}`,
   method: init.method ?? "GET",
   mode: init.mode ?? "cors",
@@ -22,7 +25,13 @@ const req = (path: string, init: { method?: string; mode?: string; accept?: stri
 
 describe("service worker routing rules (PRD §20.1)", () => {
   it("PWA-03 API read models are network-first candidates [FR-50]", () => {
-    for (const path of ["/api/v1/me", "/api/v1/houses/h1", "/api/v1/bills/b1", "/api/v1/houses/h1/kitchen", "/api/v1/me/inbox"]) {
+    for (const path of [
+      "/api/v1/me",
+      "/api/v1/houses/h1",
+      "/api/v1/bills/b1",
+      "/api/v1/houses/h1/kitchen",
+      "/api/v1/me/inbox",
+    ]) {
       expect(isApiRead(req(path), O)).toBe(true);
     }
   });
@@ -77,13 +86,34 @@ describe("service worker routing rules (PRD §20.1)", () => {
   });
 
   it("PWA-04 private responses and non-200s are never stored; pages need HTML, the API JSON [FR-18]", () => {
-    const res = (status: number, headers: Record<string, string>) => new Response("{}", { status, headers });
-    expect(storable(res(200, { "content-type": "application/json", "cache-control": "no-store" }), "api")).toBe(true);
-    expect(storable(res(200, { "content-type": "application/json", "cache-control": "private, no-store" }), "api")).toBe(false);
+    const res = (status: number, headers: Record<string, string>) =>
+      new Response("{}", { status, headers });
+    expect(
+      storable(
+        res(200, { "content-type": "application/json", "cache-control": "no-store" }),
+        "api",
+      ),
+    ).toBe(true);
+    expect(
+      storable(
+        res(200, { "content-type": "application/json", "cache-control": "private, no-store" }),
+        "api",
+      ),
+    ).toBe(false);
     expect(storable(res(404, { "content-type": "application/json" }), "api")).toBe(false);
     expect(storable(res(200, { "content-type": "text/html" }), "api")).toBe(false);
-    expect(storable(res(200, { "content-type": "text/html; charset=utf-8", "cache-control": "private, no-store" }), "page")).toBe(true);
-    expect(storable(res(200, { "content-type": "application/json", vary: "*" }), "api")).toBe(false);
+    expect(
+      storable(
+        res(200, {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "private, no-store",
+        }),
+        "page",
+      ),
+    ).toBe(true);
+    expect(storable(res(200, { "content-type": "application/json", vary: "*" }), "api")).toBe(
+      false,
+    );
   });
 });
 
@@ -102,12 +132,20 @@ function memoryCache(): CacheLike & { store: Map<string, Response> } {
 }
 
 const json = (body: unknown) =>
-  new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+  new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
 
 describe("network-first with a 3 s timeout (PWA-03)", () => {
   it("PWA-03 a fast network answer is used and saved [FR-50]", async () => {
     const cache = memoryCache();
-    const res = await networkFirst({ request: new Request(`${O}/api/v1/me`), cache, fetch: async () => json({ n: 1 }), kind: "api" });
+    const res = await networkFirst({
+      request: new Request(`${O}/api/v1/me`),
+      cache,
+      fetch: async () => json({ n: 1 }),
+      kind: "api",
+    });
     expect(await res.json()).toEqual({ n: 1 });
     expect(res.headers.get("x-kt-stale")).toBeNull();
     expect(cache.store.has(`${O}/api/v1/me`)).toBe(true);
@@ -140,7 +178,9 @@ describe("network-first with a 3 s timeout (PWA-03)", () => {
       expect(await res.json()).toEqual({ n: "old" });
       release(json({ n: "new" }));
       await Promise.all(background);
-      expect(await (await cache.match(new Request(`${O}/api/v1/me`)))!.json()).toEqual({ n: "new" });
+      expect(await (await cache.match(new Request(`${O}/api/v1/me`)))!.json()).toEqual({
+        n: "new",
+      });
     } finally {
       vi.useRealTimers();
     }
@@ -151,8 +191,16 @@ describe("network-first with a 3 s timeout (PWA-03)", () => {
     const offline = async () => {
       throw new TypeError("Failed to fetch");
     };
-    await cache.put(new Request(`${O}/tabs`), new Response("<p>tabs</p>", { headers: { "content-type": "text/html" } }));
-    const saved = await networkFirst({ request: new Request(`${O}/tabs`), cache, fetch: offline, kind: "page" });
+    await cache.put(
+      new Request(`${O}/tabs`),
+      new Response("<p>tabs</p>", { headers: { "content-type": "text/html" } }),
+    );
+    const saved = await networkFirst({
+      request: new Request(`${O}/tabs`),
+      cache,
+      fetch: offline,
+      kind: "page",
+    });
     expect(saved.headers.get("x-kt-stale")).toBe("1");
     expect(await saved.text()).toBe("<p>tabs</p>");
     const fallback = await networkFirst({
@@ -163,7 +211,12 @@ describe("network-first with a 3 s timeout (PWA-03)", () => {
       fallback: async () => new Response("offline page"),
     });
     expect(await fallback.text()).toBe("offline page");
-    const none = await networkFirst({ request: new Request(`${O}/api/v1/x`), cache, fetch: offline, kind: "api" });
+    const none = await networkFirst({
+      request: new Request(`${O}/api/v1/x`),
+      cache,
+      fetch: offline,
+      kind: "api",
+    });
     expect(none.type).toBe("error");
   });
 
@@ -174,7 +227,8 @@ describe("network-first with a 3 s timeout (PWA-03)", () => {
       const pending = networkFirst({
         request: new Request(`${O}/api/v1/me`),
         cache,
-        fetch: () => new Promise((resolve) => setTimeout(() => resolve(json({ late: true })), 5000)),
+        fetch: () =>
+          new Promise((resolve) => setTimeout(() => resolve(json({ late: true })), 5000)),
         kind: "api",
       });
       await vi.advanceTimersByTimeAsync(5000);

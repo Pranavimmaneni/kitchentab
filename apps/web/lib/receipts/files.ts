@@ -11,7 +11,8 @@ export const MAX_PDF_PAGES = 10;
 export const MAX_PHOTOS = 10;
 export const SNIFF_BYTES = 1024;
 
-export type ReceiptMime = "image/jpeg" | "image/png" | "image/heic" | "image/webp" | "application/pdf";
+export type ReceiptMime =
+  "image/jpeg" | "image/png" | "image/heic" | "image/webp" | "application/pdf";
 export const PDF: ReceiptMime = "application/pdf";
 
 /** `accept` for the photo library and the PDF picker. HEIC is listed so desktop pickers show it. */
@@ -29,7 +30,8 @@ function ascii(bytes: Uint8Array, start: number, end: number): string {
 
 /** The real type from magic bytes, exactly like the server's `sniff` (never trust the name). */
 export function sniffMime(head: Uint8Array): ReceiptMime | null {
-  if (head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "image/jpeg";
+  if (head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff)
+    return "image/jpeg";
   if (ascii(head, 0, 8) === "\x89PNG\r\n\x1a\n") return "image/png";
   if (ascii(head, 0, 4) === "RIFF" && ascii(head, 8, 12) === "WEBP") return "image/webp";
   if (ascii(head, 4, 8) === "ftyp" && HEIF_BRANDS.has(ascii(head, 8, 12))) return "image/heic";
@@ -37,7 +39,10 @@ export function sniffMime(head: Uint8Array): ReceiptMime | null {
   return null;
 }
 
-export type Refusal = { code: "type" | "size" | "empty" | "pages" | "mixed" | "count"; message: string };
+export type Refusal = {
+  code: "type" | "size" | "empty" | "pages" | "mixed" | "count";
+  message: string;
+};
 export type Checked = { file: File; mime: ReceiptMime };
 
 export function isRefusal(value: unknown): value is Refusal {

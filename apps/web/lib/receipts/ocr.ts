@@ -61,7 +61,10 @@ type Worker = {
 
 export type Ocr = {
   /** Preprocesses one page and reads it. */
-  read(source: CanvasImageSource & { width: number; height: number }, page: number): Promise<OcrPage>;
+  read(
+    source: CanvasImageSource & { width: number; height: number },
+    page: number,
+  ): Promise<OcrPage>;
   close(): Promise<void>;
 };
 

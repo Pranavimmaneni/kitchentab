@@ -52,7 +52,8 @@ const SECURITY_HEADERS = [
     key: "Permissions-Policy",
     value: "camera=(self), microphone=(), geolocation=(), payment=(), usb=()",
   },
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  // Browsers ignore (and warn about) COOP on plain http, e.g. `make house` on the home Wi-Fi.
+  ...(process.env.VERCEL ? [{ key: "Cross-Origin-Opener-Policy", value: "same-origin" }] : []),
   ...(process.env.VERCEL_ENV === "production"
     ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }]
     : []),

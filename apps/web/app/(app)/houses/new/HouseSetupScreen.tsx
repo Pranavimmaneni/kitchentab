@@ -177,7 +177,9 @@ export function HouseSetupScreen() {
 
   async function onAdd(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (await addRoommate(draft)) setDraft("");
+    const sent = draft;
+    // Clear only what was sent: the next name may already be half typed when the add returns.
+    if (await addRoommate(sent)) setDraft((now) => (now === sent ? "" : now));
   }
 
   async function remove(member: Member): Promise<void> {

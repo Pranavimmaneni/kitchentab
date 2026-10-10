@@ -8,10 +8,29 @@ import { api } from "@/lib/api/client";
 import { useMe } from "@/lib/api/hooks";
 import type { WriteDetail } from "@/lib/api/signals";
 import { trackOnce } from "@/lib/pwa/analytics";
-import { applyBadge, isIos, isStandalone, notificationPermission, pushSupported } from "@/lib/pwa/device";
-import { KEYS, countVisit, getString, readPromptMemory, rememberInstallShown, setString } from "@/lib/pwa/local";
+import {
+  applyBadge,
+  isIos,
+  isStandalone,
+  notificationPermission,
+  pushSupported,
+} from "@/lib/pwa/device";
+import {
+  KEYS,
+  countVisit,
+  getString,
+  readPromptMemory,
+  rememberInstallShown,
+  setString,
+} from "@/lib/pwa/local";
 import { decide, momentForWrite, type Moment } from "@/lib/pwa/moments";
-import { captureInstallPrompt, installed, openN1, promptState, showInstallCard } from "@/lib/pwa/prompts";
+import {
+  captureInstallPrompt,
+  installed,
+  openN1,
+  promptState,
+  showInstallCard,
+} from "@/lib/pwa/prompts";
 import { swRegistration, syncSubscription, type EnableResult } from "@/lib/pwa/push";
 import { markStaleClient, registerServiceWorker, busyNow } from "@/lib/pwa/register";
 import { safePath } from "@/lib/pwa/sw-handlers";
@@ -94,7 +113,11 @@ export function PwaRoot() {
       return;
     }
     if (decision.countsAsInstall) rememberInstallShown();
-    openN1({ platform: decision.platform, countsAsInstall: decision.countsAsInstall, fromSettings: false });
+    openN1({
+      platform: decision.platform,
+      countsAsInstall: decision.countsAsInstall,
+      fromSettings: false,
+    });
   }, []);
 
   // Worker, install prompt, installed state.
@@ -190,7 +213,10 @@ export function PwaRoot() {
       return;
     }
     if (badge !== undefined) void applyBadge(badge);
-    if (!askSeen.current && inbox.data?.items.some((i) => i.type === "asks" || i.type === "answers")) {
+    if (
+      !askSeen.current &&
+      inbox.data?.items.some((i) => i.type === "asks" || i.type === "answers")
+    ) {
       askSeen.current = true;
       void offer("ask");
     }
@@ -208,13 +234,16 @@ export function PwaRoot() {
     return () => window.clearInterval(timer);
   }, [offer]);
 
-  const onResult = useCallback((result: EnableResult) => {
-    const S = strings.notify;
-    if (result === "granted") setNotice(S.turnedOn);
-    else if (result === "denied") setNotice(S.denied);
-    else if (result !== "default") setNotice(S.failed);
-    void queryClient.invalidateQueries({ queryKey: ["push", "devices"] });
-  }, [queryClient]);
+  const onResult = useCallback(
+    (result: EnableResult) => {
+      const S = strings.notify;
+      if (result === "granted") setNotice(S.turnedOn);
+      else if (result === "denied") setNotice(S.denied);
+      else if (result !== "default") setNotice(S.failed);
+      void queryClient.invalidateQueries({ queryKey: ["push", "devices"] });
+    },
+    [queryClient],
+  );
 
   return (
     <>

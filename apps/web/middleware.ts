@@ -17,6 +17,7 @@ export async function middleware(request: NextRequest) {
     themeHash: await themeHash,
     dev: process.env.NODE_ENV === "development",
     deployed: process.env.VERCEL === "1",
+    extraOrigins: (process.env.KT_STORAGE_ORIGINS ?? "").split(",").filter(Boolean),
   });
   const headers = new Headers(request.headers);
   headers.set("x-nonce", nonce);

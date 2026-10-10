@@ -46,12 +46,16 @@ export async function networkFirst(o: NetworkFirstOptions): Promise<Response> {
   const timeoutMs = o.timeoutMs ?? NETWORK_TIMEOUT_MS;
   const now = o.now ?? Date.now;
   const setTimer = o.setTimer ?? ((fn: () => void, ms: number) => setTimeout(fn, ms));
-  const clearTimer = o.clearTimer ?? ((h: unknown) => clearTimeout(h as ReturnType<typeof setTimeout>));
+  const clearTimer =
+    o.clearTimer ?? ((h: unknown) => clearTimeout(h as ReturnType<typeof setTimeout>));
 
   const network: Promise<Response> = o.fetch(o.request.clone()).then(async (res) => {
     if (storable(res, o.kind)) {
       try {
-        await o.cache.put(o.request, withHeaders(res.clone(), { [CACHED_AT_HEADER]: String(now()) }));
+        await o.cache.put(
+          o.request,
+          withHeaders(res.clone(), { [CACHED_AT_HEADER]: String(now()) }),
+        );
       } catch {
         // quota or a body that can't be cloned: answering matters more than saving
       }

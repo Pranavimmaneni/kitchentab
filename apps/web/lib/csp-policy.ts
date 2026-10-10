@@ -12,6 +12,8 @@ export type CspOptions = {
   dev?: boolean;
   /** On Vercel: Blob origins and `upgrade-insecure-requests`; else the local storage origins. */
   deployed?: boolean;
+  /** More storage origins (KT_STORAGE_ORIGINS), e.g. MinIO on the LAN address for `make house`. */
+  extraOrigins?: readonly string[];
 };
 
 /** Vercel Blob: the client SDK uploads through vercel.com; private blobs are served from here. */
@@ -26,9 +28,18 @@ export const LOCAL_STORAGE_ORIGINS = [
   "https://localhost:*",
 ] as const;
 
-export function buildCsp({ nonce, themeHash, dev = false, deployed = false }: CspOptions): string {
+export function buildCsp({
+  nonce,
+  themeHash,
+  dev = false,
+  deployed = false,
+  extraOrigins = [],
+}: CspOptions): string {
   // Where uploads go and receipt images come from besides this origin.
-  const storage = (deployed ? VERCEL_STORAGE_ORIGINS : LOCAL_STORAGE_ORIGINS).join(" ");
+  const storage = [
+    ...(deployed ? VERCEL_STORAGE_ORIGINS : LOCAL_STORAGE_ORIGINS),
+    ...extraOrigins,
+  ].join(" ");
   const directives = [
     "default-src 'self'",
     // tesseract.js compiles its WebAssembly core: 'wasm-unsafe-eval' allows that and nothing else.

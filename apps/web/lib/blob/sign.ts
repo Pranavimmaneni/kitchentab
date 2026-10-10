@@ -8,7 +8,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * recomputes it here. Hex, lowercase, like Python's `hexdigest()`.
  */
 export function signRead(readWriteToken: string, pathname: string, expires: number): string {
-  return createHmac("sha256", readWriteToken).update(`GET\n${pathname}\n${expires}`, "utf8").digest("hex");
+  return createHmac("sha256", readWriteToken)
+    .update(`GET\n${pathname}\n${expires}`, "utf8")
+    .digest("hex");
 }
 
 export type ReadCheck = "ok" | "expired" | "bad";
@@ -21,7 +23,8 @@ export function verifyRead(
   sig: string | null,
   nowSeconds: number,
 ): ReadCheck {
-  if (!pathname || !expires || !sig || !/^\d{1,12}$/.test(expires) || !/^[0-9a-f]{64}$/.test(sig)) return "bad";
+  if (!pathname || !expires || !sig || !/^\d{1,12}$/.test(expires) || !/^[0-9a-f]{64}$/.test(sig))
+    return "bad";
   const at = Number(expires);
   const expected = Buffer.from(signRead(readWriteToken, pathname, at), "hex");
   const given = Buffer.from(sig, "hex");
@@ -30,4 +33,5 @@ export function verifyRead(
 }
 
 /** Only receipt files are ever viewed through this route. */
-export const VIEWABLE = /^receipts\/[0-9a-f-]{36}\/[A-Za-z0-9_-]{32,64}\.(?:jpg|png|heic|webp|pdf)$/;
+export const VIEWABLE =
+  /^receipts\/[0-9a-f-]{36}\/[A-Za-z0-9_-]{32,64}\.(?:jpg|png|heic|webp|pdf)$/;

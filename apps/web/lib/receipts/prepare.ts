@@ -18,7 +18,10 @@ export const PDFJS_URL = "/ocr/pdf.min.mjs";
 export const PDFJS_WORKER_URL = "/ocr/pdf.worker.min.mjs";
 
 export class PrepareError extends Error {
-  constructor(readonly code: "decode" | "encode" | "pdf", message: string) {
+  constructor(
+    readonly code: "decode" | "encode" | "pdf",
+    message: string,
+  ) {
     super(message);
     this.name = "PrepareError";
   }
@@ -59,7 +62,11 @@ export async function decodeImage(blob: Blob): Promise<Decoded> {
 
 function toBlob(canvas: HTMLCanvasElement, type: string, quality?: number): Promise<Blob> {
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new PrepareError("encode", "encode failed"))), type, quality),
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new PrepareError("encode", "encode failed"))),
+      type,
+      quality,
+    ),
   );
 }
 
@@ -92,7 +99,9 @@ export async function preparePhoto(file: Blob, mime: ReceiptMime): Promise<Prepa
 
 type PdfPage = {
   getViewport(o: { scale: number }): { width: number; height: number };
-  render(o: { canvasContext: CanvasRenderingContext2D; viewport: unknown }): { promise: Promise<void> };
+  render(o: { canvasContext: CanvasRenderingContext2D; viewport: unknown }): {
+    promise: Promise<void>;
+  };
 };
 type PdfDoc = { numPages: number; getPage(n: number): Promise<PdfPage>; destroy(): Promise<void> };
 type PdfJs = {

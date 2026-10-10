@@ -41,9 +41,13 @@ export function CaptureScreen({ houseParam }: { houseParam: string | null }) {
   async function createDraft(): Promise<string | null> {
     if (!houseId) return null;
     const keyName = `new-bill:${houseId}`;
-    const bill = await api.post<{ id: string }>(`/houses/${houseId}/bills`, {}, {
-      idempotencyKey: actionKey(keyName, newId),
-    });
+    const bill = await api.post<{ id: string }>(
+      `/houses/${houseId}/bills`,
+      {},
+      {
+        idempotencyKey: actionKey(keyName, newId),
+      },
+    );
     clearActionKey(keyName);
     return bill.id;
   }

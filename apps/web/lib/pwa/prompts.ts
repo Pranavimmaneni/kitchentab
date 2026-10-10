@@ -12,7 +12,11 @@ type BeforeInstallPrompt = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-export type N1State = { platform: "ios" | "android"; countsAsInstall: boolean; fromSettings: boolean } | null;
+export type N1State = {
+  platform: "ios" | "android";
+  countsAsInstall: boolean;
+  fromSettings: boolean;
+} | null;
 
 type State = { n1: N1State; installCard: boolean; canInstall: boolean; shareArrow: boolean };
 

@@ -29,7 +29,13 @@ export type UploadTicket = {
 
 export type Extraction = "done" | "needs_ocr" | "failed" | "offered";
 
-export type ReceiptRow = { id: string; bill_id: string; mime: string; bytes: number; page_index: number };
+export type ReceiptRow = {
+  id: string;
+  bill_id: string;
+  mime: string;
+  bytes: number;
+  page_index: number;
+};
 
 export type AttachOut = {
   receipt: ReceiptRow;
@@ -64,17 +70,33 @@ async function putToStorage(ticket: UploadTicket, body: Blob): Promise<void> {
   let res: Response;
   try {
     // Cross-origin to storage: no cookies. Content-Length is the authorized size (signed for S3).
-    res = await fetch(ticket.upload_url, { method: "PUT", headers: ticket.headers, body, credentials: "omit" });
+    res = await fetch(ticket.upload_url, {
+      method: "PUT",
+      headers: ticket.headers,
+      body,
+      credentials: "omit",
+    });
   } catch {
     throw new UploadError(0);
   }
   if (!res.ok) throw new UploadError(res.status);
 }
 
-async function blobClientUpload(ticket: UploadTicket, billId: string, body: Blob, mime: ReceiptMime, pages?: number) {
+async function blobClientUpload(
+  ticket: UploadTicket,
+  billId: string,
+  body: Blob,
+  mime: ReceiptMime,
+  pages?: number,
+) {
   if (!ticket.blob?.handle_upload_url) throw new UploadError(0);
   const { upload } = await import("@vercel/blob/client");
-  const payload: BlobClientPayload = { bill_id: billId, mime, bytes: body.size, ...(pages ? { pages } : {}) };
+  const payload: BlobClientPayload = {
+    bill_id: billId,
+    mime,
+    bytes: body.size,
+    ...(pages ? { pages } : {}),
+  };
   await upload(ticket.blob.pathname, body, {
     access: "private",
     contentType: mime,
@@ -98,7 +120,13 @@ export async function uploadToStorage(
   return ticket.storage_key;
 }
 
-export function attach(billId: string, storageKey: string, mime: ReceiptMime, bytes: number, key: string) {
+export function attach(
+  billId: string,
+  storageKey: string,
+  mime: ReceiptMime,
+  bytes: number,
+  key: string,
+) {
   return api.post<AttachOut>(
     `/bills/${billId}/receipts`,
     { storage_key: storageKey, mime, bytes },

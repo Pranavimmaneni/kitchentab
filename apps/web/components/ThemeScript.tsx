@@ -7,6 +7,12 @@ import { THEME_SCRIPT } from "@/lib/theme-script";
  */
 export function ThemeScript({ nonce }: { nonce?: string }) {
   return (
-    <script id="kt-theme-script" nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+    <script
+      id="kt-theme-script"
+      nonce={nonce}
+      // Browsers hide a script's nonce from the DOM once it ran, so the client sees nonce="".
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
+    />
   );
 }

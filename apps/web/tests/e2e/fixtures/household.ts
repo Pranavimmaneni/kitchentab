@@ -1,6 +1,7 @@
 import { expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import { LINES, WHO, call, createHouse, hydrated, readCode, uniqueEmail, type Roomie } from "./app";
 import { API_ORIGIN } from "./env";
+import { quietPrompts } from "./quiet";
 import { profileFor } from "./roommates";
 
 /**
@@ -35,6 +36,8 @@ export async function aptWith(
   payer: Page,
   claim: Roomie[] = [],
 ): Promise<Apt> {
+  // These journeys are about the kitchen and the tabs: no install or notification sheet on top.
+  await quietPrompts(payer.context());
   await apiSignIn(payer, uniqueEmail("pranav"));
   const house = await createHouse(payer);
   const view = await call<{ invite_token: string }>(payer, "GET", `/houses/${house.id}`);
@@ -47,6 +50,7 @@ export async function aptWith(
   for (const [i, who] of claim.entries()) {
     const { options } = profileFor(browser, i + 1);
     const context = await browser.newContext({ ...options, baseURL });
+    await quietPrompts(context);
     apt.contexts.push(context);
     const page = await context.newPage();
     await apiSignIn(page, uniqueEmail(who));

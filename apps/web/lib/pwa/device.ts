@@ -25,7 +25,10 @@ export function isStandalone(): boolean {
 }
 
 /** iPhone, iPad (iPadOS reports a Mac with touch) or iPod. */
-export function isIos(ua = nav()?.userAgent ?? "", touchPoints = nav()?.maxTouchPoints ?? 0): boolean {
+export function isIos(
+  ua = nav()?.userAgent ?? "",
+  touchPoints = nav()?.maxTouchPoints ?? 0,
+): boolean {
   return /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && touchPoints > 1);
 }
 
@@ -41,7 +44,10 @@ export function notificationPermission(): NotificationPermission | "unsupported"
 }
 
 /** "iPhone", "Android phone", "Mac"… for "For this iPhone, from the Home Screen app." */
-export function deviceName(ua = nav()?.userAgent ?? "", touchPoints = nav()?.maxTouchPoints ?? 0): string {
+export function deviceName(
+  ua = nav()?.userAgent ?? "",
+  touchPoints = nav()?.maxTouchPoints ?? 0,
+): string {
   if (/iPhone|iPod/i.test(ua)) return "iPhone";
   if (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && touchPoints > 1)) return "iPad";
   if (/Android/i.test(ua)) return /Mobile/i.test(ua) ? "Android phone" : "Android tablet";
@@ -53,8 +59,16 @@ export function deviceName(ua = nav()?.userAgent ?? "", touchPoints = nav()?.max
 }
 
 /** Desktop Safari installs with File → Add to Dock (PRD §20.1 table). */
-export function isDesktopSafari(ua = nav()?.userAgent ?? "", touchPoints = nav()?.maxTouchPoints ?? 0): boolean {
-  return /Macintosh/i.test(ua) && touchPoints <= 1 && /Safari/i.test(ua) && !/Chrome|Chromium|Edg|Firefox/i.test(ua);
+export function isDesktopSafari(
+  ua = nav()?.userAgent ?? "",
+  touchPoints = nav()?.maxTouchPoints ?? 0,
+): boolean {
+  return (
+    /Macintosh/i.test(ua) &&
+    touchPoints <= 1 &&
+    /Safari/i.test(ua) &&
+    !/Chrome|Chromium|Edg|Firefox/i.test(ua)
+  );
 }
 
 /** `navigator.setAppBadge(n)` where supported; 0 clears it (PUSH-16). */

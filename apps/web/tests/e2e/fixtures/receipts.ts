@@ -6,7 +6,10 @@ import { expect, type Page } from "@playwright/test";
 import { call } from "./app";
 
 /** packages/fixtures/receipts (ADR-0020): generated receipts with ground truth. */
-export const RECEIPTS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../../packages/fixtures/receipts");
+export const RECEIPTS = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../../../packages/fixtures/receipts",
+);
 
 export const receiptFile = (name: string) => path.join(RECEIPTS, name);
 
@@ -17,7 +20,12 @@ export function truth(id: string): Truth {
   return JSON.parse(readFileSync(receiptFile(`${id}.truth.json`), "utf8")) as Truth;
 }
 
-export type BillItemLike = { name: string; quantity: string; line_total_cents: number; discount_cents: number };
+export type BillItemLike = {
+  name: string;
+  quantity: string;
+  line_total_cents: number;
+  discount_cents: number;
+};
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
@@ -25,7 +33,10 @@ const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
  * Lines exactly right, as `app/extraction/evaluate.py` counts them: normalized name, gross line
  * total and quantity equal, matched in order (LCS), divided by max(truth, extracted).
  */
-export function lineScore(items: BillItemLike[], expected: TruthItem[]): { right: number; of: number } {
+export function lineScore(
+  items: BillItemLike[],
+  expected: TruthItem[],
+): { right: number; of: number } {
   const key = (name: string, cents: number, qty: string) => `${norm(name)}|${cents}|${Number(qty)}`;
   const a = items.map((i) => key(i.name, i.line_total_cents + i.discount_cents, i.quantity));
   const b = expected.map((i) => key(i.name, i.line_total_cents, i.quantity));
@@ -65,7 +76,10 @@ export function blankPng(width = 600, height = 800): Buffer {
 
 /** `jpeg` with an EXIF APP1 (GPS IFD with a latitude) right after SOI, like a phone photo. */
 export function withExifGps(jpeg: Buffer): Buffer {
-  const tiff = Buffer.from("MM\0*\0\0\0\x08\0\x01\x88\x25\0\x04\0\0\0\x01\0\0\0\x1a\0\0\0\0GPSLatitude=40.7128N;GPSLongitude=74.0060W", "latin1");
+  const tiff = Buffer.from(
+    "MM\0*\0\0\0\x08\0\x01\x88\x25\0\x04\0\0\0\x01\0\0\0\x1a\0\0\0\0GPSLatitude=40.7128N;GPSLongitude=74.0060W",
+    "latin1",
+  );
   const body = Buffer.concat([Buffer.from("Exif\0\0", "latin1"), tiff]);
   const header = Buffer.from([0xff, 0xe1, (body.length + 2) >> 8, (body.length + 2) & 0xff]);
   return Buffer.concat([jpeg.subarray(0, 2), header, body, jpeg.subarray(2)]);
@@ -77,7 +91,8 @@ export function blankPdf(pages: number): Buffer {
   const kids = Array.from({ length: pages }, (_, i) => `${3 + i} 0 R`).join(" ");
   objects.push("<< /Type /Catalog /Pages 2 0 R >>");
   objects.push(`<< /Type /Pages /Kids [${kids}] /Count ${pages} >>`);
-  for (let i = 0; i < pages; i++) objects.push("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 300] >>");
+  for (let i = 0; i < pages; i++)
+    objects.push("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 300] >>");
   let out = "%PDF-1.4\n";
   const offsets: number[] = [];
   objects.forEach((body, i) => {
@@ -92,7 +107,12 @@ export function blankPdf(pages: number): Buffer {
 }
 
 export type BillApi = {
-  bill: { id: string; store_name: string | null; receipt_total_cents: number | null; extraction_status: string };
+  bill: {
+    id: string;
+    store_name: string | null;
+    receipt_total_cents: number | null;
+    extraction_status: string;
+  };
   items: BillItemLike[];
   scanned_offer: { extraction_id: string; item_count: number } | null;
 };

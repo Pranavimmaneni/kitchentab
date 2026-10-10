@@ -42,7 +42,13 @@ export function stretch(g: Float32Array): Float32Array {
 }
 
 /** Bradley–Roth: ink (1) when darker than (1 - t) × the local mean and by more than 14 levels. */
-export function threshold(g: Float32Array, w: number, h: number, win: number, t: number): Uint8Array {
+export function threshold(
+  g: Float32Array,
+  w: number,
+  h: number,
+  win: number,
+  t: number,
+): Uint8Array {
   const integral = new Float64Array((w + 1) * (h + 1));
   for (let y = 0; y < h; y++) {
     let row = 0;
@@ -77,7 +83,8 @@ export function threshold(g: Float32Array, w: number, h: number, win: number, t:
 export function estimateSkew(ink: Uint8Array, w: number, h: number): number {
   const pts: number[] = [];
   const step = Math.max(1, Math.floor(Math.sqrt((w * h) / 400000)));
-  for (let y = 0; y < h; y += step) for (let x = 0; x < w; x += step) if (ink[y * w + x]) pts.push(x, y);
+  for (let y = 0; y < h; y += step)
+    for (let x = 0; x < w; x += step) if (ink[y * w + x]) pts.push(x, y);
   if (pts.length < 200) return 0;
   const score = (deg: number): number => {
     const a = (deg * Math.PI) / 180;
@@ -120,7 +127,13 @@ export function windowFor(w: number, h: number): number {
   return Math.max(15, Math.round(Math.max(w, h) / 40)) | 1;
 }
 
-export type Prepared = { canvas: HTMLCanvasElement; angle: number; scale: number; width: number; height: number };
+export type Prepared = {
+  canvas: HTMLCanvasElement;
+  angle: number;
+  scale: number;
+  width: number;
+  height: number;
+};
 
 type Source = CanvasImageSource & { width: number; height: number };
 

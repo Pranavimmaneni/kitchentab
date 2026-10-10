@@ -97,8 +97,17 @@ IDs: FR-10, FR-13..FR-17, FR-20..FR-27, FR-30, FR-31, FR-60 (tag), BILL-01..07, 
 IDs: FR-10..FR-12, FR-18, FR-60, EXTRACT-01..16, VERCEL-03
 
 - [ ] Blob/MinIO client uploads (20 MB, 10 pages), PDF first-class input, drag-and-drop
+- [x] Web (ADR-0026): capture sheet (camera, photo library, "Upload PDF", desktop drag-and-drop, by
+      hand), on-device refusals (magic bytes, 20 MB, 10 pages), EXIF stripped by canvas re-encode,
+      client upload (MinIO PUT / `@vercel/blob/client`), reading + failure states with Try again /
+      Enter by hand, "Use the scanned items instead?" banner, receipt photo; `/api/blob-upload` and
+      `/api/blob-view` routes (HMAC pinned to `storage.sign_read`); `tests/e2e/receipts.spec.ts`
+      (EXTRACT-01/02/06/12/14, SYNC-15) green on WebKit, Chromium and Firefox; unit tests for files,
+      EXIF, preprocessing, scan job and both routes
 - [ ] Server text-PDF extraction (pdfplumber/pypdf) + shared receipt parser with store profiles
-- [ ] Browser OCR (tesseract.js self-hosted under /ocr/, pdfjs-dist), preprocessing
+- [x] Browser OCR (tesseract.js 5 self-hosted under /ocr/, pdfjs-dist 4, eng best_int committed),
+      preprocessing copied from scripts/receipts/preprocess.js: 5 photos + 1 scanned PDF read in
+      WebKit and Chromium within the C1 targets, no request off the app's hosts (EXTRACT-12)
 - [ ] 30 synthetic receipts with ground truth; `make test-extract` meets C1 targets
 - [ ] Optional LLM plugin only when EXTRACTOR_API_KEY is set
 - [ ] Gate
@@ -118,6 +127,13 @@ IDs: SYNC-01..35, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VE
 - [x] Multi-roommate browser tests (`tests/e2e/sync.spec.ts`, 12 × 3 browsers): SYNC-01/03/05/06/12/
       31/32/34, PAY-01/07, BILL-08/09/10, SPLIT-08, OFFLINE-01/02/04
 - [ ] Not yet: SYNC-22 (deploy toast / 426 prompt, with PWA-09 in M9), PAY-08 (auto-reminders, M9 outbox)
+- [x] Web stabilization pass (2026-10-09): more browser races (`sync.spec.ts` SYNC-02/04/09/10/23,
+      `kitchen-sync.spec.ts` SYNC-07/13), AUTH-09 sign out everywhere (`session.spec.ts`; the stream
+      re-reads its session every second and sends `revoked {reason: "signed_out"}`, API test in
+      `test_sync_stream.py`), network rules (`network.spec.ts`: EDGE-15-25 long-open banner, EDGE-15-26,
+      OFFLINE-03/04, CHAOS-06 "Saving…", CHAOS-08 server time from the `Date` header), screen audits
+      (`screens-quality.spec.ts`: A11Y-01/04/06/07, VIS-02 on 26 screens, Chromium), SPLIT-10
+      (`split-wide.spec.ts`). Writes are refused, never held, while offline (`lib/api/client.ts`).
 - [ ] Gate (both profiles)
 
 ## Milestone 7: Tabs and balances
@@ -129,8 +145,7 @@ IDs: FR-50..FR-54, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · 
       `tests/unit/tabs.test.ts`; Playwright `tests/e2e/tabs-house.spec.ts` on WebKit + Chromium; screenshots
       and axe in `tests/e2e/kitchen-screenshots.spec.ts`)
 - [x] API addition: tab cards carry `changed.by_name` / `changed.at` for "{name} tweaked it {day}"
-- [ ] BAL-02 (balances converge on every device within 2 s) depends on the M6 sync client invalidating
-      `["house", id, …]` queries
+- [x] BAL-02 (balances converge on every device within 2 s): `sync.spec.ts` "house screens live"
 - [ ] Gate
 
 ## Milestone 8: Fridge and pantry
@@ -157,9 +172,18 @@ IDs: PWA-01..12, OFFLINE-01..04, PUSH-01..19, EMAIL-01..05, VERCEL-04, VERCEL-09
       footer / dark-mode HTML, weekly digest, daily cron + sweeper (ADR-0021; `tests/test_notify.py`,
       23 tests, both profiles; VERCEL-04 runs the real Queues SDK against its embedded service)
 - [ ] Daily logical export to storage (VERCEL-09 "export" part; lands with `make restore-drill`)
-- [ ] Web: manifest, Serwist service worker, install flows, update flow, offline mode, N1 + N2,
-      push subscribe/unsubscribe, `notificationclick`, app badge (PWA-*, OFFLINE-*, PUSH-01/02/15/16 UI)
-- [ ] `make test-push` target un-pended; EMAIL-04 (DNS) is a launch-check item; EMAIL-05 screenshots
+- [x] Web (ADR-0027): manifest with screenshots + monochrome icon, Serwist worker (precache, offline
+      page, network-first 3 s reads marked stale, never-cache list), update toast + 426 prompt,
+      install card / iPhone N1 steps / Settings install, `pwa_installed`, AUTH-13 welcome, offline
+      banner side, N1 + N2 (`/settings/notifications`), subscribe + re-register on start +
+      `pushsubscriptionchange`, push / `notificationclick` handlers, app badge — `tests/e2e/pwa.spec.ts`,
+      `push.spec.ts`, `offline.spec.ts`, `email.spec.ts` (PWA-01..11, OFFLINE-01/02, PUSH-01/02/03/04/09/
+      15/16/17, AUTH-13, SYNC-22, EMAIL-05) + unit tests for the routing rules, strategy, handlers, moments
+- [ ] PWA-12: Lighthouse 11.7.1 mobile on `/start` (production build): accessibility 100, best
+      practices 100, PWA audit passes, performance 84–89 with other suites saturating the CPU (TBT
+      400–490 ms, all in the shared React/Next chunks). `tests/e2e/lighthouse.spec.ts` runs it with
+      KT_LIGHTHOUSE=1; rerun on a quiet machine
+- [x] `make test-push` web part: `tests/e2e/push.spec.ts` (grep "PUSH-"); EMAIL-04 (DNS) is a launch-check item; EMAIL-05 screenshots
 - [ ] Gate (+ test-push)
 
 ## Milestone 10: Hardening and full verification
@@ -276,7 +300,12 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 46. Payer handles appear on `GET /bills/{id}/money` as `payer_handles` (minimal API addition for the pay sheet, PRD §8/§14A).
 47. `next.config.ts` honors `KT_DIST_DIR` so two local Playwright stacks can build side by side.
 48. The local-vercel rehearsal runs the API with APP_ENV=test (no test routes) because deployed-mode validation needs Vercel Blob, a non-localhost origin and real push services; a staging preflight validates the same environment, and it has its own Postgres so it never competes with the test suites. ADR-0028.
-
+49. A scan started on this device lives in memory until it settles; after a reload a draft left `pending`/`failed` with no items shows the failure state with "Choose the file again" (the stored file stays attached). ADR-0026.
+50. The install card and N1 sheet render from the root layout (`components/pwa/PwaRoot.tsx`); "Settings › Install app" lives on `/settings/notifications`, which Settings links to. Prompt memory is per device (localStorage). ADR-0027.
+51. `pwa_installed` and install events go to `window.__ktEvents` until an analytics provider is chosen. ADR-0027.
+52. A "visit" is a new browser session (tab or app launch); the 2nd visit is an install moment. The "first ask" moment is an ask sent from this app or any ask/answer in the inbox.
+53. Playwright blocks service workers by default; PWA/push/offline specs opt in, and push specs use the full Chromium build (`channel: "chromium"`) because the headless shell always reports notification permission as denied. ADR-0027.
+54. `X-Client-Version` is the integer API compatibility level (`1`), compared numerically with MIN_CLIENT_VERSION. ADR-0026.
 
 ## Waivers
 

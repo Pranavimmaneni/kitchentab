@@ -72,7 +72,8 @@ export function neverCache(req: RequestLike, origin: string): boolean {
   if ((req.headers.get("accept") ?? "").includes("text/event-stream")) return true;
   if (req.headers.get("range")) return true;
   if (NEVER_SAME_ORIGIN.some((r) => r.test(url.pathname))) return true;
-  if (url.pathname.startsWith("/api/v1/") && NEVER_API.some((r) => r.test(url.pathname))) return true;
+  if (url.pathname.startsWith("/api/v1/") && NEVER_API.some((r) => r.test(url.pathname)))
+    return true;
   return false;
 }
 
@@ -117,7 +118,8 @@ export type ResponseLike = {
  * `private, no-store`, so for navigations only the path rules above decide.
  */
 export function storable(res: ResponseLike, kind: "api" | "page"): boolean {
-  if (!res.ok || res.status !== 200 || res.type === "opaque" || res.type === "opaqueredirect") return false;
+  if (!res.ok || res.status !== 200 || res.type === "opaque" || res.type === "opaqueredirect")
+    return false;
   if (res.headers.get("vary")?.includes("*")) return false;
   if (kind === "page") return (res.headers.get("content-type") ?? "").includes("text/html");
   const cc = (res.headers.get("cache-control") ?? "").toLowerCase();

@@ -1,5 +1,6 @@
 import { expect, type Page, type Request } from "@playwright/test";
 import { call, createHouse, hydrated, readCode, seedShopRite, uniqueEmail, type Roomie } from "./app";
+import { quietPrompts } from "./quiet";
 import type { House } from "./roommates";
 
 /**
@@ -40,6 +41,8 @@ export type Apartment = {
 export async function apartment(house: House, roommates: Roomie[]): Promise<Apartment> {
   const [payerPage, ...others] = house.pages;
   if (!payerPage || others.length < roommates.length) throw new Error("not enough browser contexts");
+  // Screen 5 races, not the install or notification sheets (those have their own specs).
+  await Promise.all(house.pages.map((p) => quietPrompts(p.context())));
   await signInViaApi(payerPage, uniqueEmail("pranav"));
   const apt = await createHouse(payerPage);
   const { billId, itemIds } = await seedShopRite(payerPage, apt, { split: "all", send: true });

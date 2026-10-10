@@ -35,7 +35,9 @@ afterEach(() => {
 describe("signed receipt views (ADR-0024)", () => {
   it("EXTRACT-10 the HMAC matches apps/api storage.sign_read byte for byte [FR-18]", () => {
     // Vectors printed by `sign_read(token, pathname, expires)` in apps/api/app/adapters/storage.py.
-    expect(signRead(TOKEN, KEY, 1760000000)).toBe("9685de75be12c5fde0913517add07c09dfddc91d73e5f14e40f587ed76616827");
+    expect(signRead(TOKEN, KEY, 1760000000)).toBe(
+      "9685de75be12c5fde0913517add07c09dfddc91d73e5f14e40f587ed76616827",
+    );
     expect(signRead(TOKEN, "receipts/x y/ü.pdf", 1700000000)).toBe(
       "d6db20e1dc6c6a642713311c758b368d1e00f23652dae6a9f1cbe301e7b55df5",
     );
@@ -61,7 +63,9 @@ describe("signed receipt views (ADR-0024)", () => {
     expect(res.status).toBe(302);
     expect(res.headers.get("location")).toContain(`blob.vercel-storage.com/${KEY}`);
     expect(res.headers.get("cache-control")).toContain("no-store");
-    expect(issued).toEqual([expect.objectContaining({ token: TOKEN, pathname: KEY, operations: ["get"] })]);
+    expect(issued).toEqual([
+      expect.objectContaining({ token: TOKEN, pathname: KEY, operations: ["get"] }),
+    ]);
     const until = (issued[0] as { validUntil: number }).validUntil;
     expect(until).toBeLessThanOrEqual(Date.now() + 5 * 60_000);
   });
@@ -69,11 +73,15 @@ describe("signed receipt views (ADR-0024)", () => {
   it("EXTRACT-10 expired or tampered links get 403; without Vercel Blob the route is 404 [FR-18]", async () => {
     const past = Math.floor(Date.now() / 1000) - 1;
     const expired = await blobView(
-      new Request(`http://web.test/api/blob-view?pathname=${encodeURIComponent(KEY)}&expires=${past}&sig=${signRead(TOKEN, KEY, past)}`),
+      new Request(
+        `http://web.test/api/blob-view?pathname=${encodeURIComponent(KEY)}&expires=${past}&sig=${signRead(TOKEN, KEY, past)}`,
+      ),
     );
     expect(expired.status).toBe(403);
     const tampered = await blobView(
-      new Request(`http://web.test/api/blob-view?pathname=${encodeURIComponent(KEY)}&expires=${past + 999}&sig=${signRead(TOKEN, KEY, past)}`),
+      new Request(
+        `http://web.test/api/blob-view?pathname=${encodeURIComponent(KEY)}&expires=${past + 999}&sig=${signRead(TOKEN, KEY, past)}`,
+      ),
     );
     expect(tampered.status).toBe(403);
     expect(issued).toEqual([]);
@@ -100,7 +108,11 @@ describe("client upload tokens (ADR-0015)", () => {
     vi.stubGlobal("fetch", fetchMock);
     const req = new Request("http://web.test/api/blob-upload", {
       method: "POST",
-      headers: { cookie: "kt_session=s; kt_csrf=c", "x-csrf-token": "c", "content-type": "application/json" },
+      headers: {
+        cookie: "kt_session=s; kt_csrf=c",
+        "x-csrf-token": "c",
+        "content-type": "application/json",
+      },
       body: JSON.stringify({
         type: "blob.generate-client-token",
         payload: {
@@ -115,31 +127,55 @@ describe("client upload tokens (ADR-0015)", () => {
     const out = (await res.json()) as { type: string; clientToken: string };
     expect(out.type).toBe("blob.generate-client-token");
     const payload = getPayloadFromClientToken(out.clientToken);
-    expect(payload).toMatchObject({ pathname: KEY, allowedContentTypes: ["image/jpeg"], maximumSizeInBytes: 123456 });
+    expect(payload).toMatchObject({
+      pathname: KEY,
+      allowedContentTypes: ["image/jpeg"],
+      maximumSizeInBytes: 123456,
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("http://api.test/api/v1/uploads/authorize");
     const headers = init.headers as Record<string, string>;
     expect(headers.Cookie).toBe("kt_session=s; kt_csrf=c");
     expect(headers["X-CSRF-Token"]).toBe("c");
-    expect(JSON.parse(String(init.body))).toEqual({ bill_id: "b1", mime: "image/jpeg", bytes: 123456, storage_key: KEY });
+    expect(JSON.parse(String(init.body))).toEqual({
+      bill_id: "b1",
+      mime: "image/jpeg",
+      bytes: 123456,
+      storage_key: KEY,
+    });
   });
 
   it("EXTRACT-01 the API's refusal (413, 403…) reaches the browser and no token is minted [FR-10]", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => Response.json({ title: "That file is over 20 MB", status: 413, code: "FILE_TOO_LARGE" }, { status: 413 })),
+      vi.fn(async () =>
+        Response.json(
+          { title: "That file is over 20 MB", status: 413, code: "FILE_TOO_LARGE" },
+          { status: 413 },
+        ),
+      ),
     );
     await expect(
-      authorizeBlobUpload(new Request("http://web.test/x"), KEY, JSON.stringify({ bill_id: "b", mime: "image/jpeg", bytes: 1 })),
+      authorizeBlobUpload(
+        new Request("http://web.test/x"),
+        KEY,
+        JSON.stringify({ bill_id: "b", mime: "image/jpeg", bytes: 1 }),
+      ),
     ).rejects.toBeInstanceOf(BlobRefusal);
-    await expect(authorizeBlobUpload(new Request("http://web.test/x"), KEY, "not json")).rejects.toMatchObject({ status: 422 });
+    await expect(
+      authorizeBlobUpload(new Request("http://web.test/x"), KEY, "not json"),
+    ).rejects.toMatchObject({ status: 422 });
     const res = await blobUpload(
       new Request("http://web.test/api/blob-upload", {
         method: "POST",
         body: JSON.stringify({
           type: "blob.generate-client-token",
-          payload: { pathname: KEY, clientPayload: JSON.stringify({ bill_id: "b", mime: "image/jpeg", bytes: 1 }), multipart: false },
+          payload: {
+            pathname: KEY,
+            clientPayload: JSON.stringify({ bill_id: "b", mime: "image/jpeg", bytes: 1 }),
+            multipart: false,
+          },
         }),
       }),
     );
@@ -149,10 +185,19 @@ describe("client upload tokens (ADR-0015)", () => {
 
   it("EXTRACT-01 webhooks and other bodies are refused; without Vercel Blob the route is 404 [FR-10]", async () => {
     const res = await blobUpload(
-      new Request("http://web.test/api/blob-upload", { method: "POST", body: JSON.stringify({ type: "blob.upload-completed" }) }),
+      new Request("http://web.test/api/blob-upload", {
+        method: "POST",
+        body: JSON.stringify({ type: "blob.upload-completed" }),
+      }),
     );
     expect(res.status).toBe(400);
     vi.stubEnv("STORAGE_PROVIDER", "fakeblob");
-    expect((await blobUpload(new Request("http://web.test/api/blob-upload", { method: "POST", body: "{}" }))).status).toBe(404);
+    expect(
+      (
+        await blobUpload(
+          new Request("http://web.test/api/blob-upload", { method: "POST", body: "{}" }),
+        )
+      ).status,
+    ).toBe(404);
   });
 });

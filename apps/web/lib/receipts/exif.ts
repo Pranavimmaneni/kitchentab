@@ -18,7 +18,8 @@ const COM = 0xfe;
 
 function ascii(bytes: Uint8Array, start: number, length: number): string {
   let out = "";
-  for (let i = start; i < Math.min(start + length, bytes.length); i++) out += String.fromCharCode(bytes[i]!);
+  for (let i = start; i < Math.min(start + length, bytes.length); i++)
+    out += String.fromCharCode(bytes[i]!);
   return out;
 }
 
@@ -98,7 +99,8 @@ export function pngChunks(bytes: Uint8Array): Chunk[] | null {
   const chunks: Chunk[] = [];
   let i = 8;
   while (i + 8 <= bytes.length) {
-    const length = ((bytes[i]! << 24) >>> 0) + (bytes[i + 1]! << 16) + (bytes[i + 2]! << 8) + bytes[i + 3]!;
+    const length =
+      ((bytes[i]! << 24) >>> 0) + (bytes[i + 1]! << 16) + (bytes[i + 2]! << 8) + bytes[i + 3]!;
     const type = ascii(bytes, i + 4, 4);
     const end = i + 12 + length;
     if (end > bytes.length) return null;
@@ -128,7 +130,8 @@ export function hasMetadata(bytes: Uint8Array): boolean {
     let i = 12;
     while (i + 8 <= bytes.length) {
       const type = ascii(bytes, i, 4);
-      const size = bytes[i + 4]! | (bytes[i + 5]! << 8) | (bytes[i + 6]! << 16) | (bytes[i + 7]! << 24);
+      const size =
+        bytes[i + 4]! | (bytes[i + 5]! << 8) | (bytes[i + 6]! << 16) | (bytes[i + 7]! << 24);
       if (type === "EXIF" || type === "XMP ") return true;
       i += 8 + size + (size % 2);
     }

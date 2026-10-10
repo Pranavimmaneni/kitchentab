@@ -13,7 +13,8 @@ function page(w: number, h: number, deg: number): Float32Array {
       const dy = y - h / 2;
       const ux = dx * Math.cos(a) + dy * Math.sin(a) + w / 2;
       const uy = -dx * Math.sin(a) + dy * Math.cos(a) + h / 2;
-      if (ux > 40 && ux < w - 40 && uy > 30 && uy < h - 30 && uy % 24 < 6 && ux % 50 < 40) g[y * w + x] = 20;
+      if (ux > 40 && ux < w - 40 && uy > 30 && uy < h - 30 && uy % 24 < 6 && ux % 50 < 40)
+        g[y * w + x] = 20;
     }
   }
   return g;
@@ -21,7 +22,9 @@ function page(w: number, h: number, deg: number): Float32Array {
 
 describe("browser OCR preprocessing (the same math as scripts/receipts/preprocess.js)", () => {
   it("EXTRACT-12 grayscale uses Rec. 601 weights and contrast stretches 1st..99th percentile [FR-11]", () => {
-    const rgba = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 10, 20, 30, 255]);
+    const rgba = new Uint8ClampedArray([
+      255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 10, 20, 30, 255,
+    ]);
     const g = toGray(rgba, 4, 1);
     expect([...g].map((v) => Math.round(v))).toEqual([76, 150, 29, 18]);
     const flat = new Float32Array(1000).map((_, i) => 100 + (i % 51)); // 100..150
@@ -65,7 +68,9 @@ describe("browser OCR preprocessing (the same math as scripts/receipts/preproces
                   text: "WHOLE MILK 1 GAL      4.29\n",
                   bbox: { x0: 10, y0: 20, x1: 300, y1: 40 },
                   confidence: 91.234,
-                  words: [{ text: "WHOLE", bbox: { x0: 10, y0: 20, x1: 60, y1: 40 }, confidence: 95.55 }],
+                  words: [
+                    { text: "WHOLE", bbox: { x0: 10, y0: 20, x1: 60, y1: 40 }, confidence: 95.55 },
+                  ],
                 },
                 { text: "   \n", bbox: { x0: 0, y0: 0, x1: 1, y1: 1 }, confidence: 0 },
               ],
