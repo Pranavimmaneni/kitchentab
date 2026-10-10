@@ -46,7 +46,7 @@ Open, in order (overnight queue):
    sticky bars in flow), EMAIL-05 depended on the hour (quiet hours hold email overnight; the test turns
    them off), E2E-01 on WebKit: the N1 sheet covered the Share button (product fix, assumption 55).
    CI e2e on main otherwise: 254 passed, 3 failed (those), 2 flaky (KITCH-13 WebKit, SYNC-13), 83 skipped.
-   STILL RED: SYNC-24 (see item 2) in the test and both sync jobs: needs the owner's decision.
+   SYNC-24: decided (item 2); the Vercel-profile sync job needs the serverless pool PR.
    Old note: full local browser suite was 245 passed / 27 failed / 83 skipped, partly machine load.
    Possibly real: SYNC-32 tick flicker (WebKit), SYNC-31 leader hand-over > 3 s, SYNC-12 (WebKit/Firefox),
    SYNC-07 flaky, KITCH-07/08, ASK-06, BILL-03, E2E-01; VIS-02 and A11Y-07 need one confirmed run.
@@ -56,6 +56,11 @@ Open, in order (overnight queue):
    laptop 0.63 s. Owner decision pending: change the load model to the real client's (ticks batched
    every 250 ms per person) and keep the flat-out run for correctness + a throughput floor, or invest in
    a different lock design. Not changed without the owner (PRD §21, CLAUDE.md).
+   DECIDED 2026-10-10 (owner: "Realistic load", ADR-0031): flat-out run keeps correctness + >= 20
+   ticks/s; human-pace run (tap every 0.5-1.5 s, 250 ms coalescing) asserts p95 < 300 ms. Local profile
+   passes both here. Vercel profile failed both (7 ticks/s, p95 4 s): every request opened a new DB
+   connection and paid per-connection type lookups, some inside the house lock. Fix in a stacked PR
+   (connection reuse in the serverless profile, ADR-0032).
    Earlier note: API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
    VERCEL-02, SYNC-25, write-helper load test. Re-measure on a quiet machine before deciding.
 3. Not yet run: `make test-load` (PERF-01/02), three 30-minute `make simulate` seeds plus browser

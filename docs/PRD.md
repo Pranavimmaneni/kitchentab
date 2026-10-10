@@ -1343,7 +1343,7 @@ Ticks don't bump the bill header or item version, so a roommate ticking never ca
 | SYNC-21 | The API restarts mid-session (deploy) | Streams reconnect with backoff and resume without missing events |
 | SYNC-22 | A new app version deploys while a user is mid-edit | No forced reload; toast offers refresh; breaking API changes return `426 STALE_CLIENT` |
 | SYNC-23 | Payer deletes an item that a member is ticking | Tick returns 404 `ITEM_GONE`; the row disappears on every device |
-| SYNC-24 | 20 people tick across one bill as fast as possible for 30 s | No lost updates, Σ shares = total after every commit, p95 write < 300 ms, every device converges |
+| SYNC-24 | 20 people tick across one bill for 30 s, flat out and at human pace (a tap every 0.5–1.5 s, held 250 ms by the client) (ADR-0031) | Both: no lost updates, Σ shares = total after every commit, every device converges. Flat out: at least 20 ticks/s. Human pace: p95 write < 300 ms |
 
 ### 21.8 Data model and API additions
 
