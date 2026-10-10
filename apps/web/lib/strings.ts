@@ -337,6 +337,36 @@ export const strings = {
     shareDefaultNote: "Applies to items stocked after you change it.",
     email: "EMAIL",
     notifyEmail: "Email me about new tabs and changes",
+    // FR-83: the name follows you into every house
+    nameSavedTaken: (houses: string, name: string) =>
+      `Saved. Someone in ${houses} is already called ${name}, so you kept your old name there.`,
+    // FR-84: one place for notifications, the home screen app and your house
+    notifications: "NOTIFICATIONS",
+    homeScreen: "ADD KITCHENTAB TO YOUR HOME SCREEN",
+    homeScreenBody:
+      "It opens like an app, straight to your kitchen, and it's how iPhones get notifications.",
+    install: "Install KitchenTab",
+    installed: "Installed. Open KitchenTab from your home screen.",
+    iphone: "ON IPHONE · SAFARI",
+    iphoneSteps: [
+      "Open KitchenTab in Safari (not Chrome).",
+      "Tap Share, the square with the arrow pointing up.",
+      "Scroll down, choose “Add to Home Screen”, then tap Add.",
+      "Open KitchenTab from your Home Screen and sign in once more there.",
+      "Allow notifications when it asks, or turn them on in Settings › Notifications.",
+    ],
+    android: "ON ANDROID · CHROME",
+    androidSteps: [
+      "Open KitchenTab in Chrome.",
+      "Tap Install above, or the ⋮ menu › Install app (some phones say Add to Home screen).",
+      "Open KitchenTab from your home screen and allow notifications.",
+    ],
+    computer: "ON A COMPUTER",
+    computerStep: "In Chrome or Edge, click the install icon at the right end of the address bar.",
+    yourHouse: "YOUR HOUSE",
+    houseLink: "House settings",
+    houseLinkHint: (house: string) => `${house}: members, invite link, admin`,
+    leaveHouse: (house: string) => `Leave ${house}`,
     appearance: "APPEARANCE",
     data: "YOUR DATA",
     export: "Export my data",

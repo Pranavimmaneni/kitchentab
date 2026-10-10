@@ -334,6 +334,40 @@
     font-weight: 700;
   }
 
+  /* ---- Settings › Add KitchenTab to your home screen (FR-84) --------------------------------- */
+  .kt-install-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border: 2px dashed var(--faint);
+    border-radius: var(--radius-control);
+  }
+  .kt-install-steps__title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .kt-install-steps__list {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .kt-install-steps__line {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
   /* ---- N2 · Settings › Notifications -------------------------------------------------------- */
   .kt-n2 .kt-screen__main {
     gap: 18px;
