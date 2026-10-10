@@ -203,11 +203,13 @@ golden: test-extract ## Alias of test-extract
 #   make deploy-setup DRY_RUN=1      make rollback ARGS="--to 2"      make set-email ARGS=--local
 DEPLOY_PY := $(UV) python scripts/deploy
 DEPLOY_FLAGS = $(if $(filter 1 true yes,$(DRY_RUN)),--dry-run) $(ARGS)
-.PHONY: deploy-setup deploy redeploy rollback set-email prod-clean-test-data
+.PHONY: deploy-setup deploy redeploy migrate-prod rollback set-email prod-clean-test-data
 deploy-setup: ## One-time Vercel setup: link, Neon, Blob, every env var (idempotent; DRY_RUN=1)
 	$(DEPLOY_PY)/deploy_setup.py $(DEPLOY_FLAGS)
 deploy: ## lint + tests, migrations on Neon, vercel deploy --prod, origin settings (DRY_RUN=1)
 	$(DEPLOY_PY)/deploy.py $(DEPLOY_FLAGS)
+migrate-prod: ## Apply Alembic migrations to the production (Neon) database before merging a schema change (DRY_RUN=1)
+	$(DEPLOY_PY)/migrate_prod.py $(DEPLOY_FLAGS)
 redeploy: ## Rebuild the live production deployment with the current env vars
 	$(DEPLOY_PY)/redeploy.py $(DEPLOY_FLAGS)
 rollback: ## Promote an earlier production deployment (lists them; ARGS="--to N")
