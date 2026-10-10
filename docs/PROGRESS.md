@@ -40,10 +40,23 @@ B. Settings (SettingsScreen.tsx): one place for
 Ship both behind the usual gate; ask the user before redeploying production.
 
 Open, in order (overnight queue):
-1. Full browser suite not green: last run 245 passed / 27 failed / 83 skipped, partly machine load.
+1. GitHub CI (first runs 2026-10-10) was red on main. Fixed on branch fix/ci-baseline: ruff EXE001 (four
+   scripts not executable in git), the test job had no MinIO (receipt tests, VERCEL-09 backup), A11Y-01
+   target-size flagged a review row only where it sat under the sticky action bar (the audit now puts
+   sticky bars in flow), EMAIL-05 depended on the hour (quiet hours hold email overnight; the test turns
+   them off), E2E-01 on WebKit: the N1 sheet covered the Share button (product fix, assumption 55).
+   CI e2e on main otherwise: 254 passed, 3 failed (those), 2 flaky (KITCH-13 WebKit, SYNC-13), 83 skipped.
+   STILL RED: SYNC-24 (see item 2) in the test and both sync jobs: needs the owner's decision.
+   Old note: full local browser suite was 245 passed / 27 failed / 83 skipped, partly machine load.
    Possibly real: SYNC-32 tick flicker (WebKit), SYNC-31 leader hand-over > 3 s, SYNC-12 (WebKit/Firefox),
    SYNC-07 flaky, KITCH-07/08, ASK-06, BILL-03, E2E-01; VIS-02 and A11Y-07 need one confirmed run.
-2. API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
+2. SYNC-24 p95 < 300 ms with 20 clients ticking flat out is not reachable with ticks serialized on the
+   house lock (~15 ms each locally, slower on CI's 2-CPU runners): by Little's law the mean wait alone is
+   about 20 x 15 ms = 300 ms. CI measured p95 1.0 s (local profile) and 4.0 s (vercel profile); this
+   laptop 0.63 s. Owner decision pending: change the load model to the real client's (ticks batched
+   every 250 ms per person) and keep the flat-out run for correctness + a throughput floor, or invest in
+   a different lock design. Not changed without the owner (PRD §21, CLAUDE.md).
+   Earlier note: API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
    VERCEL-02, SYNC-25, write-helper load test. Re-measure on a quiet machine before deciding.
 3. Not yet run: `make test-load` (PERF-01/02), three 30-minute `make simulate` seeds plus browser
    devices, PERF-03..06 (Lighthouse / bundle / extraction / 200 items; mobile perf 84-89 vs 90),
@@ -348,6 +361,7 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 52. A "visit" is a new browser session (tab or app launch); the 2nd visit is an install moment. The "first ask" moment is an ask sent from this app or any ask/answer in the inbox.
 53. Playwright blocks service workers by default; PWA/push/offline specs opt in, and push specs use the full Chromium build (`channel: "chromium"`) because the headless shell always reports notification permission as denied. ADR-0027.
 54. `X-Client-Version` is the integer API compatibility level (`1`), compared numerically with MIN_CLIENT_VERSION. ADR-0026.
+55. The first-bill notifications pre-prompt (N1) waits until the payer leaves E · Share: a write moment is decided on the next idle check and Share is marked busy (`data-kt-busy`), so the sheet never lands on the Share button (PUSH-01, E2E-01; PRD §20.2 rule 1 clarified).
 
 ## Waivers
 
