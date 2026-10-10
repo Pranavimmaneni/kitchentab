@@ -51,6 +51,9 @@ from app.extraction.schema import (
 )
 
 FULL = 1000  # certainty / confidence scale (thousandths)
+# Stored as receipt_extractions.prompt_version (PRD §9 "store prompt version and model id"); bump on
+# any change that can alter output for the same input.
+PARSER_VERSION = "local-parser-2026.10"
 MIN_OCR_CONF_FOR_ITEM = 400  # an OCR line below this never becomes an item (EDGE-15-01: never invent)
 SEAM_CONF = FLAG_BELOW - 1  # kept lines at a multi-photo seam are always flagged
 

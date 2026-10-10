@@ -2,6 +2,7 @@
 
 import { ReceiptCard } from "@/components/ReceiptCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { StandaloneWelcome } from "@/components/pwa/StandaloneWelcome";
 import { CodeRequestForm } from "@/components/screens/CodeRequestForm";
 import { GoogleButton } from "@/components/screens/GoogleButton";
 import type { AuthMethods } from "@/lib/api/types";
@@ -15,6 +16,7 @@ export function StartScreen({ methods }: { methods: AuthMethods }) {
         <ThemeToggle />
       </div>
       <main className="kt-screen__main">
+        <StandaloneWelcome />
         <ReceiptCard heading={strings.start.receiptNo} rotated>
           <div className="kt-hero">
             <h1 className="kt-hero__headline">

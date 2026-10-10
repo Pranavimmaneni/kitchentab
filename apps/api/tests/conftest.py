@@ -23,6 +23,7 @@ os.environ.update(
         "WEB_ORIGIN": "https://app.test",
         "PUBLIC_LINK_BASE": "https://app.test",
         "EMAIL_PROVIDER": "testinbox",
+        "EMAIL_POSTAL_ADDRESS": "KitchenTab, 1 Test Street, Testville",
         "TEST_INBOX_SECRET": "t" * 64,
         "SMS_PROVIDER": "fake",
         "GOOGLE_ISSUER": "http://oidc.test",
@@ -31,6 +32,10 @@ os.environ.update(
         "GOOGLE_REDIRECT_URI": "https://app.test/api/v1/auth/google/callback",
         "EXTRACTOR_PROVIDER": "fake",
         "PUSH_PROVIDER": "fake",
+        "QUEUE_PROVIDER": "inline",  # tests drive the outbox drain with the controllable clock
+        # One test user makes hundreds of writes a minute (SYNC x200); SEC-05 tests the real limits.
+        "RATE_LIMIT_WRITES_PER_MIN": "0",
+        "RATE_LIMIT_READS_PER_MIN": "0",
         "STORAGE_PROVIDER": "s3",
         "LOG_LEVEL": "WARNING",
     }
@@ -87,6 +92,32 @@ def redis_url() -> Iterator[str]:
 
     with RedisContainer("redis:7-alpine") as rc:
         yield f"redis://{rc.get_container_host_ip()}:{rc.get_exposed_port(6379)}/0"
+
+
+OPT_IN_MARKERS = ("chaos", "load")
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """`chaos` (Toxiproxy, 30 s waits) and `load` (k6, minutes) tests run only when asked for: by
+    `-m chaos` / `-m load` (make test-chaos / make test-load) or by naming their file."""
+    for item in items:  # TEST_PLAN and FR ids into the JUnit XML, for scripts/test_report.py
+        for prop, mark in (("test_ids", "id"), ("fr_ids", "fr")):
+            ids = [str(a) for m in item.iter_markers(mark) for a in m.args]
+            if ids:
+                item.user_properties.append((prop, " ".join(ids)))
+    expr = config.getoption("markexpr") or ""
+    named = {os.path.basename(str(a).split("::")[0]) for a in config.args}
+    keep: list[pytest.Item] = []
+    dropped: list[pytest.Item] = []
+    for item in items:
+        opt_in = [m for m in OPT_IN_MARKERS if item.get_closest_marker(m)]
+        if opt_in and item.path.name not in named and not any(m in expr for m in opt_in):
+            dropped.append(item)
+        else:
+            keep.append(item)
+    if dropped:
+        config.hook.pytest_deselected(items=dropped)
+        items[:] = keep
 
 
 def alembic_config(database_url: str) -> Config:

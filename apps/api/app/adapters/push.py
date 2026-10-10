@@ -75,7 +75,7 @@ class WebPushSender:
         urgency: Urgency,
         topic: str | None = None,
     ) -> PushResult:
-        body = json.dumps(payload, separators=(",", ":")).encode()
+        body = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode()
         if len(body) > MAX_PAYLOAD_BYTES:
             raise ValueError(f"push payload is {len(body)} bytes; the limit is {MAX_PAYLOAD_BYTES}")
         status = await asyncio.to_thread(self._send_sync, sub, body, ttl, urgency, topic)

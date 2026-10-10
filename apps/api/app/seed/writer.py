@@ -29,6 +29,7 @@ from app.models import (
     Member,
     Payment,
     ShareRequest,
+    ShareSnapshot,
     User,
 )
 from app.seed.scenario import Scenario, seed_uuid
@@ -202,6 +203,23 @@ async def write_scenario(session: AsyncSession, sc: Scenario, pepper: str) -> di
                 )
             )
         await session.flush()
+        if bill.state != "draft":  # what send would have stored (FR-30): one snapshot per participant
+            from app.services import bill_math
+
+            for key, cents in bill_math.shares(await bill_math.load(session, b)).shares.items():
+                session.add(
+                    ShareSnapshot(
+                        id=uid("snapshot", f"{bill.key}.{key}", created),
+                        bill_id=b.id,
+                        member_id=uuid.UUID(key[2:]) if key.startswith("m:") else None,
+                        guest_id=uuid.UUID(key[2:]) if key.startswith("g:") else None,
+                        share_cents=cents,
+                        bill_version=b.version or 1,
+                        computed_at=created,
+                        reason="sent",
+                    )
+                )
+            await session.flush()
 
     await _requests(session, sc, ids, house.id)
     return ids

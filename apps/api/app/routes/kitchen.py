@@ -17,6 +17,7 @@ from app.policy import Action, require
 from app.services import inventory as svc
 from app.services.house_write import house_write
 from app.services.houses import membership
+from app.services.kitchen import _share_defaults as share_defaults
 
 router = APIRouter(tags=["kitchen"])
 
@@ -37,7 +38,7 @@ async def kitchen(
 ) -> dict[str, Any]:
     house, me = await _house_and_me(request, house_id, actor)
     c = ctx(request)
-    async with c.sessions() as db:
+    async with c.read_sessions() as db:
         return await svc.kitchen_view(db, house, me, c.clock.now())
 
 
@@ -54,7 +55,7 @@ async def inventory(
     house, me = await _house_and_me(request, house_id, actor)
     c = ctx(request)
     places = ("fridge", "freezer") if place == "fridge" else ("pantry",)
-    async with c.sessions() as db:
+    async with c.read_sessions() as db:
         items = list(
             (
                 await db.scalars(
@@ -148,13 +149,14 @@ async def edit_item(
                     await w.session.scalars(select(InventoryOwner).where(InventoryOwner.inventory_item_id == item.id))
                 ).all()
             }
-            wanted = set(body.owner_member_ids) or {me.member_id}
+            wanted = set(await svc.house_owner_ids(w, list(body.owner_member_ids), me))
+            defaults = await share_defaults(w.session, sorted(wanted - set(current)))
             for mid in wanted - set(current):
                 w.session.add(
                     InventoryOwner(
                         inventory_item_id=item.id,
                         member_id=mid,
-                        open_to_share=False,
+                        open_to_share=defaults.get(mid, False),
                         updated_by_member_id=me.member_id,
                         updated_at=now,
                     )
@@ -236,9 +238,7 @@ async def requests(
     _house, me = await _house_and_me(request, house_id, actor)
     c = ctx(request)
     now = c.clock.now()
-    async with c.sessions() as db, db.begin():
-        await svc.expire_requests(db, now)
-    async with c.sessions() as db:
+    async with c.read_sessions() as db:
         mine = select(InventoryOwner.inventory_item_id).where(InventoryOwner.member_id == me.member_id)
         base = select(ShareRequest).where(
             ShareRequest.house_id == house_id, ShareRequest.created_at > now - timedelta(days=30)
@@ -250,7 +250,7 @@ async def requests(
         ).all()
         outgoing = (await db.scalars(base.where(ShareRequest.requester_member_id == me.member_id))).all()
         rows = incoming if box == "in" else outgoing
-        rows = sorted(rows, key=lambda r: (r.status != "pending", -r.created_at.timestamp()))
+        rows = sorted(rows, key=lambda r: (svc.effective_status(r, now) != "pending", -r.created_at.timestamp()))
         items = {
             i.id: i
             for i in (
@@ -272,7 +272,8 @@ async def requests(
             view["owners"] = [members[o].display_name for o in owners if o in members]
             view["source"] = {"store_name": bill.store_name, "state": bill.state} if bill else None
             view["line_total_cents"] = line.line_total_cents if line else items[r.inventory_item_id].price_cents
-            if box == "in" and r.status == "pending":
+            view["status"] = svc.effective_status(r, now)
+            if box == "in" and view["status"] == "pending":
                 view["options"] = (
                     ["free"] if bill is None else ["free", "split"] if bill.state == "open" else ["free", "chip_in"]
                 )
@@ -290,8 +291,8 @@ async def requests(
         "box": box,
         "requests": out,
         "counts": {
-            "in": sum(r.status == "pending" for r in incoming),
-            "out": sum(r.status == "pending" for r in outgoing),
+            "in": sum(svc.effective_status(r, now) == "pending" for r in incoming),
+            "out": sum(svc.effective_status(r, now) == "pending" for r in outgoing),
         },
     }
 
@@ -300,7 +301,7 @@ async def requests(
 async def split_preview(
     request_id: uuid.UUID, request: Request, actor: Annotated[Actor, Depends(require_actor)]
 ) -> dict[str, int]:
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         req = await db.get(ShareRequest, request_id)
         if req is None:
             raise Problem(404, ErrorCode.NOT_FOUND, "That ask is gone")
@@ -367,7 +368,7 @@ async def history(
     _, me = await _house_and_me(request, house_id, actor)
     c = ctx(request)
     since = c.clock.now() - timedelta(days=30)
-    async with c.sessions() as db:
+    async with c.read_sessions() as db:
         used = (
             await db.scalars(
                 select(InventoryItem)

@@ -155,6 +155,21 @@ export type BillView = {
     state: BillState;
   } | null;
   me: { member_id: string | null; is_payer: boolean; can_edit: boolean };
+  /** A scan that finished after items were typed by hand (drafts only; PRD §21.6, SYNC-15). */
+  scanned_offer?: ScannedOffer | null;
+  /** Open 60+ days: the payer sees a gentle banner (PRD §15, EDGE-15-25). */
+  long_open?: boolean;
+};
+
+/** `receipts.offer_view`: "Use the scanned items instead?" */
+export type ScannedOffer = {
+  extraction_id: string;
+  item_count: number;
+  total_cents: number | null;
+  computed_cents: number;
+  store_name: string | null;
+  source: string;
+  created_at: string;
 };
 
 /** `GET /b/{token}`: the bill view plus the join picker (no link token). */

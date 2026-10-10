@@ -72,7 +72,7 @@ async def list_bills(
     actor: Annotated[Actor, Depends(require_actor)],
     state: Literal["draft", "open", "settled", "voided"] | None = None,
 ) -> list[dict[str, Any]]:
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         me = await membership(db, house_id, actor.user.id)
         require(Action.HOUSE_READ, actor=me)
         q = select(Bill).where(Bill.house_id == house_id, Bill.deleted_at.is_(None))
@@ -97,13 +97,13 @@ async def list_bills(
 async def get_bill(
     bill_id: uuid.UUID, request: Request, response: Response, actor: Annotated[Actor, Depends(require_actor)]
 ) -> dict[str, Any]:
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         bill = await db.get(Bill, bill_id)
         if bill is None or bill.deleted_at is not None:
             raise Problem(404, ErrorCode.NOT_FOUND, "Tab not found")
         me = await membership(db, bill.house_id, actor.user.id)
         require(Action.BILL_READ, actor=me, bill=svc.bill_ctx(bill))
-        view = await svc.bill_view(db, _pepper(request), bill, me)
+        view = await svc.bill_view(db, _pepper(request), bill, me, ctx(request).clock.now())
     response.headers["ETag"] = f'"{bill.version}"'
     return view
 
@@ -407,7 +407,7 @@ async def bill_link(
     c = ctx(request)
     bill = None
     if looks_like_token(token):
-        async with c.sessions() as db:
+        async with c.read_sessions() as db:
             bill = (
                 await db.scalars(
                     select(Bill).where(
@@ -423,11 +423,13 @@ async def bill_link(
             "This link doesn't work anymore. Ask your house for a new one.",
             headers=LINK_HEADERS,
         )
-    async with c.sessions() as db:
+    async with c.read_sessions() as db:
         house = await db.get(House, bill.house_id)
         assert house is not None
         me = await membership(db, bill.house_id, actor.user.id) if actor else None
-        view = await svc.bill_view(db, _pepper(request), bill, me if me and me.active else None)
+        view = await svc.bill_view(
+            db, _pepper(request), bill, me if me and me.active else None, ctx(request).clock.now()
+        )
         payer = await db.get(Member, bill.payer_member_id)
         join = await house_svc.join_view(db, house, actor.user if actor else None)
     view["bill"].pop("link_token", None)

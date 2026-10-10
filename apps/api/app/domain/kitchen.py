@@ -17,6 +17,7 @@ SHELF_LIFE_BY_CATEGORY = {
     "condiments": 180, "other": 30,
 }  # fmt: skip
 SHORT_NAME_MAX = 14
+PACKAGING = {"box", "bag", "pack", "bunch", "tray", "jar", "bottle", "can", "carton", "tub", "case", "container"}
 
 
 def default_shelf_life(category: str | None, icon: str | None) -> int:
@@ -40,13 +41,19 @@ def generic_icon(storage: str) -> str:
 
 def short_name(name: str) -> str:
     """Tile label: drop sizes and counts ("Whole milk 1 gal" -> "Whole milk"), fit 14 chars."""
-    words = []
+    words: list[str] = []
     for word in name.split():
         if any(ch.isdigit() for ch in word) or word.lower() in {"lb", "oz", "gal", "ct", "pk", "l", "ml", "kg", "g"}:
             break
+        if words and word.lower() in {"from", "for"}:  # leftovers: "Dal from Sunday" -> "Dal"
+            break
         words.append(word)
+    while len(words) > 1 and words[-1].lower() in PACKAGING:  # "Korean pear box" -> "Korean pear"
+        words.pop()
+    # English names end in the thing itself, so shorten from the front: "Organic baby spinach" ->
+    # "Baby spinach", never "Organic".
+    while len(words) > 1 and len(" ".join(words)) > SHORT_NAME_MAX:
+        words.pop(0)
     label = " ".join(words) or name
-    if len(label) <= SHORT_NAME_MAX:
-        return label
-    first = label.split()[0]
-    return first[:SHORT_NAME_MAX]
+    label = label[:1].upper() + label[1:]
+    return label if len(label) <= SHORT_NAME_MAX else label[: SHORT_NAME_MAX - 1] + "…"

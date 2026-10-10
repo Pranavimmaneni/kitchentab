@@ -25,6 +25,7 @@ dependencies = [
   "pdfplumber>=0.11",
   "pypdf>=5.0",
   "vercel-queue[devserver]>=0.9.1",
+  "vercel>=0.5",
 ]
 
 [dependency-groups]
@@ -39,6 +40,7 @@ dev = [
   "types-pyyaml",
   "pre-commit>=3.8",
   "pillow>=11.0",
+  "pip-audit>=2.7",
 ]
 
 [tool.uv]
@@ -80,6 +82,8 @@ markers = [
   "id(test_id): TEST_PLAN ID(s) this test proves, e.g. id('SYNC-25')",
   "fr(*fr_ids): PRD FR IDs this test covers",
   "sync: concurrency/race tests run by make test-sync",
+  "chaos: needs Toxiproxy or a long wait; run by make test-chaos (opt-in, see conftest)",
+  "load: k6 / SSE load runs against several API instances; run by make test-load (opt-in, see conftest)",
 ]
 addopts = "-ra --strict-markers"
 filterwarnings = ["ignore::DeprecationWarning:testcontainers.*"]

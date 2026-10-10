@@ -11,8 +11,9 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -22,6 +23,22 @@ Profile = Literal["local", "vercel"]
 PLACEHOLDER_PREFIX = "change-me"
 TEST_INBOX_SECRET_MIN = 64
 VERCEL_MAX_BODY_BYTES = 4_500_000  # Hobby request/response body limit (ADR-0011)
+
+
+def asyncpg_url(url: str) -> str:
+    """Neon and other providers hand out libpq URLs (`postgresql://…?sslmode=require&channel_binding=
+    require`). SQLAlchemy needs the asyncpg driver, and asyncpg takes `ssl`, not `sslmode`, and has
+    no `channel_binding` (it negotiates SCRAM channel binding itself)."""
+    parts = urlsplit(url)
+    scheme = parts.scheme
+    if scheme in ("postgres", "postgresql", "postgresql+psycopg2", "postgresql+psycopg"):
+        scheme = "postgresql+asyncpg"
+    query = []
+    for key, value in parse_qsl(parts.query, keep_blank_values=True):
+        if key == "channel_binding":
+            continue
+        query.append(("ssl", value) if key == "sslmode" and scheme == "postgresql+asyncpg" else (key, value))
+    return urlunsplit((scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
 
 
 class Settings(BaseSettings):
@@ -49,6 +66,8 @@ class Settings(BaseSettings):
     # Database / cache. Redis is used only with PROFILE=local (ADR-0012, ADR-0014).
     database_url: str
     database_direct_url: str | None = None  # Neon direct URL, migrations only
+    db_pool_size: int = Field(default=10, ge=1)  # per instance, plus 2x overflow (PROFILE=local only)
+    vercel_url: str | None = None  # set by Vercel on every deployment (preview origin fallback)
     redis_url: str | None = None
 
     # Receipt storage (ADR-0015)
@@ -73,6 +92,9 @@ class Settings(BaseSettings):
     # Email (ADR-0016): fake = SMTP to Mailpit; smtp = Gmail; testinbox = Postgres + secret.
     email_provider: Literal["fake", "smtp", "testinbox"] = "fake"
     email_from: str = "KitchenTab <hello@example.com>"
+    rate_limit_writes_per_min: int = 60  # per user (PRD §11, SEC-05); 0 disables (load tests only)
+    rate_limit_reads_per_min: int = 300  # per IP
+    email_postal_address: str = ""  # footer of notification emails (EMAIL-01); set before launch
     smtp_url: str = "smtp://localhost:1025"
     smtp_host: str | None = None
     smtp_port: int = 587
@@ -133,6 +155,23 @@ class Settings(BaseSettings):
     def phone_enabled(self) -> bool:
         return self.sms_provider != "none"
 
+    @field_validator("database_url", "database_direct_url")
+    @classmethod
+    def _asyncpg_url(cls, value: str | None) -> str | None:
+        return asyncpg_url(value) if value else value
+
+    @model_validator(mode="after")
+    def _preview_origin(self) -> Settings:
+        """Preview deployments get a fresh URL each time: use it unless an origin was set."""
+        if self.app_env == "staging" and self.vercel_url and "web_origin" not in self.model_fields_set:
+            origin = f"https://{self.vercel_url}"
+            self.web_origin = origin
+            if "public_link_base" not in self.model_fields_set:
+                self.public_link_base = origin
+            if "google_redirect_uri" not in self.model_fields_set:
+                self.google_redirect_uri = f"{origin}/api/v1/auth/google/callback"
+        return self
+
     @model_validator(mode="after")
     def _validate(self) -> Settings:
         problems: list[str] = []
@@ -170,6 +209,8 @@ class Settings(BaseSettings):
                 not self.google_redirect_uri.startswith("https://") or "localhost" in self.google_redirect_uri
             ):
                 problems.append("GOOGLE_REDIRECT_URI must be the https production callback")
+            if not (self.rate_limit_writes_per_min and self.rate_limit_reads_per_min):
+                problems.append("rate limits can't be turned off in production")
             if self.queue != "vercel":
                 problems.append(f"QUEUE_PROVIDER must be vercel in {self.app_env}")
 

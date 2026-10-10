@@ -32,13 +32,13 @@ from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import Any
 
-from sqlalchemy import insert, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.adapters.queue import Kicker, kick_safely
 from app.clock import Clock
 from app.errors import ErrorCode, Problem
 from app.ids import uuid7
-from app.models import ActivityEvent, HouseEvent, OutboxRow
 from app.services.bus import EventBus, house_channel, publish_safely
 
 IDEMPOTENCY_TTL = timedelta(hours=24)
@@ -112,6 +112,7 @@ class WriteContext:
     sessions: async_sessionmaker[AsyncSession]
     clock: Clock
     bus: EventBus
+    kicker: Kicker | None = None  # wakes the outbox drain after commit (ADR-0013)
 
 
 class HouseWrite:
@@ -131,6 +132,8 @@ class HouseWrite:
         self.committed: list[CommittedEvent] = []
         self.idempotency: Idempotency | None = None
         self._response: tuple[int, Any] | None = None
+        self.outbox_rows = 0
+        self._locked_seq: int | None = None
 
     def emit(
         self,
@@ -142,6 +145,11 @@ class HouseWrite:
         notify: Sequence[str] = (),
     ) -> None:
         agg_type, agg_id, version = aggregate
+        if activity is None:
+            # DATA-06: every state change has exactly one activity entry. Changes that aren't part of
+            # a sent bill's story (draft ticks, kitchen switches) get a house-level entry with no
+            # bill, so bill activity feeds stay as they were.
+            activity = Activity(type)
         self._pending.append(PendingEvent(type, agg_type, agg_id, version, data, activity, tuple(notify)))
 
     def respond(self, status_code: int, body: Any) -> None:
@@ -188,6 +196,19 @@ class HouseWrite:
             raise Problem(422, ErrorCode.IDEMPOTENCY_MISMATCH, "This Idempotency-Key was used for a different request")
         raise IdempotentReplay(int(row.status_code or 200), row.response_body)
 
+    async def lock_house(self) -> None:
+        """Take the house lock now instead of at commit. It stays the LAST lock this write takes
+        (row locks come first), and every read after it sees all writes that committed before:
+        concurrent ticks use it so each computes shares from the latest allocations (SYNC-24)."""
+        row = (
+            await self.session.execute(
+                text("SELECT event_seq FROM houses WHERE id = :h FOR NO KEY UPDATE"), {"h": self.house_id}
+            )
+        ).first()
+        if row is None:
+            raise Problem(404, ErrorCode.NOT_FOUND, "House not found")
+        self._locked_seq = int(row[0])  # nobody else can take a number until we commit
+
     def touch_house(self) -> None:
         """Bump `houses.version` (guarded house edits) together with the sequence, house lock last."""
         self._bump_house_version = True
@@ -212,16 +233,16 @@ class HouseWrite:
             return
         n = len(self._pending)
         bump_version = "version = version + 1, " if self._bump_house_version else ""
-        sql = f"UPDATE houses SET {bump_version}event_seq = event_seq + :n WHERE id = :id RETURNING event_seq"  # noqa: S608 - constant fragments only
-        row = (
-            await self.session.execute(
-                text(sql),
-                {"n": n, "id": self.house_id},
-            )
-        ).first()
-        if row is None:
-            raise Problem(404, ErrorCode.NOT_FOUND, "House not found")
-        first = int(row[0]) - n + 1
+        if self._locked_seq is not None:
+            # The lock was taken early and we already know the last number: moving the sequence
+            # travels in the same statement as the rows below (one round trip).
+            first = self._locked_seq + 1
+        else:
+            sql = f"UPDATE houses SET {bump_version}event_seq = event_seq + :n WHERE id = :id RETURNING event_seq"  # noqa: S608 - constant fragments only
+            row = (await self.session.execute(text(sql), {"n": n, "id": self.house_id})).first()
+            if row is None:
+                raise Problem(404, ErrorCode.NOT_FOUND, "House not found")
+            first = int(row[0]) - n + 1
         now = now_clock.now()
         events, activities, outbox = [], [], []
         for offset, ev in enumerate(self._pending):
@@ -279,11 +300,72 @@ class HouseWrite:
                 }
                 for kind in ev.notify
             ]
-        await self.session.execute(insert(HouseEvent), events)
-        if activities:
-            await self.session.execute(insert(ActivityEvent), activities)
-        if outbox:
-            await self.session.execute(insert(OutboxRow), outbox)
+        # One statement, one round trip, prepared once: data-modifying CTEs insert the events, their
+        # activity entries and outbox rows from arrays (and move the sequence when the lock was
+        # taken early). Foreign keys are checked at the end of the statement, so children may
+        # reference events inserted alongside them.
+        locked = self._locked_seq is not None
+        sql = _FINISH_SQL[(locked, locked and self._bump_house_version)]
+        params: dict[str, Any] = {
+            "house": self.house_id,
+            "actor": self.actor_member_id,
+            "cmid": self.client_mutation_id,
+            "now": now,
+            "last": first + n - 1,
+            "ev_seq": [e["seq"] for e in events],
+            "ev_type": [e["type"] for e in events],
+            "ev_agg": [e["aggregate_type"] for e in events],
+            "ev_aid": [e["aggregate_id"] for e in events],
+            "ev_ver": [e["version"] for e in events],
+            "ev_data": [None if e["data"] is None else json.dumps(e["data"], default=str) for e in events],
+            "ac_id": [a["id"] for a in activities],
+            "ac_bill": [a["bill_id"] for a in activities],
+            "ac_user": [a["actor_user_id"] for a in activities],
+            "ac_type": [a["type"] for a in activities],
+            "ac_payload": [json.dumps(a["payload"], default=str) for a in activities],
+            "ac_seq": [a["house_event_seq"] for a in activities],
+            "ob_id": [o["id"] for o in outbox],
+            "ob_seq": [o["seq"] for o in outbox],
+            "ob_kind": [o["kind"] for o in outbox],
+        }
+        await self.session.execute(text(sql), params)
+        self.outbox_rows = len(outbox)
+
+
+def _finish_sql(locked: bool, bump_version: bool) -> str:
+    """Built once at import from constant fragments; every value is a bound parameter."""
+    update = (
+        ", hs AS (UPDATE houses SET "  # noqa: S608 - constant fragments; values are bound
+        + ("version = version + 1, " if bump_version else "")
+        + "event_seq = :last WHERE id = :house RETURNING 1)"
+        if locked
+        else ""
+    )
+    return (
+        "WITH ev AS ("  # noqa: S608
+        "INSERT INTO house_events (house_id, seq, type, aggregate_type, aggregate_id, version, actor_member_id, "
+        "client_mutation_id, data, created_at) "
+        "SELECT :house, x.seq, x.type, x.agg, x.aid, x.ver, :actor, :cmid, CAST(x.data AS jsonb), :now "
+        "FROM unnest(CAST(:ev_seq AS bigint[]), CAST(:ev_type AS text[]), CAST(:ev_agg AS text[]), "
+        "CAST(:ev_aid AS uuid[]), CAST(:ev_ver AS integer[]), CAST(:ev_data AS text[])) "
+        "AS x(seq, type, agg, aid, ver, data) RETURNING 1), "
+        "ac AS ("
+        "INSERT INTO activity_events (id, house_id, bill_id, actor_user_id, actor_member_id, type, payload, "
+        "house_event_seq, created_at) "
+        "SELECT y.id, :house, y.bill, y.usr, :actor, y.type, CAST(y.payload AS jsonb), y.seq, :now "
+        "FROM unnest(CAST(:ac_id AS uuid[]), CAST(:ac_bill AS uuid[]), CAST(:ac_user AS uuid[]), "
+        "CAST(:ac_type AS text[]), CAST(:ac_payload AS text[]), CAST(:ac_seq AS bigint[])) "
+        "AS y(id, bill, usr, type, payload, seq) RETURNING 1), "
+        "ob AS ("
+        "INSERT INTO outbox (id, house_id, seq, kind, status, attempts, next_attempt_at, created_at) "
+        "SELECT z.id, :house, z.seq, z.kind, 'pending', 0, :now, :now "
+        "FROM unnest(CAST(:ob_id AS uuid[]), CAST(:ob_seq AS bigint[]), CAST(:ob_kind AS text[])) "
+        "AS z(id, seq, kind) RETURNING 1)" + update + " "
+        "SELECT (SELECT count(*) FROM ev), (SELECT count(*) FROM ac), (SELECT count(*) FROM ob)"
+    )
+
+
+_FINISH_SQL = {key: _finish_sql(*key) for key in ((False, False), (True, False), (True, True))}
 
 
 @asynccontextmanager
@@ -304,3 +386,6 @@ async def house_write(
         # Committed. Publish strictly after commit (§21.5).
     for event in write.committed:
         await publish_safely(ctx.bus, house_channel(house_id), event.wire())
+    if write.outbox_rows:
+        last = write.committed[-1]
+        await kick_safely(ctx.kicker, key=f"drain-{house_id}-{last.seq}")

@@ -17,10 +17,14 @@ test("sign-in screens follow /auth/methods, validate inline, mask the address an
   const methods = await page.request.get("/api/v1/auth/methods").then((r) => r.json());
   await page.goto("/start");
   await hydrated(page);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Split the groceries.Keep the roommates.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Split the groceries.Keep the roommates.",
+  );
   await expect(page.getByText("*** RECEIPT NO. 0001 ***")).toBeVisible();
   // Google only with keys; the phone tab only when SMS is configured (BUILD_ALL C3).
-  await expect(page.getByRole("link", { name: "Continue with Google" })).toHaveCount(methods.google ? 1 : 0);
+  await expect(page.getByRole("link", { name: "Continue with Google" })).toHaveCount(
+    methods.google ? 1 : 0,
+  );
   await expect(page.getByRole("tab", { name: "PHONE" })).toHaveCount(methods.phone ? 1 : 0);
 
   await page.getByLabel("YOUR EMAIL").fill("not-an-email");
@@ -46,7 +50,8 @@ test("sign-in screens follow /auth/methods, validate inline, mask the address an
   await page.getByLabel("6-digit code").fill(code);
   await page.waitForURL("**/houses/new");
 
-  const setCookie = ((await (await verified).headersArray()).filter((h) => h.name.toLowerCase() === "set-cookie"))
+  const setCookie = (await (await verified).headersArray())
+    .filter((h) => h.name.toLowerCase() === "set-cookie")
     .map((h) => h.value)
     .find((v) => v.startsWith("kt_session="));
   expect(setCookie).toMatch(/HttpOnly/i);
@@ -65,7 +70,11 @@ test("signed-in screens send people with no session to /start", async ({ page })
   await expect(page).toHaveURL(/\/start$/);
 });
 
-test("LINK-04 bill and invite link pages send noindex and no-referrer", async ({ page, request, browserName }) => {
+test("LINK-04 bill and invite link pages send noindex and no-referrer", async ({
+  page,
+  request,
+  browserName,
+}) => {
   await signInWithEmail(page, uniqueEmail("pranav"));
   const house = await createHouse(page);
   const { linkToken } = await seedShopRite(page, house, { split: "all", send: true });
@@ -87,7 +96,9 @@ test("LINK-04 bill and invite link pages send noindex and no-referrer", async ({
     await page.goto("/h/thisLinkWasRotatedAway00");
     await expect(page.getByRole("heading", { name: "*** NO SUCH TAB ***" })).toBeAttached();
     await expect(page.locator(".kt-not-found__title")).toHaveText("*** NO SUCH TAB ***");
-    await expect(page.getByText("This link has expired. Ask your house for a new one.")).toBeVisible();
+    await expect(
+      page.getByText("This link has expired. Ask your house for a new one."),
+    ).toBeVisible();
     await expect(page.getByRole("link", { name: "Go home" })).toBeVisible();
   }
 });
@@ -101,7 +112,9 @@ test("LINK-05 the bill link preview is a 1200×630 PNG with store, date, total a
   const { linkToken } = await seedShopRite(page, house, { split: "all", send: true });
   const html = await request.get(`/b/${linkToken}`).then((r) => r.text());
   const og = (prop: string) =>
-    new RegExp(`<meta property="og:${prop}" content="([^"]+)"`).exec(html)?.[1]?.replace(/&amp;/g, "&");
+    new RegExp(`<meta property="og:${prop}" content="([^"]+)"`)
+      .exec(html)?.[1]
+      ?.replace(/&amp;/g, "&");
   expect(og("title")).toBe("ShopRite · $95.18");
   expect(og("description")).toBe("10/02 · SPLIT 4 WAYS · APT 4B");
   for (const leak of ["Arjun", "Meera", "Kabir", "$23.51", "$33.91", "$18.87", "$18.89"]) {

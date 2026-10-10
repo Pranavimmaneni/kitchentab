@@ -1,5 +1,12 @@
 import { expect, test } from "./fixtures/roommates";
-import { createHouse, enterCode, hydrated, seedShopRite, signInWithEmail, uniqueEmail } from "./fixtures/app";
+import {
+  createHouse,
+  enterCode,
+  hydrated,
+  seedShopRite,
+  signInWithEmail,
+  uniqueEmail,
+} from "./fixtures/app";
 
 test.skip(({ browserName }) => browserName === "firefox", "phone journeys: WebKit and Chromium");
 
@@ -8,7 +15,7 @@ test("a roommate opens the sent bill link signed out, peeks read-only, claims Me
 }) => {
   test.setTimeout(120_000);
   const house = await roommates(2);
-  const [payer, meera] = house.pages as [typeof house.pages[0], typeof house.pages[0]];
+  const [payer, meera] = house.pages as [(typeof house.pages)[0], (typeof house.pages)[0]];
 
   // Roommate 0 (payer) signs in, sets up Apt 4B and sends the ShopRite bill.
   await signInWithEmail(payer, uniqueEmail("pranav"));
@@ -19,7 +26,9 @@ test("a roommate opens the sent bill link signed out, peeks read-only, claims Me
   // Roommate 1 opens the link with no session: read-only peek + picker, no edit controls.
   await meera.goto(`/b/${linkToken}`);
   await hydrated(meera);
-  await expect(meera.getByRole("heading", { level: 1 })).toHaveText("Pranav split a ShopRite run with you.");
+  await expect(meera.getByRole("heading", { level: 1 })).toHaveText(
+    "Pranav split a ShopRite run with you.",
+  );
   await expect(meera.getByText("Peek is free. Sign in to tick your items.")).toBeVisible();
   await expect(meera.getByText("10/02 · 12 ITEMS · Apt 4B")).toBeVisible();
   await expect(meera.getByRole("button", { name: /uses/ })).toHaveCount(0);
@@ -34,7 +43,10 @@ test("a roommate opens the sent bill link signed out, peeks read-only, claims Me
     await expect(meera.getByRole("button", { name, exact: true })).toBeVisible();
   }
   await meera.getByRole("button", { name: "Meera", exact: true }).click();
-  await expect(meera.getByRole("button", { name: "Meera", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(meera.getByRole("button", { name: "Meera", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await expect(meera.getByText("Hi Meera, quick check it's you:")).toBeVisible();
   await meera.getByRole("button", { name: "Email code" }).click();
   const email = uniqueEmail("meera");
@@ -53,11 +65,18 @@ test("a roommate opens the sent bill link signed out, peeks read-only, claims Me
   expect(claimed.display_name).toBe("Meera");
   expect(claimed.claimed).toBe(true);
   await expect(meera.getByText("You", { exact: true })).toBeVisible();
-  await expect(meera.getByText("$18.87")).toBeVisible();
+  // Her own who-owes row carries her share (screen 5 also offers "Pay $18.87" below).
+  const myRow = meera
+    .getByRole("listitem")
+    .filter({ has: meera.getByText("You", { exact: true }) });
+  await expect(myRow.getByText("$18.87", { exact: true })).toBeVisible();
 
   // Meera is gone from the picker for anyone else (FR-05).
   const fresh = await payer.request.get(`/api/v1/b/${linkToken}`).then((r) => r.json());
-  expect(fresh.join.placeholders.map((m: { display_name: string }) => m.display_name)).toEqual(["Arjun", "Kabir"]);
+  expect(fresh.join.placeholders.map((m: { display_name: string }) => m.display_name)).toEqual([
+    "Arjun",
+    "Kabir",
+  ]);
 });
 
 test("HOUSE-03 a roommate claims their placeholder from the house invite link after signing in @multi", async ({
@@ -65,14 +84,16 @@ test("HOUSE-03 a roommate claims their placeholder from the house invite link af
 }) => {
   test.setTimeout(120_000);
   const house = await roommates(2);
-  const [admin, arjun] = house.pages as [typeof house.pages[0], typeof house.pages[0]];
+  const [admin, arjun] = house.pages as [(typeof house.pages)[0], (typeof house.pages)[0]];
   await signInWithEmail(admin, uniqueEmail("pranav"));
   const apt = await createHouse(admin);
   const view = await admin.request.get(`/api/v1/houses/${apt.id}`).then((r) => r.json());
 
   await arjun.goto(`/h/${view.invite_token}`);
   await hydrated(arjun);
-  await expect(arjun.getByRole("heading", { level: 1 })).toHaveText("Pranav invited you to Apt 4B.");
+  await expect(arjun.getByRole("heading", { level: 1 })).toHaveText(
+    "Pranav invited you to Apt 4B.",
+  );
   await expect(arjun.getByText("4 MEMBERS")).toBeVisible();
   await arjun.getByRole("button", { name: "Arjun", exact: true }).click();
   await arjun.getByRole("button", { name: "Email code" }).click();

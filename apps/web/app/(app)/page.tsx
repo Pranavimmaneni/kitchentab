@@ -1,6 +1,6 @@
-import { LandingScreen } from "./LandingScreen";
+import { KitchenScreen } from "./KitchenScreen";
 
-/** `/` until the Kitchen (K1, Milestone 8): your houses, drafts and open tabs. */
+/** `/` is the Kitchen (K1), the house landing page; Tabs moved to `/tabs` (PRD §19.8). */
 export default function HomePage() {
-  return <LandingScreen />;
+  return <KitchenScreen />;
 }

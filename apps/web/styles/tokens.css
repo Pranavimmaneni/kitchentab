@@ -59,6 +59,30 @@
   --food-pea: #e7f3b5;
   --food-stroke: #121210;
 
+  /* Illustration fills: food icons and the 2.5D fridge/pantry (Fridge.dc.html ICONS,
+     Kitchen.dc.html). Flat, decorative, the same in both themes (sticker look, PRD §19.8). */
+  --ill-white: #ffffff;
+  --ill-cream: #edeae0;
+  --ill-stone: #d9d5c8;
+  --ill-tan: #e8d2a6;
+  --ill-sky: #7fd3f7;
+  --ill-lime: #c6f432;
+  --ill-coral: #ff8a65;
+  --ill-red: #ff6b4a;
+  --ill-caramel: #e9a15a;
+  --ill-orange: #f7a44a;
+  --ill-yellow: #f7d046;
+  --ill-leaf: #7bc86c;
+  --ill-violet: #7b61ff;
+  --ill-lavender: #b0a6ff;
+  --ill-pink: #ffb3c7;
+  --ill-magenta: #ff6fb5;
+  --ill-brown: #a8743f;
+  --ill-light-brown: #c99560;
+  --ill-dark-brown: #3b2a1a;
+  --ill-grey: #5a5850;
+  --ill-note: #fff0c2;
+
   /* Storage tags on the review screen (Scan.dc.html): fridge sky, freezer lilac, pantry tan */
   --tag-fridge: #7fd3f7;
   --tag-freezer: #e3ddff;

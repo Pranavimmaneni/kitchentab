@@ -16,6 +16,11 @@ const config = [
   {
     ignores: [
       ".next/**",
+      ".next-*/**",
+      // Generated at build time: the Serwist worker and the self-hosted OCR assets (ADR-0026).
+      "public/sw*.js",
+      "public/swe-worker*.js",
+      "public/ocr/**",
       "node_modules/**",
       "test-results/**",
       "playwright-report/**",

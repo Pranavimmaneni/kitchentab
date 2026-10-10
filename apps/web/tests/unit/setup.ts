@@ -12,24 +12,27 @@ function matches(query: string): boolean {
   return false;
 }
 
-Object.defineProperty(window, "matchMedia", {
-  configurable: true,
-  writable: true,
-  value: (query: string) => ({
-    get matches() {
-      return matches(query);
-    },
-    media: query,
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }),
-});
+// Server-side tests (`@vitest-environment node`, e.g. the Next route handlers) have no window.
+if (typeof window !== "undefined")
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      get matches() {
+        return matches(query);
+      },
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  });
 
 afterEach(() => {
+  if (typeof window === "undefined") return;
   cleanup();
   mediaState.dark = false;
   mediaState.reducedMotion = true;

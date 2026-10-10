@@ -1,8 +1,19 @@
 import { defineConfig, devices } from "@playwright/test";
-import { API_ENV, API_ORIGIN, API_PORT } from "./tests/e2e/fixtures/env";
+import {
+  API_ENV,
+  API_ORIGIN,
+  API_PORT,
+  REMOTE,
+  TARGET,
+  WEB_ORIGIN,
+  WEB_PORT,
+  chromiumTrustArgs,
+} from "./tests/e2e/fixtures/env";
 
-const PORT = 3000;
-const BASE_URL = `http://localhost:${PORT}`;
+const PORT = WEB_PORT;
+// TARGET=local-vercel|prod: an already running HTTPS origin, no servers started here (ADR-0028).
+const BASE_URL = REMOTE ? WEB_ORIGIN : `http://localhost:${PORT}`;
+const LOCAL_VERCEL = TARGET === "local-vercel";
 const UV = process.env.UV ?? "uv";
 
 /**
@@ -24,42 +35,50 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     trace: "retain-on-failure",
+    // The service worker would sit between page.route() and the network; specs that test it
+    // (pwa, push, offline, receipts) opt in with test.use({ serviceWorkers: "allow" }).
+    serviceWorkers: "block",
   },
   projects: [
     {
       name: "webkit-iphone-14",
-      use: { ...devices["iPhone 14"] },
+      use: { ...devices["iPhone 14"], ...(LOCAL_VERCEL ? { ignoreHTTPSErrors: true } : {}) },
       testIgnore: /screenshots\.spec\.ts/,
     },
     {
       name: "chromium-pixel-7",
-      use: { ...devices["Pixel 7"] },
+      use: {
+        ...devices["Pixel 7"],
+        ...(LOCAL_VERCEL ? { launchOptions: { args: chromiumTrustArgs() } } : {}),
+      },
     },
     {
       name: "firefox-desktop",
-      use: { ...devices["Desktop Firefox"] },
+      use: { ...devices["Desktop Firefox"], ...(LOCAL_VERCEL ? { ignoreHTTPSErrors: true } : {}) },
       testIgnore: /screenshots\.spec\.ts/,
     },
   ],
-  webServer: [
-    {
-      command: `${UV} run alembic upgrade head && ${UV} run uvicorn --factory app.main:create_app --port ${API_PORT}`,
-      cwd: "../api",
-      url: `${API_ORIGIN}/api/v1/health`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 180_000,
-      env: API_ENV,
-      stdout: "ignore",
-      stderr: "pipe",
-    },
-    {
-      command: "pnpm run build && pnpm run start",
-      url: `${BASE_URL}/dev/components`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 300_000,
-      env: { KT_DEV_COMPONENTS: "1", KT_API_ORIGIN: API_ORIGIN },
-      stdout: "ignore",
-      stderr: "pipe",
-    },
-  ],
+  webServer: REMOTE
+    ? []
+    : [
+        {
+          command: `${UV} run alembic upgrade head && ${UV} run uvicorn --factory app.main:create_app --port ${API_PORT}`,
+          cwd: "../api",
+          url: `${API_ORIGIN}/api/v1/health`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180_000,
+          env: API_ENV,
+          stdout: "ignore",
+          stderr: "pipe",
+        },
+        {
+          command: `pnpm run build && pnpm exec next start --port ${PORT}`,
+          url: `${BASE_URL}/dev/components`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 300_000,
+          env: { KT_DEV_COMPONENTS: "1", KT_API_ORIGIN: API_ORIGIN },
+          stdout: "ignore",
+          stderr: "pipe",
+        },
+      ],
 });

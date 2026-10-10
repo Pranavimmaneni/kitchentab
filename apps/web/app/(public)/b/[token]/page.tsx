@@ -25,7 +25,7 @@ export default async function BillLinkPage({ params }: Props) {
   if (!loaded.ok) {
     return (
       <LinkShell>
-        {loaded.expired ? <NotFoundCard body={strings.notFound.bill} /> : <ErrorCard error={loaded.error} />}
+        {loaded.expired ? <NotFoundCard body={strings.notFound.bill} pageTitle /> : <ErrorCard error={loaded.error} />}
       </LinkShell>
     );
   }

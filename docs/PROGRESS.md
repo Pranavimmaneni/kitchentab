@@ -4,11 +4,30 @@ Checkpoint for every session. Read `CLAUDE.md`, this file and `docs/BUILD_ALL.md
 continue from the first unchecked item. A box is checked only when its tests pass, not when code
 is written. Branch: `build/all`. No git remote is configured (nothing is pushed).
 
-**Status line:** M1 + M2 built, reviewed (fresh-eyes review: 14 findings, backend ones fixed in
-`a070e8a`); three web review items open (below). Backends for M3, M4 and M6 built and green (186 API
-tests, 72 web unit tests, 40 Playwright, SYNC x200 local, SYNC x10 PROFILE=vercel). Screens for M3/M4
-are being built by a subagent in apps/web. Next: close M1/M2 web review items, M3/M4 screens + gates,
-M6 client (SSE, leader tab, polling fallback) and screen 5.
+**Status line (2026-10-09, session paused by usage limit):** committed through 873c813 (extraction core).
+EVERYTHING BELOW IS UNCOMMITTED in the working tree and was last verified only file-by-file:
+M5 receipts backend (storage adapters incl. Vercel Blob via `vercel` Python SDK, routes, fake blob, 26
+tests), M9 notification backend (notify service, queue, cron, email, 25 tests), hardening (policy moves,
+rate limits, headers, backup/restore drill, invariants, SYNC-24 fixes ADR-0023, PAY-08 migration 0006,
+EDGE-15-25 `long_open` flag, daily export), deploy scripts (ADR-0022), vercel.json, LAUNCH.md and
+DEVICE_QA.md drafts. Four background agents were STOPPED mid-work and their partial files are also in the
+tree: security suite (tests/test_security_*.py, scripts/scan_bundle_secrets.py), chaos/load (Toxiproxy,
+tests/test_chaos.py, load/), M7/M8 screens and M6 sync client (apps/web). FIRST STEPS NEXT SESSION:
+(1) `make lint` and the full API suite in both profiles; fix or finish the stopped agents' partial files;
+(2) finish the fresh-eyes review fixes listed under "Open review findings" below; (3) commit in groups.
+
+### Fresh-eyes review of M8/M9/M10 backend: all 23 findings fixed
+Highs: undo-split locking (#1), foreign owner ids (#2), house time zone + cron isolation (#3), the
+tick/sharing deadlock (#4, removed at the source, ADR-0023 amendment). Mediums/lows: wake keys, savepoint
+per notification, byte-based payload trim, 240 s drain budget, scheduled in-app round-ups re-checked,
+snooze key, badge = live pending asks, expiry sweep via house_write events (GETs never write), advisory
+lock in coalescing, push endpoint allowlist + no device takeover, worker digest, Neon URLs in tools,
+422 for bad cursors, payer gets the tab notice. DATA-06 is now 1:1 by construction (every event gets an
+activity row; house-level when it isn't part of a sent bill's story). Weak tests strengthened (PUSH-14
+with a real rollback, SYNC-13 one event, PUSH-18 emoji, PUSH-06 decline/reject/reopen/void, KITCH-15 in
+Europe/Berlin). Security suite findings fixed: NUL in any text (422 via NulGuardMiddleware), CSV formula
+injection (apostrophe prefix), cross-house member/guest ids on exclusions and payments (404).
+Still failing: SYNC-24 p95 (0.6 s at ~67 ticks/s/house locally; see ADR-0023 amendment).
 
 `scripts/check_traceability.py` reads the `Milestone N` headings below: a milestone whose heading
 ends with `[done]` must have every FR and TEST_PLAN ID listed under its "IDs" line covered by a
@@ -44,8 +63,8 @@ IDs: DATA-01, SYNC-25, SYNC-26, SEC-11, PWA-10, A11Y-05
 - [x] §14B base components + `/dev/components` (both themes; WebKit, Chromium, Firefox)
 - [x] Multi-roommate Playwright fixture `roommates(n)` + `expectEverywhere`
 - [x] Fresh-eyes review; backend findings fixed
-- [ ] Web review items: Undo toast pauses on hover/focus (WCAG 2.2.1); SplitCheckbox ignores key repeat;
-      theme preference saved to the account too (PATCH /me)
+- [x] Web review items: Undo toast pauses on hover/focus (WCAG 2.2.1); SplitCheckbox ignores key repeat;
+      theme preference saved to the account too (PATCH /me) and applied from /me on load
 - [x] Makefile (every CLAUDE.md target, `PROFILE=vercel`, `TARGET=`), GitHub Actions CI
 - [x] `scripts/check_traceability.py` + `docs/traceability/edge_cases.yaml` (self-tested)
 - [ ] Gate (lint, test, review)
@@ -85,13 +104,20 @@ IDs: FR-10..FR-12, FR-18, FR-60, EXTRACT-01..16, VERCEL-03
 - [ ] Gate
 
 ## Milestone 6: Real-time sync and open-bill life
-IDs: SYNC-01..34, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VERCEL-02, VERCEL-05 · Screen 5
+IDs: SYNC-01..35, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VERCEL-02, VERCEL-05 · Screen 5
 
 - [x] API: SSE from Postgres `house_events` (750 ms poll, 270 s rollover), replay, gap fill, resync, revoked
 - [x] Idempotency store and rate limits in Postgres; version checks; four write kinds; 426 STALE_CLIENT
 - [x] API: member edits, change badges, activity, payments, reminders, settle, reopen, void (race tests at API level)
-- [ ] Client: event cache patching, gap fill, leader tab (Web Locks + BroadcastChannel), polling fallback,
-      tick coalescing; screen 5; multi-roommate browser tests for SYNC-01..24
+- [x] Client (`lib/sync/*`): event reducer + cache patching, in-order sequencer with `?after=` gap fill,
+      resync/revoked/rollover, leader tab (Web Locks + BroadcastChannel relay), backoff + polling fallback,
+      echo suppression by mutation id, offline banner and disabled writes; tick coalescing (M4)
+- [x] Screen 5 (`/bills/[id]`): who owes, payments (pay sheet, confirm/reject, cash), remind, settle,
+      reopen, void, story with cursor, change banner + PUT seen, split grid (own column / payer), item
+      edit with conflict prompt; API adds `payer_handles` to `GET /bills/{id}/money` (PAY-04/05)
+- [x] Multi-roommate browser tests (`tests/e2e/sync.spec.ts`, 12 × 3 browsers): SYNC-01/03/05/06/12/
+      31/32/34, PAY-01/07, BILL-08/09/10, SPLIT-08, OFFLINE-01/02/04
+- [ ] Not yet: SYNC-22 (deploy toast / 426 prompt, with PWA-09 in M9), PAY-08 (auto-reminders, M9 outbox)
 - [ ] Gate (both profiles)
 
 ## Milestone 7: Tabs and balances
@@ -99,7 +125,12 @@ IDs: FR-50..FR-54, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · 
 
 - [x] API: balances (per-pair netting, carried), tabs lists with 20-per-page history, search, CSV export,
       sign-in methods, payment handles, data export, account deletion (anonymize, keep amounts)
-- [ ] Screens: Tabs, Balances, House, Settings, house switcher
+- [x] Screens: Tabs (`/tabs`), Balances, House, Settings, house switcher (web unit tests in
+      `tests/unit/tabs.test.ts`; Playwright `tests/e2e/tabs-house.spec.ts` on WebKit + Chromium; screenshots
+      and axe in `tests/e2e/kitchen-screenshots.spec.ts`)
+- [x] API addition: tab cards carry `changed.by_name` / `changed.at` for "{name} tweaked it {day}"
+- [ ] BAL-02 (balances converge on every device within 2 s) depends on the M6 sync client invalidating
+      `["house", id, …]` queries
 - [ ] Gate
 
 ## Milestone 8: Fridge and pantry
@@ -110,19 +141,86 @@ IDs: FR-60..FR-80, KITCH-01..16, ASK-01..14, MONEY-09 · Screens K1–K4
       leftovers, asks with limits, answers (free / split / chip in / decline), undo, cancel, 48 h expiry,
       member-left handling, history (24 tests in `tests/test_kitchen.py`, both profiles)
 - [ ] KITCH-15 daily use-soon round-up (lands with the M9 outbox drain and cron)
-- [ ] Screens K1–K4, item sheet, food icons; KITCH-16 / EDGE-19-10 virtualized long areas (Playwright)
+- [x] Screens K1–K4, item sheet, add leftovers, 51 food icons; KITCH-16 / EDGE-19-10 windowed rows past
+      40 tiles (page scroll, no inner panel) — `tests/e2e/kitchen.spec.ts`, `tests/unit/kitchen*.test.ts`
+- [x] API additions: request cards carry `owners`, `source`, `line_total_cents`; item views carry `granted_by`
 - [ ] Gate
 
 ## Milestone 9: Install and notifications
-IDs: PWA-01..12, OFFLINE-01..04, PUSH-01..18, EMAIL-01..05, VERCEL-04, VERCEL-09 · Screens N1–N2
+IDs: PWA-01..12, OFFLINE-01..04, PUSH-01..19, EMAIL-01..05, VERCEL-04, VERCEL-09 · Screens N1–N2
 
-- [ ] Vercel Queues adapter (fake locally) draining the outbox; delayed messages for quiet hours
+- [x] API: outbox drain (arq locally, Vercel Queues `outbox-drain` subscriber, inline in tests), fan-out
+      for every §20.2 event type, never the actor, dedupe keys, inbox rows, preferences matrix (N2
+      defaults), quiet hours with grouped morning delivery, 10-minute share coalescing, 50¢ threshold,
+      daily cap 20, retries, private lock screen, subscriptions (404/410 delete, 5 failures stale),
+      `POST /push/test`, badge, inbox + read, email with List-Unsubscribe / one-click unsubscribe /
+      footer / dark-mode HTML, weekly digest, daily cron + sweeper (ADR-0021; `tests/test_notify.py`,
+      23 tests, both profiles; VERCEL-04 runs the real Queues SDK against its embedded service)
+- [ ] Daily logical export to storage (VERCEL-09 "export" part; lands with `make restore-drill`)
+- [ ] Web: manifest, Serwist service worker, install flows, update flow, offline mode, N1 + N2,
+      push subscribe/unsubscribe, `notificationclick`, app badge (PWA-*, OFFLINE-*, PUSH-01/02/15/16 UI)
+- [ ] `make test-push` target un-pended; EMAIL-04 (DNS) is a launch-check item; EMAIL-05 screenshots
 - [ ] Gate (+ test-push)
 
 ## Milestone 10: Hardening and full verification
 IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08, DATA-01..06, E2E-01..10, VERCEL-06, VERCEL-07, VERCEL-08, VERCEL-10
 
+- [x] Rate limits: 60 writes/min per user (across devices), 300 reads/min per IP, 429 + Retry-After
+      (SEC-05); production refuses to boot with them off; the shared test app turns them off for SYNC x200
+- [x] Policy: every authorization check in `app/policy.py` (moved the payer-only open-bill checks, kitchen
+      owner/asker checks and device ownership in); `tests/test_policy.py` covers every cell, 100% branches
+- [x] Backups: `app/services/backup.py` logical export (tagged JSON lines, gzip, FK order) + restore into a
+      fresh database; `make restore-drill` (DATA-02) and `scripts/check_invariants.py` / `make check-invariants`
+      (DATA-05: money, kitchen owners, balances net to zero, gapless events, notifications)
+- [ ] Daily export written to storage by the cron (needs the storage adapter from M5 integration)
+- [ ] SEC-01 HTTP matrix, SEC-02..04, SEC-06..09, SEC-11, SEC-12, SEC-14; CSP/HSTS headers (web + API)
+- [ ] A11Y, VIS, COPY, PERF (k6), CHAOS (Toxiproxy), DATA-01/03/06, E2E-01..10
+- [x] DATA-06 (one event per state change, activity 1:1), SYNC-24 at API level against 4 uvicorn worker
+      processes (`tests/harness/multiserver.py`) with the invariant checker: found and fixed two tick races
+      (ADR-0023); its p95 < 300 ms check still has to pass on a quiet machine (last run: other agents saturating CPU)
+- [ ] Live household simulation `scripts/simulate_household.py` / `make simulate` (BUILD_ALL §4.3): 4
+      people on 6 API devices with reconnecting streams; manual, PDF and photo (client OCR) bills, ticks,
+      If-Match price edits, payments with double taps and lost responses, confirm/reject, settle/reopen,
+      asks answered every way + undo, used up/restore, sharing, member removed + rejoined, tab sleeps,
+      server restarts; checks every 30 s (invariants, gapless/duplicate-free streams, devices agree, no
+      duplicate push, and any 5xx on reads or drains). Runs on 3 single-process API instances, streams on a
+      different instance than writes. Found and fixed (ADR-0029, regression tests in
+      `tests/test_races_found_by_simulation.py`): torn reads → 500 on `/tabs` (SYNC-35, GET views now read one
+      REPEATABLE READ snapshot); drain deadlock on device rows → failed drain → pushes sent twice (PUSH-19,
+      device bookkeeping in its own short transaction; MissingGreenlet in the error path); harness: orphaned
+      `uvicorn --workers` children exhausted Postgres and Windows' shared socket hung new connections
+      (instances + process-tree stop). Still to do: 3 browser devices (after the web journeys land),
+      3 × 30-minute seeds, 1 local-vercel run
+- [ ] `make test-load` (`scripts/load_test.py` + `load/perf01.js`): PERF-01 k6 200 people / 50 bills, PERF-02
+      1,000 streams / 200 houses, then the invariant checker. Written; needs a quiet machine to measure
 - [ ] P10 full verification (BUILD_ALL §4), P11 deploy-ready (§6), P12 final (§9)
+
+## P11: Deploy-ready (BUILD_ALL §6)
+
+- [x] `vercel.json` (services web + api, `/api/blob-upload` → web, `/api/(.*)` → api, daily cron),
+      `app/vercel_entry.py`, queue subscriber declared in apps/api/pyproject.toml (VERCEL-06/07/08 static tests)
+- [x] Settings accept Neon's libpq URLs (asyncpg driver, `ssl`, no `channel_binding`); preview deployments take
+      their origin from `VERCEL_URL`
+- [x] Morning scripts: `make deploy-setup deploy redeploy rollback set-email prod-clean-test-data` with
+      `DRY_RUN=1` and 44 stubbed-CLI tests (VERCEL-10, ADR-0022). Production checks must sign up with
+      `@launch-check.kitchentab.test` emails or `prod-clean-test-data` won't find their rows
+- [x] `docs/LAUNCH.md` drafted (finalize after launch-check and the local-vercel rehearsal exist)
+- [x] local-vercel rehearsal (`make local-vercel-up/-down`, ADR-0028): `next build`/`next start` + `app.vercel_entry:app`
+      behind a Caddy edge with vercel.json routing on https://localhost:8443 (local CA), 4.5 MB → 413, 300 s write
+      deadline; PgBouncer (transaction) + its own Postgres `kitchentab_lv`; fake Blob on its own HTTPS origin; queue
+      devserver + the `outbox-drain` subscriber via `poll_and_handle`; fake push; APP_ENV=test with a deployed-mode
+      (staging) settings preflight
+- [x] `make launch-check TARGET=local-vercel|prod` (`scripts/launch_check.py`, 17 steps, 16 unit tests in
+      scripts/tests/test_launch_check.py) + `@launch` Playwright spec (installability via CDP, service worker, browser
+      OCR). Full run 2026-10-09: 16/17 PASS incl. 19.9 MB 10-page PDF via client upload, 5 MB JSON → 413 at the
+      edge, SSE server rollover at 271 s with 20 events gapless and no duplicates, push through queue + subscriber;
+      both `@launch` browser checks pass. `simulate_household --target local-vercel --minutes 10`: PASS, 0 violations
+- [ ] launch-check fully green: the only FAIL is the web pages' security headers (no CSP, nosniff, Referrer-Policy,
+      frame-ancestors on Next.js pages yet; M10 SEC-03). `make e2e-multi TARGET=local-vercel`: roommate-claim and
+      BAL-02 pass; AUTH-09 fails on all 3 browsers (revoked arrives 1.0–2.2 s after "Sign out everywhere" through
+      the 1 s session recheck + 750 ms poll + NullPool/PgBouncer connections; the 2 s budget is too tight in
+      PROFILE=vercel) and BAL-02 is timing-flaky on one browser per run
+- [ ] Daily export written to Blob by the cron (`backups/kitchentab-YYYY-MM-DD.jsonl.gz`)
 
 ---
 
@@ -160,7 +258,30 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 28. Settle with outstanding money writes carryover ledger entries; reopen writes reversing entries (nothing financial deleted).
 29. Chunked request bodies are buffered up to 4.5 MB and refused beyond; X-Forwarded-For is trusted only with PROFILE=vercel.
 30. `MIN_CLIENT_VERSION` (default 0) drives 426 STALE_CLIENT from `X-Client-Version`.
+31. Notification details the PRD left open (dedupe key shape, inbox rows for every type, coalescing from commit time, grouped quiet-hours delivery, badge = unread asks + share rows, dev VAPID keys derived from SESSION_SECRET, email only to verified addresses, signed unsubscribe with a confirm page): ADR-0021.
+32. `EMAIL_POSTAL_ADDRESS` (new, optional) is printed in notification email footers; it must be set before launch (LAUNCH.md).
+33. Routes follow PRD §19.8 / §14A: the Kitchen (K1) is `/` and Tabs (screen 1) is `/tabs`.
+34. The current house is the one last picked in the switcher on this device (localStorage `kt.house`), else the most recently joined (FR-08).
+35. Fridge/pantry filters are applied on the client from the server's item flags (`mine`, `open_for_me`, `use_soon`) so switching never refetches or moves tiles; counts are the server's. OPEN means open for me, as the API counts it.
+36. Areas with more than 40 tiles render only the rows near the viewport (fixed 84 px rows, page scroll), which is the KITCH-16 "virtualizes" behavior.
+37. Food-icon and illustration fills are tokens (`--ill-*` in tokens.css), the same in both themes (sticker look).
+38. Settings has one email toggle (`notify_email`) until N2 (`/settings/notifications`) lands in M9; adding Google as a sign-in method from Settings is not offered (the API attaches email and phone only).
+39. Balances "Remind" sends one reminder per open tab behind the pair (`POST /bills/{id}/remind`); "Pay" opens the tab I owe most on (the pay sheet lives on screen 5).
+40. Stream resume uses `?last_event_id=N` on a fresh EventSource (it cannot set `Last-Event-ID`); the client closes and reopens itself on errors so backoff and the polling fallback are its own.
+41. A fresh stream (no baseline) refetches what the house shows once on `ready`, covering commits between the first GETs and the stream opening; polling with no baseline takes it from `?after=0`.
+42. Own echoes: patches skipped and the optimistic bill not refetched; money, activity and lists still refresh. A patch or tick result that lands while a GET is in flight cancels that GET and refetches after (no stale overwrite).
+43. A removed member (stream event, `revoked`, or a write answered NOT_A_MEMBER) is sent to `/` with "You're not in {house} any more." (there is no join page without a token).
+44. The change badge: the first `/money` load shows "Your share changed" and records PUT seen at once; changes made while viewing show live; Dismiss PUTs seen again.
+45. Payment reminders: the bell hides for 48 h after a nudge (from the loaded story and this session); 429 shows the server's copy.
+46. Payer handles appear on `GET /bills/{id}/money` as `payer_handles` (minimal API addition for the pay sheet, PRD §8/§14A).
+47. `next.config.ts` honors `KT_DIST_DIR` so two local Playwright stacks can build side by side.
+48. The local-vercel rehearsal runs the API with APP_ENV=test (no test routes) because deployed-mode validation needs Vercel Blob, a non-localhost origin and real push services; a staging preflight validates the same environment, and it has its own Postgres so it never competes with the test suites. ADR-0028.
+
 
 ## Waivers
 
-None yet.
+- GHSA-vfj7-8cjw-p6xm (CVE-2026-93687; `braces@3.0.3`, high; dependency audit, ADR-0025): no patched
+  release exists (the advisory lists no fixed version). Reached only through lint tooling
+  (`eslint-config-next > @next/eslint-plugin-next > fast-glob > micromatch > braces`), which expands
+  our own repository's glob patterns during `pnpm lint`; nothing of it is in the built bundle or the
+  API. Revisit when eslint-config-next moves off fast-glob 3.3.1 / micromatch 4.

@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Space_Mono, Work_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 import { ICONS, themeViewport } from "@/lib/pwa";
 import { strings } from "@/lib/strings";
 import { ThemeScript } from "@/components/ThemeScript";
+import { PwaRoot } from "@/components/pwa/PwaRoot";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -38,7 +40,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = themeViewport;
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // The per-request CSP nonce from middleware.ts (SEC-03). Reading headers also renders every page
+  // per request, so no prerendered HTML ever ships without its nonce.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="en"
@@ -46,10 +51,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <head>
-        <ThemeScript />
+        <ThemeScript nonce={nonce} />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <PwaRoot />
+        </Providers>
       </body>
     </html>
   );

@@ -164,6 +164,32 @@ async def test_SYNC_33_removed_members_stream_is_revoked_within_five_minutes(ser
     await asyncio.wait_for(s.closed.wait(), 5)
 
 
+@tid("AUTH-09")
+@fr("FR-01")
+async def test_AUTH_09_sign_out_everywhere_closes_every_open_stream_within_two_seconds(server: LiveServer) -> None:
+    w, _, _, meera = await setup(server)
+    laptop = Api(server.client())
+    assert meera.email is not None
+    await laptop.sign_in(meera.email)
+    async with (
+        SseStream(meera.http, w.hid) as phone,
+        SseStream(laptop.http, w.hid) as desk,
+        SseStream(w.admin.http, w.hid) as payer,
+    ):
+        for stream in (phone, desk, payer):
+            await stream.wait_event("ready")
+        started = time.monotonic()
+        assert (await laptop.call("POST", "/api/v1/auth/logout-all", idem=False)).status_code == 204
+        for stream in (phone, desk):
+            revoked = await stream.wait_event("revoked", timeout=2)
+            assert revoked.data == {"reason": "signed_out"}
+            await asyncio.wait_for(stream.closed.wait(), 2)
+        assert time.monotonic() - started < 2.0
+        # Another user's stream is untouched.
+        await asyncio.sleep(1.2)
+        assert not payer.closed.is_set()
+
+
 @tid("VERCEL-01")
 async def test_VERCEL_01_stream_rolls_over_and_reconnect_loses_nothing(settings: Settings, db_reset: None) -> None:
     """The stream closes cleanly at its max duration (270 s in production; 2 s here) and the

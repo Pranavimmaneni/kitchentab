@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Annotated, Any, Literal
 from zoneinfo import available_timezones
 
@@ -26,12 +27,15 @@ def user_view(user: User) -> dict[str, Any]:
         "timezone": user.timezone,
         "notify_email": user.notify_email,
         "share_by_default": user.share_by_default,
+        "notify_kitchen_digest": user.notify_kitchen_digest,
+        "auto_remind": user.auto_remind,
+        "prompt_snoozed_until": user.prompt_snoozed_until.isoformat() if user.prompt_snoozed_until else None,
     }
 
 
 @router.get("/me")
 async def me(request: Request, actor: Annotated[Actor, Depends(require_actor)]) -> dict[str, Any]:
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         rows = (
             await db.execute(
                 select(House.id, House.name, Member.id, Member.role)
@@ -52,6 +56,9 @@ class Profile(BaseModel):
     timezone: str | None = None
     notify_email: bool | None = None
     share_by_default: bool | None = None
+    notify_kitchen_digest: bool | None = None  # EMAIL-03 weekly digest
+    auto_remind: bool | None = None  # FR-41 automatic reminders on my tabs
+    prompt_snoozed_until: datetime | None = None  # N1 "Not now" (PUSH-01)
 
     @field_validator("timezone")
     @classmethod

@@ -3,7 +3,11 @@ import { ImageResponse } from "next/og";
 const LIME = "#C6F432";
 const INK = "#121210";
 
-export type AppIconKind = "any" | "maskable" | "apple";
+export type AppIconKind = "any" | "maskable" | "apple" | "badge";
+
+/** The fridge glyph alone, for the monochrome manifest icon and notification badges. */
+export const GLYPH_SVG = (color: string, stroke = 2) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2"/><path d="M6 9.5h12M9 5.5v2M9 12.5v4"/></svg>`;
 
 /**
  * KitchenTab app icon: a lime rounded square with the ink fridge glyph from N1 (PRD §20.1).
@@ -12,6 +16,18 @@ export type AppIconKind = "any" | "maskable" | "apple";
  * - apple: full-bleed lime square (iOS applies its own mask)
  */
 export function appIcon(size: number, kind: AppIconKind): ImageResponse {
+  if (kind === "badge") {
+    // Android draws notification badges from the alpha channel: white glyph, transparent canvas.
+    return new ImageResponse(
+      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="6" y="2.5" width="12" height="19" rx="2" />
+          <path d="M6 9.5h12M9 5.5v2M9 12.5v4" />
+        </svg>
+      </div>,
+      { width: size, height: size },
+    );
+  }
   const fullBleed = kind !== "any";
   const glyph = Math.round(size * (kind === "maskable" ? 0.5 : 0.6));
   const border = Math.max(2, Math.round(size / 48));

@@ -48,4 +48,72 @@ describe("Toast", () => {
     expect(onUndo).toHaveBeenCalledTimes(1);
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
+
+  it("A11Y-02 pauses the 4 s timer while hovered and resumes with the time that was left (WCAG 2.2.1)", () => {
+    const onDismiss = vi.fn();
+    render(<Toast message="Arjun removed from Coffee beans." onUndo={() => undefined} onDismiss={onDismiss} />);
+    const toast = screen.getByText("Arjun removed from Coffee beans.").parentElement!;
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    fireEvent.mouseEnter(toast);
+    expect(toast.getAttribute("data-paused")).toBe("true");
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+    });
+    expect(onDismiss).not.toHaveBeenCalled();
+    fireEvent.mouseLeave(toast);
+    act(() => {
+      vi.advanceTimersByTime(999);
+    });
+    expect(onDismiss).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it("A11Y-02 pauses while keyboard focus is inside (Undo reachable by Tab) and resumes on blur", () => {
+    const onDismiss = vi.fn();
+    render(
+      <>
+        <Toast message="Kabir removed from Eggs." onUndo={() => undefined} onDismiss={onDismiss} />
+        <button type="button">Elsewhere</button>
+      </>,
+    );
+    const undo = screen.getByRole("button", { name: "Undo" });
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    act(() => {
+      undo.focus();
+    });
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(onDismiss).not.toHaveBeenCalled();
+    act(() => {
+      screen.getByRole("button", { name: "Elsewhere" }).focus();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1999);
+    });
+    expect(onDismiss).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it("A11Y-02 a toast that disappears while hovered does not leave the next one paused", () => {
+    const onDismiss = vi.fn();
+    const { rerender } = render(<Toast message="First." onDismiss={onDismiss} />);
+    fireEvent.mouseEnter(screen.getByText("First.").parentElement!);
+    rerender(<Toast message={null} onDismiss={onDismiss} />);
+    rerender(<Toast message="Second." onDismiss={onDismiss} />);
+    act(() => {
+      vi.advanceTimersByTime(4000);
+    });
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
 });

@@ -88,3 +88,19 @@ async def extractor_mode(body: ExtractorMode, request: Request) -> Response:
     if request.app.state.redis is not None:
         await request.app.state.redis.set(FAKE_EXTRACTOR_MODE_KEY, body.mode)
     return Response(status_code=204)
+
+
+@router.post("/drain")
+async def drain(request: Request) -> dict[str, int]:
+    """Run the outbox drain now with the controllable clock (tests and e2e)."""
+    from app.services.notify import drain as run
+
+    result = await run(request.app.state.notify)
+    return {"outbox": result.outbox, "notifications": result.notifications, "sent": result.sent}
+
+
+@router.post("/use-soon")
+async def use_soon(request: Request) -> dict[str, int]:
+    from app.services.notify import use_soon_roundup
+
+    return {"created": await use_soon_roundup(request.app.state.notify)}

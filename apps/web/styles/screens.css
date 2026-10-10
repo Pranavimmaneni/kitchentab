@@ -605,7 +605,7 @@
   }
   .kt-totals__input {
     width: 104px;
-    min-height: 40px;
+    min-height: 44px;
     border: 0;
     border-bottom: 2px dotted var(--control-edge);
     background: transparent;

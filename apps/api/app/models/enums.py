@@ -57,6 +57,7 @@ NOTIFICATION_TYPES = (
     "settled",
     "joined",
     "digest",
+    "test",
 )
 NOTIFICATION_STATUSES = ("pending", "held", "sent", "failed", "suppressed")
 OUTBOX_STATUSES = ("pending", "processing", "done", "failed")

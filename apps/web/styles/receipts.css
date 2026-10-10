@@ -1,0 +1,183 @@
+/*
+ * Receipt capture and reading (PRD §9, §14A 1–2, Scan.dc.html): the capture sheet's drop zone,
+ * the reading and failure states, the scanned-items offer and the receipt photo. Colors only from
+ * tokens.css, both themes, 44 px targets, no inner scroll panels.
+ */
+
+@layer components {
+  /* Capture sheet: dashed drop zone, shown where there is a mouse (desktop drag-and-drop). */
+  .kt-dropzone {
+    display: none;
+    min-height: 88px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px 16px;
+    border: 2px dashed var(--control-edge);
+    border-radius: var(--radius-card);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .kt-dropzone[data-active] {
+    display: flex;
+    border-color: var(--ink);
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .kt-dropzone {
+      display: flex;
+    }
+  }
+  .kt-capture__status {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .kt-capture__error {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--warn);
+    font-weight: 600;
+  }
+
+  /* Reading and failure states (Scan.dc.html receipt card) */
+  .kt-scan {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 6px 0 4px;
+  }
+  .kt-scan .kt-skeleton {
+    padding: 8px 0;
+  }
+  .kt-scan__status {
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .kt-scan .kt-text-link {
+    align-self: center;
+  }
+  .kt-scan__title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .kt-scan__detail {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--muted);
+    text-align: center;
+  }
+  .kt-scan__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* "Use the scanned items instead?" */
+  .kt-offer {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--ink);
+  }
+  .kt-offer .kt-banner__text {
+    font-family: var(--font-mono);
+    font-weight: 700;
+  }
+  .kt-offer__detail {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .kt-offer__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .kt-offer .kt-pill[data-variant="secondary"] {
+    color: var(--on-accent);
+    border-color: var(--on-accent);
+    background: transparent;
+  }
+  .kt-offer .kt-capture__error {
+    color: var(--on-accent);
+    text-decoration: underline;
+  }
+
+  /* Receipt photo: thumbnail in the card's corner, full screen on tap */
+  .kt-review {
+    position: relative;
+  }
+  .kt-photo-thumb {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 48px;
+    min-height: 60px;
+    padding: 0;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-card);
+    background: var(--bg);
+    overflow: hidden;
+    cursor: zoom-in;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    text-align: center;
+  }
+  .kt-photo-thumb img {
+    width: 100%;
+    height: 60px;
+    object-fit: cover;
+    display: block;
+  }
+  .kt-photo-thumb--pdf {
+    width: 64px;
+    cursor: pointer;
+    line-height: 1.2;
+    padding: 4px;
+  }
+  .kt-photo-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(56px + env(safe-area-inset-top)) 8px calc(16px + env(safe-area-inset-bottom));
+    touch-action: pinch-zoom;
+  }
+  .kt-photo-viewer__img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .kt-photo-viewer__close {
+    position: absolute;
+    top: calc(8px + env(safe-area-inset-top));
+    right: 8px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+}

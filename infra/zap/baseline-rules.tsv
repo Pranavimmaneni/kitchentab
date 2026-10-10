@@ -1,0 +1,6 @@
+# ZAP baseline rules for `make zap-baseline` (SEC-08), passed to zap-baseline.py with -c.
+# Format (tab-separated): <plugin id>	<IGNORE|INFO|WARN|FAIL>	(<alert name>: <why>)
+# Every IGNORE is a documented false positive; scripts/zap_gate.py refuses an IGNORE without a
+# reason and fails the run on any other High or Medium alert. Add a line only with the reason.
+10202	IGNORE	(Absence of Anti-CSRF Tokens: writes go through fetch with the X-CSRF-Token double-submit header, SameSite=Lax cookies and an Origin check, ADR-0006; ZAP only looks for hidden form fields)
+10010	IGNORE	(Cookie No HttpOnly Flag: kt_csrf is readable on purpose so the page can echo it in X-CSRF-Token, ADR-0006; the session cookie kt_session is HttpOnly)

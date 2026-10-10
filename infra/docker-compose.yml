@@ -1,5 +1,6 @@
 # Local stack for `make dev` (PRD §12 "local"): Postgres 16, Redis, MinIO, Mailpit, the in-repo
-# mock Google OIDC issuer and the in-repo fake Web Push service. Never used in staging or prod.
+# mock Google OIDC issuer, the in-repo fake Web Push service and the in-repo fake Vercel Blob
+# service. Never used in staging or prod.
 name: kitchentab
 
 services:
@@ -81,6 +82,123 @@ services:
       timeout: 3s
       retries: 30
 
+  # Fake Vercel Blob (ADR-0015, ADR-0017): STORAGE_PROVIDER=fakeblob / PROFILE=vercel locally.
+  fake-blob:
+    build:
+      context: ../apps/api
+      dockerfile: ../../infra/fakes.Dockerfile
+    command: ["uvicorn", "--factory", "fakeservices.fake_blob:create_app", "--host", "0.0.0.0", "--port", "4012"]
+    environment:
+      FAKE_BLOB_BASE_URL: http://localhost:4012
+      # FAKE_BLOB_RW_TOKEN defaults to the built-in local token (same default as the API)
+    ports: ["4012:4012"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4012/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  # Chaos proxy (TEST_PLAN §2, CHAOS-*; ADR-0024). Only `make test-chaos` starts it (profile
+  # "chaos"). Tests create proxies through its API on :8474; proxies listen on 26400-26409 and
+  # reach services published on the host (the test Postgres/Redis containers) via host.docker.internal.
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    profiles: ["chaos"]
+    ports: ["8474:8474", "26400-26409:26400-26409"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    healthcheck:
+      test: ["CMD", "/toxiproxy-cli", "list"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # ---- TARGET=local-vercel rehearsal (ADR-0028). Only `make local-vercel-up` starts these
+  # (profile "local-vercel"); the API, queue devserver + subscriber and `next start` run on the
+  # host from scripts/local_vercel.py. Its own Postgres (database kitchentab_lv), so it never
+  # touches the dev or test databases or competes with the test suites for connections.
+  lv-postgres:  # Neon's direct (unpooled) URL: migrations and the invariant checks, :5442
+    image: postgres:16.15-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    profiles: ["local-vercel"]
+    command: ["postgres", "-c", "track_commit_timestamp=on", "-c", "max_connections=200"]
+    environment:
+      POSTGRES_USER: kitchentab
+      POSTGRES_PASSWORD: kitchentab
+      POSTGRES_DB: kitchentab_lv
+    ports: ["127.0.0.1:5442:5432"]
+    volumes: [lvpgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kitchentab -d kitchentab_lv"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  lv-pgbouncer:  # Neon's pooled URL: transaction pooling on :6432
+    image: edoburu/pgbouncer:v1.24.1-p1@sha256:3db3d7223e93af52b4116f642951a1a5fa44702a88c2a59cf7562cac19320c9e
+    profiles: ["local-vercel"]
+    entrypoint: ["pgbouncer", "/etc/pgbouncer/pgbouncer.ini"]
+    volumes:
+      - ./local-vercel/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./local-vercel/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    ports: ["127.0.0.1:6432:6432"]
+    depends_on:
+      lv-postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 6432"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  lv-fake-blob:  # the Blob store, reached only through lv-edge's HTTPS blob origin
+    build:
+      context: ../apps/api
+      dockerfile: ../../infra/fakes.Dockerfile
+    profiles: ["local-vercel"]
+    command: ["uvicorn", "--factory", "fakeservices.fake_blob:create_app", "--host", "0.0.0.0", "--port", "4012"]
+    environment:
+      FAKE_BLOB_BASE_URL: https://${LOCAL_VERCEL_HOST:-localhost}:${LV_BLOB_PORT:-8444}
+      FAKE_BLOB_RW_TOKEN: ${LV_BLOB_RW_TOKEN:-}  # generated per rehearsal (.cache/local-vercel); empty = built-in
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4012/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  lv-fake-push:  # a browser push service for launch-check's test subscription
+    build:
+      context: ../apps/api
+      dockerfile: ../../infra/fakes.Dockerfile
+    profiles: ["local-vercel"]
+    command: ["uvicorn", "--factory", "fakeservices.fake_push:create_app", "--host", "0.0.0.0", "--port", "4010"]
+    environment:
+      FAKE_PUSH_BASE_URL: http://localhost:${LV_PUSH_PORT:-4020}
+    ports: ["127.0.0.1:${LV_PUSH_PORT:-4020}:4010"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4010/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  lv-edge:  # Vercel's edge: vercel.json routing, HTTPS (Caddy internal CA), 4.5 MB / 300 s limits
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    profiles: ["local-vercel"]
+    environment:
+      LOCAL_VERCEL_HOST: ${LOCAL_VERCEL_HOST:-localhost}
+      LV_EDGE_PORT: ${LV_EDGE_PORT:-8443}
+      LV_BLOB_PORT: ${LV_BLOB_PORT:-8444}
+      LV_WEB_UPSTREAM: host.docker.internal:${LV_WEB_PORT:-3030}
+      LV_API_UPSTREAM: host.docker.internal:${LV_API_PORT:-8030}
+      LV_MAX_DURATION: ${LV_MAX_DURATION:-300s}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes:
+      - ./local-vercel/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../.cache/local-vercel/caddy:/data  # the local CA lives here (gitignored)
+    ports:
+      - "${LV_EDGE_PORT:-8443}:${LV_EDGE_PORT:-8443}"
+      - "${LV_BLOB_PORT:-8444}:${LV_BLOB_PORT:-8444}"
+    depends_on:
+      lv-fake-blob: { condition: service_healthy }
+
 volumes:
+  lvpgdata:
   pgdata:
   miniodata:

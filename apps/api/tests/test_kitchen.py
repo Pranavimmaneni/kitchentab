@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.models import LedgerEntry, ShareRequest
+from app.models import HouseEvent, LedgerEntry, ShareRequest
 from tests.harness.api import Api
 from tests.harness.race import sync_iterations
 from tests.harness.tags import fr, tid
@@ -163,8 +164,10 @@ async def test_KITCH_10_use_soon_still_there_still_good_never_removed(api: ApiFa
 
 
 @tid("KITCH-12", "SYNC-13")
-@fr("FR-77")
-async def test_KITCH_12_used_up_undo_and_non_owners_cannot(api: ApiFactory) -> None:
+@fr("FR-77", "FR-80")
+async def test_KITCH_12_used_up_undo_and_non_owners_cannot(
+    api: ApiFactory, sessions: async_sessionmaker[AsyncSession]
+) -> None:
     w, _, _, p = await kitchen_world(api)
     milk = find(await fridge(w.admin, w), "Whole milk")
     assert (await p["kabir"].post(f"/api/v1/inventory/{milk['id']}/used-up")).status_code == 403
@@ -173,6 +176,13 @@ async def test_KITCH_12_used_up_undo_and_non_owners_cannot(api: ApiFactory) -> N
         lambda: p["arjun"].post(f"/api/v1/inventory/{milk['id']}/used-up"),
     )
     assert codes(out) == [200, 200], "idempotent"
+    async with sessions() as db:
+        events = (
+            await db.scalars(
+                select(HouseEvent).where(HouseEvent.house_id == w.hid, HouseEvent.type == "inventory_changed")
+            )
+        ).all()
+    assert len([e for e in events if (e.data or {}).get("status") == "used_up"]) == 1, "one event (SYNC-13)"
     assert not any(i["id"] == milk["id"] for a in (await fridge(w.admin, w))["areas"] for i in a["items"])
     assert (await p["meera"].post(f"/api/v1/inventory/{milk['id']}/restore")).status_code == 200
     assert any(i["id"] == milk["id"] for a in (await fridge(w.admin, w))["areas"] for i in a["items"])
@@ -521,3 +531,30 @@ async def test_ASK_13_request_cards_carry_owners_source_and_line_total(api: ApiF
     granted = find(await fridge(p["kabir"], w), "Chicken thighs")
     assert granted["granted_to_me"] is True and granted["granted_by"] == "Pranav"
     assert find(await fridge(p["meera"], w), "Chicken thighs")["granted_by"] is None
+
+
+@pytest.mark.sync
+@tid("SYNC-13", "EDGE-19-01")
+@fr("FR-62", "FR-69")
+async def test_sharing_switch_races_an_untick_without_deadlock(
+    api: ApiFactory, sessions: async_sessionmaker[AsyncSession]
+) -> None:
+    """Review finding: a tick holds the house lock while syncing owners; a sharing switch holds an
+    owner row and wants the house lock. Lock order (bill, lines, kitchen items, house) prevents it."""
+    from app.services.invariants import check_all
+
+    w, bill_id, ids, p = await kitchen_world(api)
+    milk = find(await fridge(w.admin, w), "Whole milk")
+    url = f"/api/v1/inventory/{milk['id']}/sharing"
+    for _ in range(sync_iterations()):
+        # Arjun owns the milk and isn't sharing; then the payer unticks him while he switches sharing on.
+        assert (await tick(w.admin, bill_id, ids[0], w.key("arjun"), True)).status_code == 200
+        assert (await p["arjun"].call("PUT", url, {"open": False})).status_code == 200
+        untick, share = await race(
+            lambda: tick(w.admin, bill_id, ids[0], w.key("arjun"), False),
+            lambda: p["arjun"].call("PUT", url, {"open": True}),
+        )
+        assert untick.status_code == 200, untick.text
+        assert share.status_code in (200, 403), share.text  # 403 if the untick committed first
+    async with sessions() as db:
+        assert await check_all(db, datetime.now(UTC)) == []

@@ -114,4 +114,23 @@ describe("SplitCheckbox", () => {
     rerender(<SplitCheckbox {...props} />);
     expect(stamp().style.getPropertyValue("--tilt")).toBe("4deg");
   });
+
+  it("A11Y-03 a held key toggles once: auto-repeated Space and Enter keydowns are ignored", () => {
+    const onToggle = vi.fn();
+    render(<Controlled onToggle={onToggle} />);
+    const box = screen.getByRole("button", { name: "Arjun uses Whole milk" });
+    box.focus();
+    fireEvent.keyDown(box, { key: " ", code: "Space" });
+    for (let i = 0; i < 5; i++) {
+      const notCancelled = fireEvent.keyDown(box, { key: " ", code: "Space", repeat: true });
+      expect(notCancelled).toBe(false);
+    }
+    fireEvent.keyUp(box, { key: " ", code: "Space" });
+    expect(onToggle).toHaveBeenCalledTimes(1);
+    expect(box.getAttribute("aria-pressed")).toBe("true");
+    // Enter: the browser clicks on every repeated keydown unless it is cancelled.
+    const enterRepeat = fireEvent.keyDown(box, { key: "Enter", code: "Enter", repeat: true });
+    expect(enterRepeat).toBe(false);
+    expect(onToggle).toHaveBeenCalledTimes(1);
+  });
 });

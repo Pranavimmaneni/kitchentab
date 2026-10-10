@@ -50,6 +50,7 @@ async def test_forwarded_for_is_ignored_off_vercel(app: Any) -> None:
     from app.deps import client_ip
 
     scope = {"type": "http", "app": app, "headers": [(b"x-forwarded-for", b"6.6.6.6")], "client": ("10.0.0.1", 1)}
+    app.state.settings = app.state.settings.model_copy(update={"profile": "local"})
     assert client_ip(Request(scope)) == "10.0.0.1"
     app.state.settings = app.state.settings.model_copy(update={"profile": "vercel"})
     assert client_ip(Request(scope)) == "6.6.6.6"

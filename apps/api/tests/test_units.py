@@ -13,6 +13,7 @@ from app.errors import ErrorCode, Problem
 from app.ids import uuid7
 from app.logs import JsonFormatter, redact, redact_text
 from app.tokens import TOKEN_LENGTH, hash_token, new_token, token_matches
+from tests.harness.tags import fr, tid
 
 
 def test_uuid7_version_variant_and_order() -> None:
@@ -69,3 +70,24 @@ def test_problem_body_shape() -> None:
     body = Problem(409, ErrorCode.LAST_PERSON, "Someone has to keep it", extra={"item_id": "x"}).body("/api/v1/x")
     assert body["code"] == "LAST_PERSON" and body["status"] == 409 and body["item_id"] == "x"
     assert body["type"].endswith("/last-person")
+
+
+@tid("KITCH-05")
+@fr("FR-65")
+@pytest.mark.parametrize(
+    ("name", "label"),
+    [
+        ("Whole milk 1 gal", "Whole milk"),
+        ("Korean pear box", "Korean pear"),
+        ("Organic baby spinach", "Baby spinach"),
+        ("eggs 18 ct", "Eggs"),
+        ("Kimchi", "Kimchi"),
+        ("Dal from Sunday", "Dal"),
+        ("Cake for Kabir", "Cake"),
+        ("Supercalifragilisticexpialidocious", "Supercalifrag…"),
+    ],
+)
+def test_tile_labels_keep_the_thing_itself(name: str, label: str) -> None:
+    from app.domain.kitchen import SHORT_NAME_MAX, short_name
+
+    assert short_name(name) == label and len(short_name(name)) <= SHORT_NAME_MAX

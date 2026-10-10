@@ -19,6 +19,10 @@ export type WhoOwesRowProps = {
   onNudge?: () => void;
   /** Custom action (Confirm / Reject, Pay). Replaces the bell. */
   action?: ReactNode;
+  /** Full-width line under the row (e.g. the payer's Confirm / Reject on a pending payment). */
+  below?: ReactNode;
+  /** Replaces the status line text (e.g. "PAID $5.00 · $1.68 BACK TO PRANAV"). */
+  statusText?: string;
   currency?: string;
 };
 
@@ -47,6 +51,8 @@ export function WhoOwesRow({
   statusAmountCents = amountCents,
   onNudge,
   action,
+  below,
+  statusText: statusOverride,
   currency = "USD",
 }: WhoOwesRowProps) {
   return (
@@ -55,7 +61,7 @@ export function WhoOwesRow({
       <div className="kt-owes-row__who">
         <span className="kt-owes-row__name">{name}</span>
         <span className="kt-owes-row__status">
-          {statusText(status, formatMoney(statusAmountCents, currency))}
+          {statusOverride ?? statusText(status, formatMoney(statusAmountCents, currency))}
         </span>
       </div>
       <span className="kt-owes-row__amount kt-money">{formatMoney(amountCents, currency)}</span>
@@ -72,6 +78,7 @@ export function WhoOwesRow({
             </button>
           ) : null)}
       </span>
+      {below ? <div className="kt-owes-row__below">{below}</div> : null}
     </li>
   );
 }

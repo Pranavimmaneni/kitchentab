@@ -16,6 +16,7 @@ htmlcov/
 # Node / web
 node_modules/
 .next/
+.next-*/
 out/
 playwright-report/
 test-results/
@@ -29,3 +30,14 @@ Thumbs.db
 
 # Local Playwright browsers (ADR-0019)
 .cache/
+
+# Vercel CLI link state (make deploy-setup); never commit
+.vercel/
+.claude/launch.json
+
+# Generated at build time (ADR-0026, ADR-0027): the Serwist worker and the self-hosted OCR assets.
+# The eng model under public/ocr/lang/ is committed.
+apps/web/public/sw*.js
+apps/web/public/swe-worker*.js
+apps/web/public/ocr/*
+!apps/web/public/ocr/lang/

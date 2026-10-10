@@ -120,12 +120,14 @@ async def test_SEC_11_test_routes_absent_without_flag(settings: Settings) -> Non
         assert (await c.post("/__test/clock", json={"now": "2026-01-01T00:00:00Z"})).status_code == 404
 
 
-async def test_health_and_readiness(client: httpx.AsyncClient) -> None:
+async def test_health_and_readiness(client: httpx.AsyncClient, settings: Settings) -> None:
     health = await client.get("/api/v1/health")
     assert health.status_code == 200 and health.json()["status"] == "ok"
     assert health.headers["x-request-id"]
     ready = await client.get("/api/v1/health/ready")
-    assert ready.json() == {"status": "ok", "database": True, "redis": True}
+    # PROFILE=vercel has no Redis at all (ADR-0012): readiness reports it as not applicable.
+    expected_redis = True if settings.profile == "local" else None
+    assert ready.json() == {"status": "ok", "database": True, "redis": expected_redis}
 
 
 async def test_unknown_route_is_problem_json(client: httpx.AsyncClient) -> None:
@@ -135,14 +137,17 @@ async def test_unknown_route_is_problem_json(client: httpx.AsyncClient) -> None:
     assert resp.json()["code"] == "NOT_FOUND"
 
 
-async def test_clock_control_pins_and_advances_server_time(client: httpx.AsyncClient, redis: Any) -> None:
+async def test_clock_control_pins_and_advances_server_time(
+    client: httpx.AsyncClient, redis: Any, settings: Settings
+) -> None:
     pinned = datetime(2026, 10, 3, 23, 0, tzinfo=UTC)
     resp = await client.post("/__test/clock", json={"now": pinned.isoformat()})
     assert datetime.fromisoformat(resp.json()["now"]) == pinned
     assert (await client.get("/api/v1/health")).json()["time"] == pinned.isoformat()
     resp = await client.post("/__test/clock", json={"advance_seconds": 11 * 60})
     assert datetime.fromisoformat(resp.json()["now"]) == datetime(2026, 10, 3, 23, 11, tzinfo=UTC)
-    assert await redis.get("test:clock:override"), "worker processes follow the override via Redis"
+    if settings.profile == "local":  # PROFILE=vercel has no Redis and no worker processes
+        assert await redis.get("test:clock:override"), "worker processes follow the override via Redis"
     assert (await client.delete("/__test/clock")).status_code == 204
     assert (await client.get("/__test/clock")).json()["overridden"] is False
 
@@ -185,3 +190,26 @@ def test_phone_and_google_are_off_until_configured() -> None:
             twilio_auth_token="t",
             twilio_verify_service_sid="VA",
         )
+
+
+@tid("VERCEL-07")
+@pytest.mark.usefixtures("clean_env")
+def test_neon_urls_are_normalized_for_asyncpg() -> None:
+    neon = "postgresql://kt:pw@ep-x-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    s = build(database_url=neon, database_direct_url=neon.replace("-pooler", ""))
+    assert s.database_url == "postgresql+asyncpg://kt:pw@ep-x-pooler.us-east-1.aws.neon.tech/neondb?ssl=require"
+    assert s.database_direct_url == "postgresql+asyncpg://kt:pw@ep-x.us-east-1.aws.neon.tech/neondb?ssl=require"
+    assert build(database_url="postgres://u:p@h/db").database_url == "postgresql+asyncpg://u:p@h/db"
+    local = "postgresql+asyncpg://kitchentab:kitchentab@localhost:5432/kitchentab"
+    assert build(database_url=local).database_url == local, "already-asyncpg URLs are left alone"
+
+
+@tid("VERCEL-07")
+@pytest.mark.usefixtures("clean_env")
+def test_preview_deployments_take_their_origin_from_vercel_url() -> None:
+    preview = {k: v for k, v in REAL_PROD.items() if k not in ("web_origin", "public_link_base")}
+    s = Settings(_env_file=None, **{**preview, "app_env": "staging", "vercel_url": "kitchentab-git-x.vercel.app"})
+    assert s.web_origin == s.public_link_base == "https://kitchentab-git-x.vercel.app"
+    assert s.google_redirect_uri == "https://kitchentab-git-x.vercel.app/api/v1/auth/google/callback"
+    prod = Settings(_env_file=None, **{**REAL_PROD, "vercel_url": "kitchentab-abc123.vercel.app"})
+    assert prod.web_origin == "https://kitchentab.vercel.app", "an explicit origin always wins"

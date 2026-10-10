@@ -33,6 +33,20 @@ class Action(StrEnum):
     BILL_SEND = "bill.send"
     BILL_DELETE_DRAFT = "bill.delete_draft"
     ALLOC_SET = "bill.allocation.set"  # tick or untick one participant on one item
+    # Receipts (Milestone 5): upload/attach/OCR while the bill is a draft; view for house members.
+    RECEIPT_UPLOAD = "receipt.upload"
+    RECEIPT_VIEW = "receipt.view"
+    # Open-bill life (Milestone 6): the payer runs the tab; members record their own payments
+    PAYMENT_RECORD = "bill.payment.record"
+    PAYMENT_ANSWER = "bill.payment.answer"  # confirm or reject
+    BILL_SETTLE = "bill.settle"
+    BILL_REOPEN = "bill.reopen"
+    BILL_VOID = "bill.void"
+    BILL_REMIND = "bill.remind"
+    # Fridge and pantry (Milestone 8, PRD §19)
+    ITEM_OWNER_ACT = "kitchen.item.owner"  # sharing, used up, restore, still good, edit, answer, undo
+    ASK_CREATE = "kitchen.ask.create"  # only non-owners ask (§19.4 step 1)
+    ASK_CANCEL = "kitchen.ask.cancel"
 
 
 @dataclass(frozen=True)
@@ -69,6 +83,16 @@ class BillCtx:
 
 
 @dataclass(frozen=True)
+class ItemCtx:
+    owner_member_ids: frozenset[uuid.UUID]  # active owners only
+
+
+@dataclass(frozen=True)
+class AskCtx:
+    requester_member_id: uuid.UUID
+
+
+@dataclass(frozen=True)
 class Decision:
     allowed: bool
     code: ErrorCode = ErrorCode.FORBIDDEN
@@ -85,7 +109,14 @@ ADMIN_ONLY = {
     Action.MEMBER_UNCLAIM,
     Action.ADMIN_TRANSFER,
 }
-BILL_ACTIONS = {Action.BILL_READ, Action.BILL_EDIT, Action.BILL_SEND, Action.BILL_DELETE_DRAFT, Action.ALLOC_SET}
+BILL_ACTIONS = {
+    Action.BILL_READ,
+    Action.BILL_EDIT,
+    Action.BILL_SEND,
+    Action.BILL_DELETE_DRAFT,
+    Action.ALLOC_SET,
+    Action.RECEIPT_UPLOAD,
+}
 
 
 def _decide_member_admin(action: Action, actor: MemberCtx, target: TargetMember | None) -> Decision:
@@ -122,12 +153,52 @@ def _decide_bill(
         return Decision(False, ErrorCode.CONFLICT, "This tab was already sent")
     if action == Action.BILL_DELETE_DRAFT and bill.state != "draft":
         return Decision(False, ErrorCode.CONFLICT, "Sent tabs can be voided, not deleted")
-    if action in (Action.BILL_EDIT, Action.BILL_SEND, Action.BILL_DELETE_DRAFT):
+    if action == Action.RECEIPT_UPLOAD and bill.state != "draft":
+        return Decision(False, ErrorCode.CONFLICT, "Receipts can be added while the tab is a draft")
+    if action in (Action.BILL_EDIT, Action.BILL_SEND, Action.BILL_DELETE_DRAFT, Action.RECEIPT_UPLOAD):
         return ALLOW if is_owner else Decision(False, ErrorCode.FORBIDDEN, "Only the payer can change this tab")
     # ALLOC_SET: the payer edits anyone's ticks; on an open bill members edit their own (FR-32, FR-33).
     if is_owner or (bill.state == "open" and participant_member_id == actor.member_id):
         return ALLOW
     return Decision(False, ErrorCode.FORBIDDEN, "You can only change your own ticks")
+
+
+PAYER_ONLY = {
+    Action.PAYMENT_ANSWER: "Only the payer confirms payments",
+    Action.BILL_SETTLE: "Only the payer can settle this tab",
+    Action.BILL_REOPEN: "Only the payer can reopen this tab",
+    Action.BILL_VOID: "Only the payer can void this tab",
+    Action.BILL_REMIND: "Only the payer sends reminders",
+}
+
+
+def _decide_payer(
+    action: Action, actor: MemberCtx, bill: BillCtx | None, participant_member_id: uuid.UUID | None
+) -> Decision:
+    """State checks (open, settled, 30-day window) are business rules in the services."""
+    if bill is None:
+        return Decision(False, ErrorCode.FORBIDDEN, "missing bill")
+    if actor.member_id == bill.payer_member_id:
+        return ALLOW
+    if action == Action.PAYMENT_RECORD:
+        if participant_member_id == actor.member_id:
+            return ALLOW
+        return Decision(False, ErrorCode.FORBIDDEN, "You can only record your own payment")
+    return Decision(False, ErrorCode.FORBIDDEN, PAYER_ONLY[action])
+
+
+def _decide_kitchen(action: Action, actor: MemberCtx, item: ItemCtx | None, ask: AskCtx | None) -> Decision:
+    if action == Action.ITEM_OWNER_ACT:
+        if item is not None and actor.member_id in item.owner_member_ids:
+            return ALLOW
+        return Decision(False, ErrorCode.FORBIDDEN, "Only the owners can do that")
+    if action == Action.ASK_CREATE:
+        if item is not None and actor.member_id in item.owner_member_ids:
+            return Decision(False, ErrorCode.CONFLICT, "It's yours already")
+        return ALLOW
+    if ask is not None and ask.requester_member_id == actor.member_id:  # ASK_CANCEL
+        return ALLOW
+    return Decision(False, ErrorCode.FORBIDDEN, "Only the person who asked can cancel")
 
 
 def decide(
@@ -137,9 +208,13 @@ def decide(
     target: TargetMember | None = None,
     bill: BillCtx | None = None,
     participant_member_id: uuid.UUID | None = None,
+    item: ItemCtx | None = None,
+    ask: AskCtx | None = None,
 ) -> Decision:
     if actor is None or not actor.active:
         return Decision(False, ErrorCode.NOT_A_MEMBER, "You're not in this house")
+    if action == Action.RECEIPT_VIEW:
+        return ALLOW  # signed-in members of the house (PRD §7, FR-18, EXTRACT-10)
     if action in (Action.HOUSE_READ, Action.INVITE_READ, Action.HOUSE_LEAVE, Action.BILL_CREATE):
         # Leave: business checks (admin hand-over, open bills as payer) live in the service.
         return ALLOW
@@ -147,7 +222,21 @@ def decide(
         return _decide_member_admin(action, actor, target)
     if action in BILL_ACTIONS:
         return _decide_bill(action, actor, bill, participant_member_id)
+    if action == Action.PAYMENT_RECORD or action in PAYER_ONLY:
+        return _decide_payer(action, actor, bill, participant_member_id)
+    if action in (Action.ITEM_OWNER_ACT, Action.ASK_CREATE, Action.ASK_CANCEL):
+        return _decide_kitchen(action, actor, item, ask)
     return Decision(False, ErrorCode.FORBIDDEN, f"no rule for {action!s}")
+
+
+def decide_own(owner_user_id: uuid.UUID | None, actor_user_id: uuid.UUID) -> Decision:
+    """A device or sign-in method is managed only by the user it belongs to (SEC-10). A missing
+    resource is NOT_FOUND; someone else's is FORBIDDEN."""
+    if owner_user_id is None:
+        return Decision(False, ErrorCode.NOT_FOUND, "Not found")
+    if owner_user_id != actor_user_id:
+        return Decision(False, ErrorCode.FORBIDDEN, "That isn't yours")
+    return ALLOW
 
 
 STATUS_FOR = {
@@ -165,7 +254,26 @@ def require(
     target: TargetMember | None = None,
     bill: BillCtx | None = None,
     participant_member_id: uuid.UUID | None = None,
+    item: ItemCtx | None = None,
+    ask: AskCtx | None = None,
 ) -> None:
-    decision = decide(action, actor=actor, target=target, bill=bill, participant_member_id=participant_member_id)
+    _raise(
+        decide(
+            action,
+            actor=actor,
+            target=target,
+            bill=bill,
+            participant_member_id=participant_member_id,
+            item=item,
+            ask=ask,
+        )
+    )
+
+
+def require_own(owner_user_id: uuid.UUID | None, actor_user_id: uuid.UUID) -> None:
+    _raise(decide_own(owner_user_id, actor_user_id))
+
+
+def _raise(decision: Decision) -> None:
     if not decision.allowed:
         raise Problem(STATUS_FOR.get(decision.code, 403), decision.code, decision.reason or "You can't do that here")

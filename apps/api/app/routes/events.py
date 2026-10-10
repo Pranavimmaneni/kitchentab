@@ -8,6 +8,9 @@
   the server sends `event: resync` and the client refetches everything.
 * Membership is checked when the stream opens and every 5 minutes; a removed member's stream gets
   `event: revoked` and closes (SYNC-12, SYNC-33).
+* The stream's own session is re-read every second: after "Sign out everywhere" (or a plain sign
+  out) every open device gets `event: revoked {"reason": "signed_out"}` and lands on sign-in
+  within 2 s (AUTH-09, PRD §21.6). A primary-key read beside the 750 ms event poll.
 * `GET /houses/{id}/events?after=N` (JSON, max 500) fills gaps and backs the polling fallback.
 """
 
@@ -28,7 +31,7 @@ from sqlalchemy import func, select
 
 from app.deps import Actor, ctx, require_actor
 from app.errors import ErrorCode, Problem
-from app.models import HouseEvent
+from app.models import HouseEvent, Session
 from app.policy import Action, require
 from app.services.bus import house_channel
 from app.services.houses import membership
@@ -90,6 +93,25 @@ async def _is_member(request: Request, house_id: uuid.UUID, actor: Actor) -> boo
     async with ctx(request).sessions() as db:
         me = await membership(db, house_id, actor.user.id)
     return me is not None and me.active
+
+
+async def _poll(request: Request, house_id: uuid.UUID, actor: Actor, after: int) -> tuple[bool, list[HouseEvent]]:
+    """One round trip per poll: is the session still live, and what happened since `after`. Checking
+    the session every poll (not every second on its own connection) keeps "Sign out everywhere"
+    under 2 s on every tab with PROFILE=vercel, where each connection is a fresh PgBouncer one (AUTH-09)."""
+    async with ctx(request).sessions() as db:
+        revoked_at = await db.scalar(select(Session.revoked_at).where(Session.id == actor.session_id))
+        if revoked_at is not None:
+            return False, []
+        found = (
+            await db.scalars(
+                select(HouseEvent)
+                .where(HouseEvent.house_id == house_id, HouseEvent.seq > after)
+                .order_by(HouseEvent.seq)
+                .limit(REPLAY_LIMIT)
+            )
+        ).all()
+    return True, list(found)
 
 
 def _sse(event: str | None, data: Any, event_id: int | None = None) -> bytes:
@@ -169,7 +191,11 @@ async def _stream(request: Request, house_id: uuid.UUID, actor: Actor, last: int
                 if not await _is_member(request, house_id, actor):
                     yield _sse("revoked", {"reason": "not_a_member"})
                     return
-            for event in await _events_after(request, house_id, last, REPLAY_LIMIT):
+            live, found = await _poll(request, house_id, actor, last)
+            if not live:
+                yield _sse("revoked", {"reason": "signed_out"})
+                return
+            for event in found:
                 last = event.seq
                 yield _sse(None, wire(event), event.seq)
             now = time.monotonic()

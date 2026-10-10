@@ -35,11 +35,12 @@ from app.models import (
     ShareRequest,
 )
 from app.models import Item as ItemRow
-from app.policy import MemberCtx
+from app.policy import Action, AskCtx, ItemCtx, MemberCtx, require
 from app.services import bill_math
 from app.services.bill_math import mkey
 from app.services.house_write import Activity, HouseWrite, Idempotency, WriteContext, house_write
 from app.services.houses import membership
+from app.services.kitchen import _share_defaults
 
 USE_SOON_X1000 = 800  # 80% of shelf life (integer ratio, no floats near prices)
 PROBABLY_GONE_X1000 = 1000
@@ -284,9 +285,24 @@ async def _active_owner_ids(db: AsyncSession, item_id: uuid.UUID) -> list[uuid.U
     )
 
 
+async def house_owner_ids(w: HouseWrite, wanted: list[uuid.UUID], me: MemberCtx) -> list[uuid.UUID]:
+    """Owners named for a manual item: active members of THIS house only (else 422); none = me."""
+    if not wanted:
+        return [me.member_id]
+    found = set(
+        (
+            await w.session.scalars(
+                select(Member.id).where(Member.id.in_(wanted), Member.house_id == w.house_id, Member.status == "active")
+            )
+        ).all()
+    )
+    if found != set(wanted):
+        raise Problem(422, ErrorCode.VALIDATION_FAILED, "Owners must be people who live here")
+    return sorted(found, key=wanted.index)
+
+
 def _require_owner(me: MemberCtx, owner_ids: list[uuid.UUID]) -> None:
-    if me.member_id not in owner_ids:
-        raise Problem(403, ErrorCode.FORBIDDEN, "Only the owners can do that")
+    require(Action.ITEM_OWNER_ACT, actor=me, item=ItemCtx(frozenset(owner_ids)))
 
 
 def _event_view(item: InventoryItem) -> dict[str, Any]:
@@ -305,9 +321,9 @@ async def set_sharing(
     async with house_write(writes, house_id, client_mutation_id=cmid) as w:
         me = await _me(w, user_id)
         item = await _lock_item(w, item_id)
+        _require_owner(me, await _active_owner_ids(w.session, item.id))
         owner = await w.session.get(InventoryOwner, (item.id, me.member_id), with_for_update={"key_share": True})
-        if owner is None:
-            raise Problem(403, ErrorCode.FORBIDDEN, "Only the owners can do that")
+        assert owner is not None
         if owner.open_to_share == open_:
             return {"id": str(item_id), "open_to_share": open_}
         owner.open_to_share = open_
@@ -337,15 +353,18 @@ async def used_up(
             item.used_up_at = now
             item.updated_at = now
             item.version += 1
-            await w.session.execute(
-                update(ShareRequest)
-                .where(ShareRequest.inventory_item_id == item.id, ShareRequest.status == "pending")
-                .values(status="expired")
-            )
+            closed = (
+                await w.session.scalars(
+                    update(ShareRequest)
+                    .where(ShareRequest.inventory_item_id == item.id, ShareRequest.status == "pending")
+                    .values(status="expired", version=ShareRequest.version + 1)
+                    .returning(ShareRequest.id)
+                )
+            ).all()
             w.emit(
                 "inventory_changed",
                 aggregate=("inventory", item.id, item.version),
-                data=_event_view(item),
+                data={**_event_view(item), "closed_requests": [str(i) for i in closed]},
                 activity=Activity("used_up", payload={"name": item.name}, actor_user_id=user_id),
             )
         out = {
@@ -440,13 +459,17 @@ async def add_manual(
         )
         w.session.add(item)
         await w.session.flush()
-        owner_ids = [uuid.UUID(o) for o in body.get("owner_member_ids") or []] or [me.member_id]
+        owner_ids = await house_owner_ids(w, [uuid.UUID(str(o)) for o in body.get("owner_member_ids") or []], me)
+        defaults = await _share_defaults(w.session, owner_ids)
         for mid in owner_ids:
             w.session.add(
                 InventoryOwner(
                     inventory_item_id=item.id,
                     member_id=mid,
-                    open_to_share=bool(body.get("open_to_share", False)),
+                    # §19.3: each owner's consent is their own; others start from their FR-70 default
+                    open_to_share=bool(body.get("open_to_share", False))
+                    if mid == me.member_id
+                    else defaults.get(mid, False),
                     updated_by_member_id=me.member_id,
                     updated_at=now,
                 )
@@ -490,8 +513,7 @@ async def ask(
                 .where(InventoryOwner.inventory_item_id == item.id, Member.status == "active")
             )
         ).all()
-        if any(o.member_id == me.member_id for o in owner_rows):
-            raise Problem(409, ErrorCode.CONFLICT, "It's yours already")
+        require(Action.ASK_CREATE, actor=me, item=ItemCtx(frozenset(o.member_id for o in owner_rows)))
         granted = await w.session.get(InventoryGrant, (item.id, me.member_id))
         if all(o.open_to_share for o in owner_rows) or granted is not None:
             raise Problem(409, ErrorCode.CONFLICT, "No need to ask: help yourself")
@@ -700,6 +722,7 @@ async def answer(
         elif decision == "chip_in":
             if bill is None or line is None:
                 raise Problem(409, ErrorCode.CONFLICT, "Leftovers can only be shared on the house")
+            bill = (await w.session.scalars(select(Bill).where(Bill.id == bill.id).with_for_update(read=True))).one()
             if bill.state == "open":
                 raise Problem(409, ErrorCode.CONFLICT, "The tab is still open: add them to the split instead")
             amount = chip_in_cents if chip_in_cents is not None else await chip_in_suggestion(w.session, item, owners)
@@ -834,14 +857,25 @@ async def undo_answer(
         await w.session.execute(delete(InventoryGrant).where(InventoryGrant.share_request_id == req.id))
         if req.resolution == "split":
             bill, line = await _source_line(w.session, item)
+            if bill is not None:  # same lock as a settle or an edit: the state can't change under us
+                bill = (
+                    await w.session.scalars(select(Bill).where(Bill.id == bill.id).with_for_update(key_share=True))
+                ).one()
             if bill is None or line is None or bill.state != "open":
                 raise Problem(409, ErrorCode.BILL_SETTLED, "That tab is settled now; the split stays")
             from app.services.bills import _after_money_change
 
+            # Remove only the allocation the split created (written at the answer time); a tick the
+            # payer made for them before or after stays.
             await w.session.execute(
-                delete(Allocation).where(Allocation.item_id == line.id, Allocation.member_id == req.requester_member_id)
+                delete(Allocation).where(
+                    Allocation.item_id == line.id,
+                    Allocation.member_id == req.requester_member_id,
+                    Allocation.created_at == req.answered_at,
+                )
             )
             await w.session.flush()
+            await w.lock_house()  # shares from every committed tick (ADR-0023)
             rows = await bill_math.load(w.session, bill)
             deltas = await _after_money_change(w, rows, "ask_undo", now)
             w.emit(
@@ -891,8 +925,7 @@ async def cancel(
     async with house_write(writes, house_id, client_mutation_id=cmid, idempotency=idem) as w:
         me = await _me(w, user_id)
         req, item = await _lock_request(w, request_id)
-        if req.requester_member_id != me.member_id:
-            raise Problem(403, ErrorCode.FORBIDDEN, "Only the person who asked can cancel")
+        require(Action.ASK_CANCEL, actor=me, ask=AskCtx(req.requester_member_id))
         if req.status != "pending":
             raise Problem(409, ErrorCode.ALREADY_ANSWERED, "This ask was already answered")
         req.status = "cancelled"
@@ -907,14 +940,50 @@ async def cancel(
     return out
 
 
-async def expire_requests(db: AsyncSession, now: datetime) -> int:
-    """Sweeper (daily cron + on read): pending asks past 48 h become expired (FR-76)."""
-    result = await db.execute(
-        update(ShareRequest)
-        .where(ShareRequest.status == "pending", ShareRequest.expires_at <= now)
-        .values(status="expired")
-    )
-    return int(getattr(result, "rowcount", 0) or 0)
+async def expire_requests(writes: WriteContext, now: datetime) -> int:
+    """Daily sweeper (FR-76): pending asks past 48 h become expired, one house write per house with a
+    `requests_expired` event so every device (the asker included) hears about it. Reads never write:
+    `effective_status` already shows such asks as expired until the sweep runs."""
+    async with writes.sessions() as db:
+        houses = (
+            await db.scalars(
+                select(ShareRequest.house_id)
+                .where(ShareRequest.status == "pending", ShareRequest.expires_at <= now)
+                .distinct()
+            )
+        ).all()
+    total = 0
+    for house_id in houses:
+        async with house_write(writes, house_id) as w:
+            rows = (
+                await w.session.scalars(
+                    select(ShareRequest)
+                    .where(
+                        ShareRequest.house_id == house_id,
+                        ShareRequest.status == "pending",
+                        ShareRequest.expires_at <= now,
+                    )
+                    .order_by(ShareRequest.id)
+                    .with_for_update(key_share=True)
+                )
+            ).all()
+            for r in rows:
+                r.status = "expired"
+                r.version += 1
+            if rows:
+                w.emit(
+                    "requests_expired",
+                    aggregate=("house", house_id, None),
+                    data={"ids": [str(r.id) for r in rows]},
+                    activity=Activity("requests_expired", payload={"count": len(rows)}),
+                )
+            total += len(rows)
+    return total
+
+
+def effective_status(req: ShareRequest, now: datetime) -> str:
+    """A pending ask past its 48 h reads as expired even before the daily sweep has run."""
+    return "expired" if req.status == "pending" and req.expires_at <= now else req.status
 
 
 async def member_left(db: AsyncSession, member_id: uuid.UUID) -> None:

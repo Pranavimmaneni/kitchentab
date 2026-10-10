@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import io
 import uuid
-from datetime import date
+from datetime import date, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request
@@ -14,7 +14,7 @@ from sqlalchemy import and_, func, or_, select
 
 from app.deps import Actor, ctx, require_actor
 from app.errors import ErrorCode, Problem
-from app.models import Bill, Member
+from app.models import ActivityEvent, Bill, Member
 from app.models import Item as ItemRow
 from app.policy import Action, require
 from app.services import bill_math
@@ -39,7 +39,7 @@ async def balances(
     house_id: uuid.UUID, request: Request, actor: Annotated[Actor, Depends(require_actor)]
 ) -> dict[str, Any]:
     me = await _member_or_403(request, house_id, actor)
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         return await balance_view(db, house_id, me.member_id)
 
 
@@ -70,6 +70,25 @@ async def _card(db: Any, bill: Bill, me: Any, names: dict[uuid.UUID, str]) -> di
         card["debtor_count"] = len(debtors)
         card["my_owed_cents"] = owed.get(f"m:{me.member_id}", 0)
         card["changed"] = await changed_since_seen(db, me.user_id, me.member_id, bill)
+        if card["changed"]:
+            # "{name} tweaked it {day}" (PRD §14A 1): the latest edit by someone else since I looked.
+            last = (
+                await db.execute(
+                    select(ActivityEvent.actor_member_id, ActivityEvent.created_at)
+                    .where(
+                        ActivityEvent.bill_id == bill.id,
+                        ActivityEvent.actor_member_id.is_not(None),
+                        ActivityEvent.actor_member_id != me.member_id,
+                        ActivityEvent.created_at > datetime.fromisoformat(card["changed"]["since"]),
+                    )
+                    .order_by(ActivityEvent.created_at.desc())
+                    .limit(1)
+                )
+            ).first()
+            card["changed"] |= {
+                "by_name": names.get(last[0]) if last else None,
+                "at": last[1].isoformat() if last else None,
+            }
         last = max((p.created_at for p in payments), default=None)
         card["last_activity"] = last.isoformat() if last else None
     return card
@@ -81,7 +100,7 @@ async def tabs(
 ) -> dict[str, Any]:
     """Drafts I can finish, open tabs (newest first) and settled history, 20 per page (FR-52)."""
     me = await _member_or_403(request, house_id, actor)
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         names = {
             m.id: m.display_name for m in (await db.scalars(select(Member).where(Member.house_id == house_id))).all()
         }
@@ -125,7 +144,7 @@ async def search(
     if not 2 <= len(term) <= 60:
         raise Problem(422, ErrorCode.VALIDATION_FAILED, "Search for 2 to 60 characters")
     pattern = f"%{term.replace('%', '').replace('_', '')}%"
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         item_bills = select(ItemRow.bill_id).where(ItemRow.name.ilike(pattern), ItemRow.deleted_at.is_(None))
         rows = (
             await db.scalars(
@@ -155,7 +174,7 @@ async def search(
 @router.get("/bills/{bill_id}/export.csv")
 async def export_csv(bill_id: uuid.UUID, request: Request, actor: Annotated[Actor, Depends(require_actor)]) -> Response:
     """FR-54: one row per item x participant allocation, amounts in dollars with 2 decimals."""
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         bill = await db.get(Bill, bill_id)
         if bill is None or bill.deleted_at is not None:
             raise Problem(404, ErrorCode.NOT_FOUND, "Tab not found")
@@ -172,10 +191,10 @@ async def export_csv(bill_id: uuid.UUID, request: Request, actor: Annotated[Acto
             writer.writerow(
                 [
                     bill.purchase_date.isoformat(),
-                    bill.store_name or "",
-                    item.name,
+                    _cell(bill.store_name or ""),
+                    _cell(item.name),
                     _dollars(item.line_total_cents),
-                    names.get(pid, pid),
+                    _cell(names.get(pid, pid)),
                     _dollars(cents),
                 ]
             )
@@ -184,10 +203,10 @@ async def export_csv(bill_id: uuid.UUID, request: Request, actor: Annotated[Acto
             writer.writerow(
                 [
                     bill.purchase_date.isoformat(),
-                    bill.store_name or "",
+                    _cell(bill.store_name or ""),
                     "TOTAL",
                     _dollars(bill.total_cents),
-                    names.get(pid, pid),
+                    _cell(names.get(pid, pid)),
                     _dollars(cents),
                 ]
             )
@@ -197,6 +216,15 @@ async def export_csv(bill_id: uuid.UUID, request: Request, actor: Annotated[Acto
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+FORMULA_STARTS = ("=", "+", "-", "@", chr(9), chr(13))  # = + - @ tab CR
+
+
+def _cell(text: str) -> str:
+    """SEC-06: spreadsheets run a cell starting with = + - @ (or tab/CR) as a formula; a leading
+    apostrophe makes it plain text. Money columns never come through here."""
+    return f"'{text}" if text[:1] in FORMULA_STARTS else text
 
 
 def _dollars(cents: int) -> str:

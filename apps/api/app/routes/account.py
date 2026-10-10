@@ -50,7 +50,7 @@ FORMER = "Former roommate"
 
 @router.get("/me/identities")
 async def identities(request: Request, actor: Annotated[Actor, Depends(require_actor)]) -> list[dict[str, Any]]:
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         rows = (
             await db.scalars(
                 select(AuthIdentity).where(AuthIdentity.user_id == actor.user.id).order_by(AuthIdentity.created_at)
@@ -217,7 +217,7 @@ class Handles(BaseModel):
 
 @router.get("/me/payment-handles")
 async def get_handles(request: Request, actor: Annotated[Actor, Depends(require_actor)]) -> dict[str, str | None]:
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         rows = (await db.scalars(select(PaymentHandle).where(PaymentHandle.user_id == actor.user.id))).all()
     out: dict[str, str | None] = {"venmo": None, "cashapp": None, "paypal": None, "zelle": None}
     out.update({h.method: h.handle for h in rows})
@@ -257,7 +257,7 @@ async def export_my_data(request: Request, actor: Annotated[Actor, Depends(requi
     """DATA-04: everything about me as JSON."""
     import json
 
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         user = actor.user
         members = (await db.scalars(select(Member).where(Member.user_id == user.id))).all()
         houses = {

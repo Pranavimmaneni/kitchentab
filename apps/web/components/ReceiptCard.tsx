@@ -3,7 +3,8 @@ import { useId, type ReactNode } from "react";
 export type ReceiptCardProps = {
   /** Section heading (mono 11 muted label, like "WHO OWES WHAT"). */
   heading: string;
-  headingLevel?: 2 | 3 | 4;
+  /** 1 only when the card is the page itself (a link page with nothing else on it). */
+  headingLevel?: 1 | 2 | 3 | 4;
   /** Visually hide the heading but keep it for screen readers. */
   hideHeading?: boolean;
   /** Tilt the card −1° (hero cards). */
@@ -31,7 +32,7 @@ export function ReceiptCard({
   children,
 }: ReceiptCardProps) {
   const headingId = useId();
-  const Heading = `h${headingLevel}` as "h2" | "h3" | "h4";
+  const Heading = `h${headingLevel}` as "h1" | "h2" | "h3" | "h4";
   return (
     <section
       className="kt-receipt"

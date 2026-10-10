@@ -12,7 +12,7 @@ from sqlalchemy import and_, or_, select
 
 from app.deps import Actor, client_mutation_id, ctx, idempotency, require_actor
 from app.errors import ErrorCode, Problem
-from app.models import ActivityEvent, Bill, Member
+from app.models import ActivityEvent, Bill, Member, PaymentHandle
 from app.policy import Action, require
 from app.services import bill_life as svc
 from app.services.bills import bill_ctx
@@ -162,20 +162,29 @@ async def _readable_bill(request: Request, bill_id: uuid.UUID, actor: Actor) -> 
 async def money(
     bill_id: uuid.UUID, request: Request, actor: Annotated[Actor, Depends(require_actor)]
 ) -> dict[str, Any]:
-    """Who owes what on an open bill: payments, owed per person, and my change badge (FR-35)."""
+    """Who owes what on an open bill: payments, owed per person, my change badge (FR-35) and the
+    payer's payment handles for the pay sheet."""
     from app.services import bill_math
 
     bill, me = await _readable_bill(request, bill_id, actor)
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         payments = await svc.payments_for(db, bill_id)
         rows = await bill_math.load(db, bill)
+        bill = rows.bill  # from this snapshot, with its items and payments
         owed = svc.owed_map(rows, payments) if bill.state != "draft" and not rows.unassigned else {}
         changed = await svc.changed_since_seen(db, actor.user.id, me.member_id, bill)
+        # The pay sheet lists only the methods the payer has set (PRD §8 deep links, §14A).
+        handles: dict[str, str | None] = {"venmo": None, "cashapp": None, "paypal": None, "zelle": None}
+        payer_user = await db.scalar(select(Member.user_id).where(Member.id == bill.payer_member_id))
+        if payer_user is not None:
+            found = (await db.scalars(select(PaymentHandle).where(PaymentHandle.user_id == payer_user))).all()
+            handles.update({h.method: h.handle for h in found})
     return {
         "payments": [svc.payment_view(p) for p in payments],
         "owed": owed,
         "changed": changed,
         "version": bill.version,
+        "payer_handles": handles,
     }
 
 
@@ -214,7 +223,7 @@ async def activity(
         at_raw, _, id_raw = cursor.partition("|")
         at, cid = datetime.fromisoformat(at_raw), uuid.UUID(id_raw)
         q = q.where(or_(ActivityEvent.created_at < at, and_(ActivityEvent.created_at == at, ActivityEvent.id < cid)))
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         rows = (
             await db.execute(q.order_by(ActivityEvent.created_at.desc(), ActivityEvent.id.desc()).limit(limit + 1))
         ).all()

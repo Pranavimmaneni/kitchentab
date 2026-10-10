@@ -18,6 +18,8 @@ milestone, and do not deviate without asking.
 - `make dev` — docker-compose (Postgres, Redis, MinIO, Mailpit, fake push, mock OIDC) + API + worker + web
 - `make test` · `make test-sync` · `make e2e` · `make e2e-multi` · `make test-push` · `make test-chaos` · `make test-load` · `make test-security` · `make test-a11y` · `make test-visual` · `make golden` · `make test-all`
 - `make lint` — ruff, mypy, eslint, tsc · `make gen` — OpenAPI + TS client · `make seed SCENARIO=apt4b`
+- `make test-extract` · `make restore-drill` · `make check-invariants` · `make check-traceability` · `make simulate SEED=1 MINUTES=30` (live household simulation) · `python scripts/test_report.py` (writes docs/TEST_REPORT.md from `.cache/results/`)
+- `make local-vercel-up` / `-down` / `-status` (https://localhost:8443 rehearsal) · `make launch-check TARGET=local-vercel` · morning deploy: `make deploy-setup deploy redeploy rollback set-email prod-clean-test-data` (`DRY_RUN=1`; never run against the real account from here)
 
 ## Non-negotiable rules
 1. **Money is integer cents everywhere.** `compute_shares` exists once per language and must pass `packages/fixtures/money_cases.json`.

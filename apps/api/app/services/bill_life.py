@@ -96,9 +96,16 @@ async def record_payment(
         participant = body.get("participant") or mkey(me.member_id)
         if participant == mkey(bill.payer_member_id):
             raise Problem(422, ErrorCode.VALIDATION_FAILED, "The payer doesn't pay themselves")
-        if not is_payer and participant != mkey(me.member_id):
-            raise Problem(403, ErrorCode.FORBIDDEN, "You can only record your own payment")
+        require(
+            Action.PAYMENT_RECORD,
+            actor=me,
+            bill=bill_ctx(bill),
+            participant_member_id=uuid.UUID(participant[2:]) if participant.startswith("m:") else None,
+        )
         rows = await bill_math.load(w.session, bill)
+        on_tab = {mkey(m.id) for m in rows.members} | {gkey(g.id) for g in rows.guests}
+        if participant not in on_tab:  # SEC-02: a member or guest of another house or tab
+            raise Problem(404, ErrorCode.NOT_FOUND, "That person isn't on this tab")
         existing = await payments_for(w.session, bill_id)
         owed = owed_map(rows, existing).get(participant, 0)
         amount = int(body.get("amount_cents") or max(owed, 0))
@@ -176,8 +183,7 @@ async def answer_payment(
     async with house_write(writes, house_id, client_mutation_id=cmid, idempotency=idem) as w:
         me = await _actor(w, user_id)
         bill = await _lock_bill(w, bill_id)
-        if me.member_id != bill.payer_member_id:
-            raise Problem(403, ErrorCode.FORBIDDEN, "Only the payer confirms payments")
+        require(Action.PAYMENT_ANSWER, actor=me, bill=bill_ctx(bill))
         if bill.state != "open":
             raise Problem(
                 409, ErrorCode.BILL_SETTLED if bill.state == "settled" else ErrorCode.BILL_VOIDED, "This tab isn't open"
@@ -267,8 +273,7 @@ async def settle(
             raise Problem(
                 409, ErrorCode.BILL_SETTLED if bill.state == "settled" else ErrorCode.CONFLICT, "This tab isn't open"
             )
-        if me.member_id != bill.payer_member_id:
-            raise Problem(403, ErrorCode.FORBIDDEN, "Only the payer can settle this tab")
+        require(Action.BILL_SETTLE, actor=me, bill=bill_ctx(bill))
         rows = await bill_math.load(w.session, bill)
         owed = owed_map(rows, await payments_for(w.session, bill_id))
         outstanding = {k: v for k, v in owed.items() if v != 0}
@@ -318,8 +323,7 @@ async def reopen(
     async with house_write(writes, house_id, client_mutation_id=cmid, idempotency=idem) as w:
         me = await _actor(w, user_id)
         bill = await _lock_bill(w, bill_id)
-        if me.member_id != bill.payer_member_id:
-            raise Problem(403, ErrorCode.FORBIDDEN, "Only the payer can reopen this tab")
+        require(Action.BILL_REOPEN, actor=me, bill=bill_ctx(bill))
         if bill.state != "settled" or bill.settled_at is None:
             raise Problem(409, ErrorCode.CONFLICT, "Only settled tabs can be reopened")
         if now - bill.settled_at > REOPEN_WINDOW:
@@ -381,8 +385,7 @@ async def void(
     async with house_write(writes, house_id, client_mutation_id=cmid, idempotency=idem) as w:
         me = await _actor(w, user_id)
         bill = await _lock_bill(w, bill_id)
-        if me.member_id != bill.payer_member_id:
-            raise Problem(403, ErrorCode.FORBIDDEN, "Only the payer can void this tab")
+        require(Action.BILL_VOID, actor=me, bill=bill_ctx(bill))
         if bill.state != "open":
             raise Problem(409, ErrorCode.CONFLICT, "Only open tabs can be voided")
         for p in await payments_for(w.session, bill_id):
@@ -425,6 +428,90 @@ async def void(
     return out
 
 
+AUTO_REMIND_DAYS = (3, 7)
+
+
+async def auto_remind(writes: WriteContext, now: datetime) -> int:
+    """FR-41 / PAY-08 (daily cron): if the payer opted in, nudge every unpaid member 3 and 7 days
+    after the tab was sent, once per stage, never more than once per member per 48 h. The payer
+    is the actor, so the payer is never notified (PUSH-07)."""
+    from app.models import User
+
+    async with writes.sessions() as db:
+        candidates = (
+            await db.execute(
+                select(Bill.id, Bill.house_id, Bill.sent_at)
+                .join(Member, Member.id == Bill.payer_member_id)
+                .join(User, User.id == Member.user_id)
+                .where(
+                    Bill.state == "open",
+                    Bill.sent_at.is_not(None),
+                    Bill.deleted_at.is_(None),
+                    User.auto_remind.is_(True),
+                    Member.status == "active",
+                )
+            )
+        ).all()
+    sent = 0
+    for bill_id, house_id, sent_at in candidates:
+        for stage in AUTO_REMIND_DAYS:
+            if sent_at is None or now - sent_at < timedelta(days=stage):
+                continue
+            sent += await _auto_stage(writes, bill_id, house_id, stage, now)
+    return sent
+
+
+async def _auto_stage(writes: WriteContext, bill_id: uuid.UUID, house_id: uuid.UUID, stage: int, now: datetime) -> int:
+    async with house_write(writes, house_id) as w:
+        bill = await _lock_bill(w, bill_id)
+        if bill.state != "open":
+            return 0
+        done = await w.session.scalar(
+            select(func.count())
+            .select_from(ActivityEvent)
+            .where(
+                ActivityEvent.bill_id == bill_id,
+                ActivityEvent.type == "reminder_sent",
+                ActivityEvent.payload["auto"].astext == str(stage),
+            )
+        )
+        if done:
+            return 0
+        payer = await w.session.get(Member, bill.payer_member_id)
+        assert payer is not None
+        w.actor_member_id = payer.id
+        rows = await bill_math.load(w.session, bill)
+        owed = owed_map(rows, await payments_for(w.session, bill_id))
+        count = 0
+        for key, cents in sorted(owed.items()):
+            if not key.startswith("m:") or cents <= 0:
+                continue
+            member_id = uuid.UUID(key[2:])
+            last = await w.session.scalar(
+                select(func.max(ActivityEvent.created_at)).where(
+                    ActivityEvent.bill_id == bill_id,
+                    ActivityEvent.type == "reminder_sent",
+                    ActivityEvent.payload["member_id"].astext == str(member_id),
+                )
+            )
+            if last is not None and now - last < REMIND_EVERY:
+                continue  # PAY-07: at most once per member per bill per 48 h
+            w.emit(
+                "reminder_sent",
+                aggregate=("bill", bill.id, bill.version),
+                data={"member_id": str(member_id), "auto": stage},
+                activity=Activity(
+                    "reminder_sent",
+                    bill_id=bill.id,
+                    actor_user_id=payer.user_id,
+                    payload={"member_id": str(member_id), "owed_cents": cents, "auto": stage},
+                ),
+                notify=["remind"],
+            )
+            count += 1
+        return count
+
+
 async def remind(
     writes: WriteContext,
     bill_id: uuid.UUID,
@@ -440,8 +527,7 @@ async def remind(
     async with house_write(writes, house_id, client_mutation_id=cmid, idempotency=idem) as w:
         me = await _actor(w, user_id)
         bill = await _lock_bill(w, bill_id)
-        if me.member_id != bill.payer_member_id:
-            raise Problem(403, ErrorCode.FORBIDDEN, "Only the payer sends reminders")
+        require(Action.BILL_REMIND, actor=me, bill=bill_ctx(bill))
         if bill.state != "open":
             raise Problem(409, ErrorCode.CONFLICT, "This tab isn't open")
         last = await w.session.scalar(

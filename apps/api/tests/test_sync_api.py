@@ -289,7 +289,7 @@ async def test_SYNC_12_removed_member_mid_edit_gets_not_a_member(api: ApiFactory
 
 
 @pytest.mark.sync
-@tid("SYNC-16", "CHAOS-01")
+@tid("SYNC-16", "CHAOS-01", "EDGE-15-26", "VERCEL-05")
 @fr("FR-36")
 async def test_SYNC_16_retry_after_a_lost_response_returns_the_original(
     api: ApiFactory, sessions: async_sessionmaker[AsyncSession]

@@ -26,7 +26,7 @@ export default async function InviteLinkPage({ params }: Props) {
   if (!loaded.ok) {
     return (
       <LinkShell>
-        {loaded.expired ? <NotFoundCard body={strings.notFound.invite} /> : <ErrorCard error={loaded.error} />}
+        {loaded.expired ? <NotFoundCard body={strings.notFound.invite} pageTitle /> : <ErrorCard error={loaded.error} />}
       </LinkShell>
     );
   }

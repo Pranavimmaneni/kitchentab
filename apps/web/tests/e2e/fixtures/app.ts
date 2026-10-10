@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
-import { API_ORIGIN, TEST_INBOX_SECRET } from "./env";
+import { API_ORIGIN, EMAIL_DOMAIN, TEST_INBOX_SECRET } from "./env";
 
 /** The mockup ShopRite receipt (apps/api/tests/test_bills.py LINES) and its split (`shoprite_sent`). */
 export const LINES = [
@@ -36,11 +36,16 @@ export const WHO: Record<(typeof LINES)[number]["key"], Roomie[]> = {
 };
 
 /** `shoprite_sent` in packages/fixtures/money_cases.json. */
-export const SHARES = { pranav: "$23.51", arjun: "$33.91", meera: "$18.87", kabir: "$18.89" } as const;
+export const SHARES = {
+  pranav: "$23.51",
+  arjun: "$33.91",
+  meera: "$18.87",
+  kabir: "$18.89",
+} as const;
 
 /** Unique per test (5 codes per email per hour); "pranav+…" still shows as "Pranav". */
 export function uniqueEmail(name = "pranav"): string {
-  return `${name}+${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}@example.com`;
+  return `${name}+${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}@${EMAIL_DOMAIN}`;
 }
 
 /** Reads the newest sign-in code sent to `email` from the test inbox (ADR-0016). */
@@ -128,17 +133,27 @@ export async function call<T>(
   return (text ? JSON.parse(text) : undefined) as T;
 }
 
-type HouseView = { house: { id: string; name: string; version: number }; members: { id: string; display_name: string }[] };
+type HouseView = {
+  house: { id: string; name: string; version: number };
+  members: { id: string; display_name: string }[];
+};
 
 /** Creates "Apt 4B" with Arjun, Meera and Kabir for the signed-in page. */
-export async function createHouse(page: Page, name = "Apt 4B"): Promise<{ id: string; member: Record<Roomie, string> }> {
+export async function createHouse(
+  page: Page,
+  name = "Apt 4B",
+): Promise<{ id: string; member: Record<Roomie, string> }> {
   const created = await call<HouseView>(page, "POST", "/houses", {
     name,
     roommates: ["Arjun", "Meera", "Kabir"],
     timezone: "America/New_York",
   });
-  const byName = Object.fromEntries(created.members.map((m) => [m.display_name.toLowerCase(), m.id]));
-  const me = created.members.find((m) => !["arjun", "meera", "kabir"].includes(m.display_name.toLowerCase()))!;
+  const byName = Object.fromEntries(
+    created.members.map((m) => [m.display_name.toLowerCase(), m.id]),
+  );
+  const me = created.members.find(
+    (m) => !["arjun", "meera", "kabir"].includes(m.display_name.toLowerCase()),
+  )!;
   return {
     id: created.house.id,
     member: { pranav: me.id, arjun: byName.arjun!, meera: byName.meera!, kabir: byName.kabir! },
@@ -154,13 +169,22 @@ type Seeded = { billId: string; itemIds: Record<string, string>; linkToken?: str
 export async function seedShopRite(
   page: Page,
   house: { id: string; member: Record<Roomie, string> },
-  { split = "none", send = false, leave = [] as string[] }: { split?: "none" | "all"; send?: boolean; leave?: string[] } = {},
+  {
+    split = "none",
+    send = false,
+    leave = [] as string[],
+  }: { split?: "none" | "all"; send?: boolean; leave?: string[] } = {},
 ): Promise<Seeded> {
-  const bill = await call<{ id: string; version: number }>(page, "POST", `/houses/${house.id}/bills`, {
-    store_name: "ShopRite",
-    purchase_date: "2026-10-02",
-    receipt_total_cents: 9518,
-  });
+  const bill = await call<{ id: string; version: number }>(
+    page,
+    "POST",
+    `/houses/${house.id}/bills`,
+    {
+      store_name: "ShopRite",
+      purchase_date: "2026-10-02",
+      receipt_total_cents: 9518,
+    },
+  );
   await call(page, "PATCH", `/bills/${bill.id}`, { tax_cents: 89 }, { ifMatch: bill.version });
   const itemIds: Record<string, string> = {};
   for (const line of LINES) {
@@ -173,7 +197,11 @@ export async function seedShopRite(
   }
   if (split === "all") {
     const changes = LINES.filter((l) => !leave.includes(l.key)).flatMap((l) =>
-      WHO[l.key].map((who) => ({ item_id: itemIds[l.key], participant: `m:${house.member[who]}`, on: true })),
+      WHO[l.key].map((who) => ({
+        item_id: itemIds[l.key],
+        participant: `m:${house.member[who]}`,
+        on: true,
+      })),
     );
     await call(page, "PUT", `/bills/${bill.id}/allocations`, { changes });
   }

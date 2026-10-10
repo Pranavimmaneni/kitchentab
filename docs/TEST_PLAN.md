@@ -226,6 +226,7 @@ Additional sync tests:
 | SYNC-32 | M | Client never flickers own optimistic changes when its echo event arrives | Visual check in test |
 | SYNC-33 | M | Removed member's open stream gets `revoked` within 5 min (clock) | Closed |
 | SYNC-34 | M | Polling fallback kicks in after 3 failed SSE connects and stops when SSE recovers | As stated |
+| SYNC-35 | M | A read racing a committed write sees one consistent state (bill, items, allocations from one snapshot) | 200, Σ shares = total; never a 500 |
 
 ### 3.7b Vercel platform (VERCEL)
 
@@ -285,6 +286,7 @@ Additional sync tests:
 | PUSH-16 | M | App badge equals pending asks + unseen changes, clears when seen | `setAppBadge` calls |
 | PUSH-17 | M | `POST /push/test` reaches every device of the caller | Payloads received |
 | PUSH-18 | M | Payload ≤ 2 KB, encrypted, VAPID JWT valid, TTL and urgency per type | Fake service verifies |
+| PUSH-19 | M | Drains running at once on several instances never deadlock, fail or send a notification twice | Every device gets each push once |
 | EMAIL-01 | M | Emails only to verified addresses with List-Unsubscribe and footer address | Mailpit check |
 | EMAIL-02 | M | Unsubscribe link turns off that type for email only | Pref updated |
 | EMAIL-03 | M | Weekly use-soon digest only when opted in, Sunday 10:00 house time | Clock test |

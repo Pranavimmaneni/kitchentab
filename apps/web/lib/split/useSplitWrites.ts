@@ -89,12 +89,19 @@ export function useSplitWrites(billId: string, onError: (failure: SplitWriteErro
       );
       request
         .then((out) => {
+          // A refetch that started before this write committed would land after it with the old
+          // cell and flicker it back (SYNC-32): cancel it, apply the result, and fetch again so
+          // anything else it was fetching for still arrives (now after the commit).
+          const key = keys.bill(billId);
+          const stale = queryClient.isFetching({ queryKey: key, exact: true }) > 0;
+          if (stale) void queryClient.cancelQueries({ queryKey: key, exact: true });
           queryClient.setQueryData<BillView>(keys.bill(billId), (old) => {
             if (!old) return old;
             const next = applyChanges(old, changes);
             return out.shares && req === lastReq.current ? { ...next, shares: out.shares } : next;
           });
           dropOverrides(finished());
+          if (stale) void queryClient.invalidateQueries({ queryKey: key, exact: true });
         })
         .catch((error: unknown) => {
           dropOverrides(finished());

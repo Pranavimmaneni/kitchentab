@@ -1,0 +1,404 @@
+/*
+ * Tabs, Balances, House and Settings (PRD §14A 1 and "screens with no mockup"; Main.dc.html).
+ * Colors only from tokens.css; 44 px targets; long lists grow the page (no inner scroll).
+ */
+
+@layer components {
+  .kt-tabs__main {
+    gap: 22px;
+  }
+  .kt-tabs__side,
+  .kt-tabs__lists,
+  .kt-tabs__section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .kt-tabs__lists {
+    gap: 16px;
+  }
+  .kt-avatar-link {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    text-decoration: none;
+  }
+  .kt-snap.kt-pill {
+    min-height: 60px;
+    font-size: 16px;
+  }
+
+  /* Balance card (Main.dc.html) */
+  .kt-balance-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-card);
+    box-shadow: 5px 5px 0 var(--shadow);
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: var(--font-mono);
+  }
+  .kt-balance-card__top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .kt-balance-card__label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 400;
+  }
+  .kt-balance-card__big {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .kt-balance-card__amount {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 4px 8px 2px;
+    font-variant-numeric: tabular-nums;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .kt-balance-card__big[data-kind="owing"] .kt-balance-card__amount {
+    background: transparent;
+    color: var(--warn);
+    padding-left: 0;
+  }
+  .kt-balance-card__words {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .kt-balance-card__rule {
+    border: 0;
+    border-top: 2px dashed var(--faint);
+    margin: 0;
+  }
+  .kt-balance-card .kt-ticker__list {
+    font-size: 13px;
+  }
+  .kt-balance-card__all {
+    align-self: flex-start;
+  }
+
+  .kt-list-heading {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .kt-list-heading__count {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .kt-open-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+  .kt-open-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .kt-open-card__titles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .kt-open-card .kt-tab-card__store {
+    font-weight: 700;
+  }
+  .kt-open-card__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .kt-open-card__note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .kt-unseen-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    border: 1px solid var(--ink);
+  }
+  .kt-settled-card {
+    min-height: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 2px dashed var(--faint);
+    border-radius: var(--radius-card);
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .kt-settled-card b {
+    color: var(--ink);
+  }
+  .kt-search {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .kt-search .kt-input {
+    width: 100%;
+  }
+  .kt-search__results {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .kt-search__hit {
+    min-height: 56px;
+  }
+
+  /* Balances */
+  .kt-pairs {
+    gap: 12px;
+  }
+  .kt-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 10px 8px 8px;
+  }
+  .kt-pair__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kt-pair__toggle {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .kt-pair__line {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .kt-pair__amount {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .kt-pair[data-kind="owing"] .kt-pair__amount,
+  .kt-money[data-kind="owing"] {
+    color: var(--warn);
+  }
+  .kt-pair__bills {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 2px dashed var(--faint);
+    padding: 10px 4px 4px;
+  }
+  .kt-pair__bill {
+    min-height: 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .kt-pair__bill[data-carried] {
+    color: var(--muted);
+  }
+
+  /* House */
+  .kt-inline-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .kt-inline-form .kt-input {
+    flex: 1;
+    min-width: 0;
+  }
+  .kt-members {
+    gap: 8px;
+  }
+  .kt-member-row {
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 6px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-card);
+    background: var(--paper);
+  }
+  .kt-member-row[data-status="left"] {
+    border-style: dashed;
+    color: var(--muted);
+  }
+  .kt-member-row__name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+  .kt-member-row__chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .kt-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .kt-tag[data-tone="lime"] {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .kt-tag[data-tone="muted"] {
+    border-color: var(--muted);
+    color: var(--muted);
+  }
+  .kt-history {
+    gap: 6px;
+  }
+  .kt-history__row {
+    font-size: 14px;
+  }
+
+  /* House switcher */
+  .kt-switcher {
+    margin-bottom: 14px;
+  }
+  .kt-switcher__house {
+    width: 100%;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-card);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .kt-switcher__house[aria-current="true"] {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .kt-switcher__here {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  /* Settings */
+  .kt-settings .kt-screen__main {
+    gap: 24px;
+  }
+  .kt-methods {
+    gap: 8px;
+  }
+  .kt-method-row {
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 6px 6px 12px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-card);
+    background: var(--paper);
+  }
+  .kt-method-row__provider {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 52px;
+  }
+  .kt-method-row__label {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+  }
+  .kt-method-row .kt-icon-button:disabled {
+    border-style: dashed;
+    border-color: var(--muted);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .kt-settings .kt-segmented {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .kt-settings a.kt-pill {
+    text-decoration: none;
+    color: var(--ink);
+  }
+}
+
+/* At ≥ 1024 px Tabs becomes two columns: balance card + actions on the left (360 px). */
+@media (min-width: 1024px) {
+  .kt-tabs[data-wide] {
+    max-width: 960px;
+  }
+  .kt-tabs__main {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    align-items: start;
+    gap: 32px;
+  }
+}

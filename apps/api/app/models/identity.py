@@ -33,6 +33,8 @@ class User(Base):
     timezone: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'America/New_York'"))
     # Fridge and pantry settings (§19.7)
     share_by_default: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+    # FR-41: as a payer, nudge unpaid roommates automatically 3 and 7 days after sending
+    auto_remind: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     notify_kitchen_digest: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     # Push settings (§20.2). Quiet hours are on by default; NULL start/end means off.
     quiet_start: Mapped[time | None] = mapped_column(Time, server_default=text("'22:00'"))

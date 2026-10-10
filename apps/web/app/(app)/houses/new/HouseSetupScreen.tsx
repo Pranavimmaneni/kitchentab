@@ -19,6 +19,7 @@ import { actionKey, clearActionKey } from "@/lib/auth-flow";
 import { colorIndexOf } from "@/lib/bills";
 import { copyText, displayLink, shareOrCopy } from "@/lib/share";
 import { strings } from "@/lib/strings";
+import { writeThrough } from "@/lib/sync/write-cache";
 
 const HOUSE_KEY = "kt-setup-house";
 const MAX_ROOMMATES = 19;
@@ -135,9 +136,10 @@ export function HouseSetupScreen() {
 
   function setMembers(update: (list: Member[]) => Member[]): void {
     if (!view) return;
-    queryClient.setQueryData<HouseView>(keys.house(view.house.id), (old) =>
-      old ? { ...old, members: update(old.members) } : old,
-    );
+    writeThrough<HouseView>(queryClient, keys.house(view.house.id), (old) => ({
+      ...old,
+      members: update(old.members),
+    }));
   }
 
   async function addRoommate(raw: string): Promise<boolean> {
@@ -155,7 +157,8 @@ export function HouseSetupScreen() {
     setAdding(true);
     try {
       const member = await api.post<Member>(`/houses/${view.house.id}/members`, { name: clean.slice(0, 24) });
-      setMembers((list) => [...list, member]);
+      // A refetch (live sync, focus) may already have brought the new member in.
+      setMembers((list) => (list.some((m) => m.id === member.id) ? list : [...list, member]));
       setAddError(null);
       return true;
     } catch (error) {

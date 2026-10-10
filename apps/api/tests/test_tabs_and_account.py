@@ -240,3 +240,24 @@ async def test_payment_handles_set_state(api: ApiFactory) -> None:
     assert (await me.get("/api/v1/me/payment-handles")).json()["venmo"] == "pranav-r"
     bad = await me.call("PUT", "/api/v1/me/payment-handles", {"venmo": "has spaces"})
     assert bad.status_code == 422
+
+
+@fr("FR-35", "FR-52")
+async def test_tab_card_change_note_names_who_tweaked_it(api: ApiFactory) -> None:
+    """PRD §14A 1: "{name} tweaked it {day}" on the open-tab card after my share changed."""
+    w, bill_id, ids, p = await open_bill(api)
+    view = (await p["arjun"].get(f"/api/v1/bills/{bill_id}")).json()
+    seen = await p["arjun"].call("PUT", f"/api/v1/bills/{bill_id}/seen", {"version": view["bill"]["version"]})
+    assert seen.status_code == 204
+    [card] = (await p["arjun"].get(f"/api/v1/houses/{w.hid}/tabs")).json()["open"]
+    assert card["changed"] is None
+    chicken = ids[7]  # Pranav + Arjun: Meera joining lowers Arjun's share
+    joined = await p["meera"].call(
+        "PUT",
+        f"/api/v1/bills/{bill_id}/allocations",
+        {"changes": [{"item_id": chicken, "participant": w.key("meera"), "on": True}]},
+    )
+    assert joined.status_code == 200, joined.text
+    [card] = (await p["arjun"].get(f"/api/v1/houses/{w.hid}/tabs")).json()["open"]
+    assert card["changed"]["delta_cents"] < 0
+    assert card["changed"]["by_name"] == "Meera" and card["changed"]["at"]

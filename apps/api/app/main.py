@@ -10,18 +10,38 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
 
+from app.adapters.queue import kicker
 from app.clock import ControllableClock
-from app.db import make_engine, make_sessionmaker
-from app.deps import BodyLimitMiddleware, guard_middleware
+from app.db import make_engine, make_read_sessionmaker, make_sessionmaker
+from app.deps import BodyLimitMiddleware, NulGuardMiddleware, guard_middleware
 from app.errors import install_error_handlers
 from app.ids import uuid7
 from app.logs import configure_logging, request_id_var
-from app.routes import account, auth, bills, events, health, houses, kitchen, lifecycle, me, tabs, test_inbox
+from app.routes import account, auth, bills, events, health, houses, kitchen, lifecycle, me, notify, tabs, test_inbox
+from app.routes import receipts as receipt_routes
 from app.services.bus import NullBus, RedisBus
 from app.services.house_write import IdempotentReplay, WriteContext
+from app.services.notify_runtime import build_deps
 from app.settings import Settings, get_settings
 
 API_PREFIX = "/api/v1"
+
+
+API_CSP = "default-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'"
+
+
+def _security_headers(response: Response, settings: Settings) -> None:
+    """SEC-03 for API responses. The web app's CSP lives in Next.js (ADR-0007); the API only ever
+    serves JSON, SSE and two tiny confirmation pages, so it can deny everything."""
+    h = response.headers
+    h.setdefault("X-Content-Type-Options", "nosniff")
+    h.setdefault("X-Frame-Options", "DENY")
+    h.setdefault("Content-Security-Policy", API_CSP)
+    h.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    h.setdefault("Cache-Control", "no-store")  # per-user data never sits in shared caches
+    h.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+    if settings.is_deployed:
+        h.setdefault("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -30,7 +50,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        engine = make_engine(settings.database_url, serverless=settings.profile == "vercel")
+        engine = make_engine(
+            settings.database_url, pool_size=settings.db_pool_size, serverless=settings.profile == "vercel"
+        )
         redis = (
             Redis.from_url(settings.redis_url, decode_responses=True)
             if settings.use_redis and settings.redis_url
@@ -42,8 +64,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.redis = redis
         app.state.clock = clock
         app.state.sessions = make_sessionmaker(engine)
+        app.state.read_sessions = make_read_sessionmaker(engine)
         # PROFILE=vercel: no Redis; SSE polls house_events (ADR-0012).
-        app.state.writes = WriteContext(app.state.sessions, clock, RedisBus(redis) if redis else NullBus())
+        app.state.kicker = kicker(settings)
+        app.state.writes = WriteContext(
+            app.state.sessions, clock, RedisBus(redis) if redis else NullBus(), app.state.kicker
+        )
+        app.state.notify = build_deps(settings, app.state.sessions, clock, app.state.kicker)
         try:
             yield
         finally:
@@ -64,6 +91,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # Same origin in every environment (ADR-0006): no CORS. CSRF, body cap: deps.guard_middleware.
     app.middleware("http")(guard_middleware)
+    app.add_middleware(NulGuardMiddleware)  # SEC-06: no NUL reaches Postgres
     app.add_middleware(BodyLimitMiddleware)  # outermost: also catches chunked bodies
 
     @app.exception_handler(IdempotentReplay)
@@ -80,6 +108,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         finally:
             request_id_var.reset(token)
         response.headers["X-Request-Id"] = rid
+        _security_headers(response, settings)
         response.headers["Server-Timing"] = f"app;dur={(time.perf_counter() - started) * 1000:.1f}"
         return response
 
@@ -90,9 +119,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         account.router,
         houses.router,
         bills.router,
+        receipt_routes.router,
         lifecycle.router,
         tabs.router,
         kitchen.router,
+        notify.router,
         events.router,
     ):
         app.include_router(router, prefix=API_PREFIX)

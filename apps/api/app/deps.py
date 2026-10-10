@@ -32,7 +32,8 @@ SESSION_TTL = timedelta(days=30)
 SESSION_REFRESH_AFTER = timedelta(hours=1)
 UNSAFE = {"POST", "PUT", "PATCH", "DELETE"}
 # Endpoints with their own authentication (bearer secrets), exempt from CSRF.
-CSRF_EXEMPT_PREFIXES = ("/api/v1/cron/", "/api/v1/queue/", "/api/test/", "/__test/")
+# Bearer-secret, signed-link and test endpoints: no browser session to forge.
+CSRF_EXEMPT_PREFIXES = ("/api/v1/cron/", "/api/v1/queue/", "/api/v1/email/unsubscribe", "/api/test/", "/__test/")
 
 
 @dataclass
@@ -42,11 +43,12 @@ class Ctx:
     clock: ControllableClock
     writes: WriteContext
     redis: Redis | None
+    read_sessions: async_sessionmaker[AsyncSession]  # one snapshot per view (GET handlers)
 
 
 def ctx(request: Request) -> Ctx:
     s = request.app.state
-    return Ctx(s.settings, s.sessions, s.clock, s.writes, s.redis)
+    return Ctx(s.settings, s.sessions, s.clock, s.writes, s.redis, s.read_sessions)
 
 
 @dataclass(frozen=True)
@@ -97,6 +99,11 @@ async def require_actor(request: Request) -> Actor:
     actor = await optional_actor(request)
     if actor is None:
         raise Problem(401, ErrorCode.UNAUTHENTICATED, "Sign in to do that")
+    settings: Settings = request.app.state.settings
+    limit = settings.rate_limit_writes_per_min
+    if request.method in UNSAFE and limit and not getattr(request.state, "write_counted", False):
+        request.state.write_counted = True  # SEC-05: 60 writes/min per user, across devices
+        await rate_limit(request, "writes", str(actor.user.id), limit=limit, window=timedelta(minutes=1))
     return actor
 
 
@@ -177,6 +184,12 @@ async def guard_middleware(request: Request, call_next: Callable[[Request], Awai
         return problem_response(
             Problem(426, ErrorCode.STALE_CLIENT, "A new version is ready", "Refresh to keep going."), path
         )
+    reads = settings.rate_limit_reads_per_min
+    if reads and request.method in ("GET", "HEAD") and path.startswith("/api/v1/") and not path.endswith("/events"):
+        try:  # SEC-05: 300 reads/min per IP (the SSE stream is one long read and is not counted)
+            await rate_limit(request, "reads", client_ip(request), limit=reads, window=timedelta(minutes=1))
+        except Problem as exc:
+            return problem_response(exc, path)
     if request.method in UNSAFE and not path.startswith(CSRF_EXEMPT_PREFIXES):
         origin = request.headers.get("origin")
         if origin is not None and origin not in _allowed_origins(settings):
@@ -255,6 +268,53 @@ class BodyLimitMiddleware:
                 return
             if not message.get("more_body"):
                 break
+        pending = iter(messages)
+
+        async def replay() -> Any:
+            return next(pending, None) or await receive()
+
+        await self.app(scope, replay, send)
+
+
+class NulGuardMiddleware:
+    """SEC-06: Postgres text can't hold NUL (U+0000), so a request carrying one in its query, path or
+    JSON body is refused with 422 here, before any handler or query sees it."""
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    @staticmethod
+    def _refuse(scope: dict[str, Any]) -> Any:
+        return problem_response(
+            Problem(422, ErrorCode.VALIDATION_FAILED, "Some text has an invisible character we can't store"),
+            scope.get("path", ""),
+        )
+
+    async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        raw_path = scope.get("raw_path") or b""
+        query = scope.get("query_string") or b""
+        if b"%00" in query or b"%00" in raw_path or b"\x00" in query or "\x00" in scope.get("path", ""):
+            await self._refuse(scope)(scope, receive, send)
+            return
+        if scope.get("method") in ("GET", "HEAD", "OPTIONS"):
+            await self.app(scope, receive, send)
+            return
+        messages: list[dict[str, Any]] = []
+        body = b""
+        while True:
+            message = await receive()
+            messages.append(message)
+            if message["type"] != "http.request":
+                break
+            body += message.get("body", b"")
+            if not message.get("more_body"):
+                break
+        if rb"\u0000" in body or b"\x00" in body:
+            await self._refuse(scope)(scope, receive, send)
+            return
         pending = iter(messages)
 
         async def replay() -> Any:

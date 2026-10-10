@@ -63,6 +63,22 @@ async def test_PAY_03_payer_records_cash_confirmed_immediately(api: ApiFactory) 
     assert (await owed(w.admin, bill_id))[w.key("kabir")] == 0
 
 
+@tid("PAY-04", "PAY-05")
+@fr("FR-36")
+async def test_PAY_04_PAY_05_money_lists_the_payers_handles_for_the_pay_sheet(api: ApiFactory) -> None:
+    w, bill_id, _, p = await open_bill(api)
+    empty = (await p["arjun"].get(f"/api/v1/bills/{bill_id}/money")).json()
+    assert empty["payer_handles"] == {"venmo": None, "cashapp": None, "paypal": None, "zelle": None}
+    r = await w.admin.call("PUT", "/api/v1/me/payment-handles", {"venmo": "@pranav-r", "zelle": "p@example.com"})
+    assert r.status_code == 200
+    money = (await p["arjun"].get(f"/api/v1/bills/{bill_id}/money")).json()
+    assert money["payer_handles"] == {"venmo": "pranav-r", "cashapp": None, "paypal": None, "zelle": "p@example.com"}
+    # Only the payer's handles: the member's own handles never show on someone else's bill.
+    await p["arjun"].call("PUT", "/api/v1/me/payment-handles", {"cashapp": "$arjun"})
+    again = (await p["meera"].get(f"/api/v1/bills/{bill_id}/money")).json()
+    assert again["payer_handles"]["cashapp"] is None
+
+
 @tid("PAY-07")
 async def test_PAY_07_one_reminder_per_member_per_bill_per_48h(api: ApiFactory) -> None:
     w, bill_id, _, _ = await open_bill(api)
@@ -228,3 +244,26 @@ async def test_EDGE_15_12_member_added_after_send_appears_only_when_added(api: A
         {"changes": [{"item_id": ids[2], "participant": f"m:{dev['id']}", "on": True}]},
     )
     assert r.status_code == 200 and r.json()["shares"][f"m:{dev['id']}"] > 0
+
+
+@tid("EDGE-15-25")
+@fr("FR-35")
+async def test_EDGE_15_25_open_for_months_gentle_banner_no_auto_settle(api: ApiFactory) -> None:
+    """After 60 days the payer sees a gentle banner; nobody else does, and nothing settles itself."""
+    w, bill_id, _, p = await open_bill(api)
+    for days, step in ((20, 20), (40, 20), (59, 19)):  # use the sessions along the way (sliding 30 days)
+        await w.admin.post("/__test/clock", {"advance_seconds": step * 86400}, idem=False)
+        view = (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()
+        assert view["long_open"] is False, f"day {days}"
+        await p["arjun"].get(f"/api/v1/bills/{bill_id}")
+    await w.admin.post("/__test/clock", {"advance_seconds": 3 * 86400}, idem=False)  # day 62
+    payer = (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()
+    member = (await p["arjun"].get(f"/api/v1/bills/{bill_id}")).json()
+    assert payer["long_open"] is True and member["long_open"] is False
+    assert payer["bill"]["state"] == "open", "no auto-settle"
+    paid = await p["arjun"].post(
+        f"/api/v1/bills/{bill_id}/payments", {"participant": w.key("arjun"), "amount_cents": 3391, "method": "cash"}
+    )
+    assert paid.status_code == 201, "still works months later"
+    assert (await w.admin.post(f"/api/v1/bills/{bill_id}/settle", {"confirm_outstanding": True})).status_code == 200
+    assert (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()["long_open"] is False

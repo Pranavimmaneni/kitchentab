@@ -17,7 +17,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.kitchen import storage_for
@@ -107,7 +107,9 @@ async def _refresh_totals(db: AsyncSession, rows: BillRows, now: datetime) -> No
     bill.updated_at = now
 
 
-async def _after_money_change(w: HouseWrite, rows: BillRows, reason: str, now: datetime) -> dict[str, int]:
+async def _after_money_change(
+    w: HouseWrite, rows: BillRows, reason: str, now: datetime, *, owners: bool = True
+) -> dict[str, int]:
     """Open bills: recompute shares under the lock, snapshot the changed ones, keep kitchen owners in
     sync (FR-62). Drafts: nothing to snapshot. Refuses to save if the invariant fails (§6 step 5)."""
     if rows.bill.state != "open":
@@ -118,40 +120,64 @@ async def _after_money_change(w: HouseWrite, rows: BillRows, reason: str, now: d
         raise Problem(500, ErrorCode.INTERNAL, "Something jammed. Try again.") from exc
     except MoneyError as exc:
         raise Problem(409, ErrorCode.LAST_PERSON, "Every item needs someone on it") from exc
-    previous = await latest_snapshot(w.session, rows.bill.id)
+    previous, last_at = await snapshot_state(w.session, rows.bill.id)
+    # Callers hold the bill's exclusive lock or the house lock, so snapshots are written one at a
+    # time: stamp them strictly after the previous one so "latest" means latest committed even
+    # when an earlier-started request commits later or the clock is pinned (ADR-0023).
+    stamp = max(now, last_at + timedelta(microseconds=1)) if last_at is not None else now
     changed = {k: v for k, v in result.shares.items() if previous.get(k, 0) != v}
-    for key, cents in changed.items():
-        kind, _, raw = key.partition(":")
-        w.session.add(
-            ShareSnapshot(
-                id=uuid7(),
-                bill_id=rows.bill.id,
-                member_id=uuid.UUID(raw) if kind == "m" else None,
-                guest_id=uuid.UUID(raw) if kind == "g" else None,
-                share_cents=cents,
-                bill_version=rows.bill.version,
-                computed_at=now,
-                reason=reason,
-            )
+    if changed:  # one prepared statement (this runs under the lock on the hot tick path)
+        keys = list(changed)
+        await w.session.execute(
+            text(
+                "INSERT INTO share_snapshots (id, bill_id, member_id, guest_id, share_cents, bill_version, "
+                "computed_at, reason) "
+                "SELECT s.id, :bill, s.member_id, s.guest_id, s.cents, :version, :at, :reason "
+                "FROM unnest(CAST(:ids AS uuid[]), CAST(:members AS uuid[]), CAST(:guests AS uuid[]), "
+                "CAST(:cents AS bigint[])) AS s(id, member_id, guest_id, cents)"
+            ),
+            {
+                "bill": rows.bill.id,
+                "version": rows.bill.version,
+                "at": stamp,
+                "reason": reason,
+                "ids": [uuid7() for _ in keys],
+                "members": [uuid.UUID(k[2:]) if k.startswith("m:") else None for k in keys],
+                "guests": [uuid.UUID(k[2:]) if k.startswith("g:") else None for k in keys],
+                "cents": [changed[k] for k in keys],
+            },
         )
-    await kitchen.sync_owners(w.session, rows, now)
+    if owners:
+        await kitchen.sync_owners(w.session, rows, now)
     return {k: v - previous.get(k, 0) for k, v in changed.items()}
 
 
 async def latest_snapshot(db: AsyncSession, bill_id: uuid.UUID) -> dict[str, int]:
+    return (await snapshot_state(db, bill_id))[0]
+
+
+async def snapshot_state(db: AsyncSession, bill_id: uuid.UUID) -> tuple[dict[str, int], datetime | None]:
+    """Each participant's latest stored share, and when the latest snapshot was written. One row per
+    participant (DISTINCT ON over the (bill_id, computed_at) index), so the cost doesn't grow with a
+    bill's history of ticks."""
     rows = (
         await db.execute(
-            select(ShareSnapshot.member_id, ShareSnapshot.guest_id, ShareSnapshot.share_cents)
-            .where(ShareSnapshot.bill_id == bill_id)
-            .order_by(ShareSnapshot.computed_at)
+            text(
+                "SELECT DISTINCT ON (member_id, guest_id) member_id, guest_id, share_cents, computed_at "
+                "FROM share_snapshots WHERE bill_id = :bill "
+                "ORDER BY member_id, guest_id, computed_at DESC, id DESC"
+            ),
+            {"bill": bill_id},
         )
     ).all()
     out: dict[str, int] = {}
-    for member_id, guest_id, cents in rows:
+    last_at: datetime | None = None
+    for member_id, guest_id, cents, at in rows:
         key = mkey(member_id) if member_id is not None else gkey(guest_id) if guest_id is not None else None
         assert key is not None  # exactly one is set (CHECK)
         out[key] = cents
-    return out
+        last_at = at if last_at is None or at > last_at else last_at
+    return out, last_at
 
 
 # ---- views --------------------------------------------------------------------------------------
@@ -251,7 +277,18 @@ async def duplicate_of(db: AsyncSession, bill: Bill) -> dict[str, Any] | None:
     }
 
 
-async def bill_view(db: AsyncSession, pepper: str, bill: Bill, me: MemberCtx | None) -> dict[str, Any]:
+async def _scanned_offer(db: AsyncSession, bill: Bill) -> dict[str, Any] | None:
+    from app.services.receipts import scanned_offer  # receipts builds on this module
+
+    return await scanned_offer(db, bill.id)
+
+
+LONG_OPEN = timedelta(days=60)  # PRD §15: after 60 days, a gentle banner to the payer; no auto-settle
+
+
+async def bill_view(
+    db: AsyncSession, pepper: str, bill: Bill, me: MemberCtx | None, now: datetime | None = None
+) -> dict[str, Any]:
     rows = await bill_math.load(db, bill)
     by_item = rows.allocations_by_item()
     allocated = {mkey(a.member_id) if a.member_id else gkey(a.guest_id) for a in rows.allocations}  # type: ignore[arg-type]
@@ -298,7 +335,13 @@ async def bill_view(db: AsyncSession, pepper: str, bill: Bill, me: MemberCtx | N
         "progress": {"assigned": len(rows.items) - len(rows.unassigned), "total": len(rows.items)},
         "reconciliation": bill_math.reconciliation(rows),
         "duplicate_of": await duplicate_of(db, bill) if bill.state == "draft" else None,
+        # "Use the scanned items instead?" (PRD §21.6, SYNC-15): a scan kept back because of hand edits
+        "scanned_offer": await _scanned_offer(db, bill) if bill.state == "draft" else None,
         "me": {"member_id": str(me.member_id) if me else None, "is_payer": is_payer, "can_edit": can_edit},
+        # EDGE-15-25: only the payer sees it; the tab stays open until they settle it
+        "long_open": bool(
+            is_payer and bill.state == "open" and bill.sent_at and now and now - bill.sent_at >= LONG_OPEN
+        ),
     }
 
 
@@ -952,8 +995,16 @@ async def set_allocations(
             await w.session.flush()
         if not applied:
             return {"applied": [], "shares": None}
-        rows = await bill_math.load(w.session, bill)
-        deltas = await _after_money_change(w, rows, "allocation_change", now)
+        # Ticks run concurrently (shared bill lock): serialize from here so the shares and the
+        # snapshot are computed from every allocation committed before ours (SYNC-24).
+        # Owners of the lines we changed follow now, while we hold those lines' locks (every other
+        # change to their allocations needs them, or the exclusive bill lock), and before the house
+        # lock: nothing touches owner rows after it, so a sharing switch can't deadlock with us.
+        if bill.state == "open":
+            await kitchen.sync_owners(w.session, rows, now, item_ids=sorted(locked))
+        await w.lock_house()
+        rows = await bill_math.reload_allocations(w.session, rows)
+        deltas = await _after_money_change(w, rows, "allocation_change", now, owners=False)
         try:
             shares = bill_math.preview(rows).shares if bill.state == "draft" else bill_math.shares(rows).shares
         except MoneyError:
@@ -1040,6 +1091,9 @@ async def set_exclusion(
         require(Action.BILL_EDIT, actor=me, bill=bill_ctx(bill))
         if bill.state != "draft":
             raise Problem(409, ErrorCode.CONFLICT, "Change who's on the tab before sending")
+        member = await w.session.get(Member, member_id)
+        if member is None or member.house_id != bill.house_id:  # SEC-02: only people in this house
+            raise Problem(404, ErrorCode.NOT_FOUND, "That person isn't in this house")
         current = await w.session.get(BillExclusion, (bill_id, member_id))
         if excluded == (current is not None):
             return {"member_id": str(member_id), "excluded": excluded}

@@ -57,7 +57,28 @@ class BillRows:
         return [i for i in self.items if not by_item.get(i.id)]
 
 
+async def reload_allocations(db: AsyncSession, rows: BillRows) -> BillRows:
+    """Fresh allocations for the same items (ticks change nothing else; the rest needs the
+    exclusive bill lock that a tick's shared lock excludes)."""
+    item_ids = [i.id for i in rows.items]
+    if not item_ids:
+        rows.allocations = []
+        return rows
+    # Plain rows, not session-tracked objects: this runs inside the house lock, so it stays cheap.
+    found = (
+        await db.execute(
+            select(
+                Allocation.id, Allocation.item_id, Allocation.member_id, Allocation.guest_id, Allocation.weight
+            ).where(Allocation.item_id.in_(item_ids))
+        )
+    ).all()
+    rows.allocations = [Allocation(id=a, item_id=i, member_id=m, guest_id=g, weight=w) for a, i, m, g, w in found]
+    return rows
+
+
 async def load(db: AsyncSession, bill: Bill) -> BillRows:
+    if bill not in db:  # read in another session: take it again from this one's snapshot (SYNC-35)
+        bill = await db.get(Bill, bill.id) or bill
     items = list(
         (
             await db.scalars(

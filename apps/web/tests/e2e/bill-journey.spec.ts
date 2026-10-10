@@ -65,13 +65,16 @@ test("new payer journey with manual entry (E2E-01 minus the scan step): code sig
   expect(inviteRes.headers()["referrer-policy"]).toBe("no-referrer");
   expect(inviteRes.headers()["x-robots-tag"]).toBe("noindex");
   // The house name autosaves.
-  await expect.poll(async () => (await page.request.get("/api/v1/me").then((r) => r.json())).houses[0].name).toBe(
-    "Apt 4B",
-  );
+  await expect
+    .poll(async () => (await page.request.get("/api/v1/me").then((r) => r.json())).houses[0].name)
+    .toBe("Apt 4B");
 
   // Capture sheet → manual entry → review.
   await page.getByRole("link", { name: "Snap your first receipt →" }).click();
-  await page.getByRole("dialog", { name: "Snap a receipt" }).getByRole("button", { name: "Enter items by hand" }).click();
+  await page
+    .getByRole("dialog", { name: "Snap a receipt" })
+    .getByRole("button", { name: "Enter items by hand" })
+    .click();
   await page.waitForURL(/\/bills\/[^/]+\/review$/);
   const billUrl = page.url().replace(/\/review$/, "");
   await expect(page.getByRole("heading", { name: "Did we read it right?" })).toBeVisible();
@@ -136,7 +139,8 @@ test("new payer journey with manual entry (E2E-01 minus the scan step): code sig
   await page.waitForURL(/\/send$/);
   await expect(page.getByRole("heading", { name: "Here's the damage" })).toBeVisible();
   await expect(page.getByText("10/02/2026 · PAID BY YOU · 12 ITEMS")).toBeVisible();
-  for (const amount of Object.values(SHARES)) await expect(page.getByText(amount, { exact: true })).toBeVisible();
+  for (const amount of Object.values(SHARES))
+    await expect(page.getByText(amount, { exact: true })).toBeVisible();
   await expect(page.getByText("ANYONE IN APT 4B CAN HOP ON OR OFF AN ITEM.")).toBeVisible();
   await expect(page.getByText("$71.67")).toBeVisible();
   await page.getByRole("button", { name: "Send it to the house ↗" }).click();
@@ -148,7 +152,9 @@ test("new payer journey with manual entry (E2E-01 minus the scan step): code sig
   await expect(page.getByText("KITCHENTAB · APT 4B")).toBeVisible();
   await expect(page.getByText("SHOPRITE · $95.18")).toBeVisible();
   await expect(page.getByText("SPLIT 4 WAYS · TAP FOR YOUR SHARE")).toBeVisible();
-  await expect(page.getByLabel("Message")).toHaveValue("Groceries are in. Tick anything I got wrong.");
+  await expect(page.getByLabel("Message")).toHaveValue(
+    "Groceries are in. Tick anything I got wrong.",
+  );
   await page.getByRole("button", { name: "Share ↗" }).click();
   const shared = await lastShared(page);
   expect(shared?.text).toBe("Groceries are in. Tick anything I got wrong.");
@@ -191,7 +197,9 @@ test("BILL-02 reconciliation blocks splitting until the total matches or is over
   await page.waitForURL(/\/split$/);
 });
 
-test("BILL-03 storage tag cycles FRIDGE → FREEZER → PANTRY → NOT FOOD and every tap saves", async ({ page }) => {
+test("BILL-03 storage tag cycles FRIDGE → FREEZER → PANTRY → NOT FOOD and every tap saves", async ({
+  page,
+}) => {
   await signInWithEmail(page, uniqueEmail("pranav"));
   const house = await createHouse(page);
   const { billId } = await seedShopRite(page, house);
@@ -231,7 +239,9 @@ test("BILL-06 draft autosave every 2 s survives a reload", async ({ page }) => {
   await expect(page.getByText("*** MATHS CHECKS OUT ***")).toBeVisible();
 });
 
-test("BILL-04 send stays blocked while any item has no one, and says why [FR-24]", async ({ page }) => {
+test("BILL-04 send stays blocked while any item has no one, and says why [FR-24]", async ({
+  page,
+}) => {
   await signInWithEmail(page, uniqueEmail("pranav"));
   const house = await createHouse(page);
   const { billId } = await seedShopRite(page, house, { split: "all", leave: ["coffee"] });

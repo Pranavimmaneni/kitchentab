@@ -45,6 +45,8 @@ export type SplitGridProps = {
   onToggle?: (itemId: string, memberId: string, next: boolean) => void;
   /** Payer mode: tapping a member's column header ticks or unticks them on every item. */
   onColumnToggle?: (memberId: string) => void;
+  /** Payer on an open bill: the item name opens the item editor ("Edit {item}"). */
+  onItemEdit?: (itemId: string) => void;
   loading?: boolean;
   /** Shows the "someone else changed this" notice with a refresh action. */
   conflict?: ReactNode;
@@ -75,6 +77,7 @@ export function SplitGrid({
   currentMemberId,
   onToggle,
   onColumnToggle,
+  onItemEdit,
   loading = false,
   conflict,
   note,
@@ -222,7 +225,18 @@ export function SplitGrid({
               return (
                 <div role="row" key={item.id} className="kt-split__row">
                   <div role="rowheader" className="kt-split__item">
-                    <span className="kt-split__name">{item.name}</span>
+                    {onItemEdit ? (
+                      <button
+                        type="button"
+                        className="kt-split__name kt-split__name-button"
+                        aria-label={strings.review.edit(item.name)}
+                        onClick={() => onItemEdit(item.id)}
+                      >
+                        {item.name}
+                      </button>
+                    ) : (
+                      <span className="kt-split__name">{item.name}</span>
+                    )}
                     <span className="kt-split__detail">
                       <span className="kt-money">{formatMoney(item.priceCents, currency)}</span>
                       {" · "}

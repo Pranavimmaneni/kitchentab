@@ -67,6 +67,13 @@ export function SplitCheckbox({
       onFocus={onFocus}
       onClick={() => onToggle?.()}
       onKeyDown={(event) => {
+        const activates = event.key === " " || event.key === "Spacebar" || event.key === "Enter";
+        // A held key auto-repeats keydown: one press is one toggle, so repeats are swallowed
+        // (Enter's native click-on-keydown included).
+        if (activates && event.repeat) {
+          event.preventDefault();
+          return;
+        }
         // Space toggles on keydown; the native keyup activation is cancelled below so the
         // box never flips twice.
         if (event.key === " " || event.key === "Spacebar") {

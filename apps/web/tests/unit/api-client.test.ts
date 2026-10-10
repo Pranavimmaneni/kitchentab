@@ -10,7 +10,11 @@ function json(status: number, body: unknown, headers: Record<string, string> = {
   });
 }
 
-function setup(responses: ((call: Call) => Response | Promise<Response>)[], cookie: Record<string, string> = {}) {
+function setup(
+  responses: ((call: Call) => Response | Promise<Response>)[],
+  cookie: Record<string, string> = {},
+  isOnline: () => boolean = () => true,
+) {
   const calls: Call[] = [];
   const jar = { ...cookie };
   let n = 0;
@@ -27,6 +31,7 @@ function setup(responses: ((call: Call) => Response | Promise<Response>)[], cook
     newId: () => `id-${++ids}`,
     retryDelayMs: () => 0,
     timeoutMs: 50,
+    isOnline,
   });
   const header = (i: number, name: string) => new Headers(calls[i]!.init.headers).get(name);
   return { client, calls, jar, header };
@@ -87,6 +92,37 @@ describe("API client", () => {
     expect(error).toBeInstanceOf(ApiError);
     expect((error as ApiError).transient).toBe(true);
     expect(calls).toHaveLength(4);
+  });
+
+  it("OFFLINE-04 a write made while offline is refused at once and never sent later", async () => {
+    const { client, calls } = setup([() => json(201, { id: "p1" })], { kt_csrf: "t" }, () => false);
+    await expect(client.post("/bills/b1/payments", { amount_cents: 100 })).rejects.toMatchObject({
+      status: 0,
+      code: "OFFLINE",
+      title: "Needs a connection",
+    });
+    expect(calls).toHaveLength(0);
+    // Reads still go out (the service worker may answer them from its cache).
+    await client.get("/me");
+    expect(calls).toHaveLength(1);
+  });
+
+  it("OFFLINE-03 OFFLINE-04 a retry stops when the connection drops between attempts, so nothing goes out later", async () => {
+    let up = true;
+    const { client, calls } = setup(
+      [
+        () => {
+          up = false;
+          return Promise.reject(new TypeError("Failed to fetch"));
+        },
+        () => json(201, { id: "p1" }),
+      ],
+      { kt_csrf: "t" },
+      () => up,
+    );
+    await expect(client.post("/bills/b1/payments", { amount_cents: 100 })).rejects.toMatchObject({ status: 0 });
+    up = true;
+    expect(calls).toHaveLength(1);
   });
 
   it("maps RFC 9457 problems to ApiError with code, title, extras and Retry-After", async () => {

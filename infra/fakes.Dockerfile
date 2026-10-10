@@ -1,4 +1,4 @@
-# Image for the in-repo fake services (mock OIDC issuer, fake Web Push service).
+# Image for the in-repo fake services (mock OIDC issuer, fake Web Push, fake Vercel Blob).
 # Build context: apps/api. Local dev and CI only.
 FROM python:3.12-slim
 COPY --from=ghcr.io/astral-sh/uv:0.12.24 /uv /usr/local/bin/uv

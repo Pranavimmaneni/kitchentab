@@ -39,6 +39,8 @@ async def inbox(request: Request, to: str | None = None, limit: int = 20) -> lis
             "to": r.to_address,
             "subject": r.subject,
             "text": r.text_body,
+            "html": r.html_body,
+            "headers": r.headers,
             "created_at": r.created_at.isoformat(),
         }
         for r in rows

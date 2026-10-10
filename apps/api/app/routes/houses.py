@@ -5,9 +5,10 @@ from __future__ import annotations
 import uuid
 from datetime import timedelta
 from typing import Annotated, Any
+from zoneinfo import available_timezones
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 
 from app.deps import (
@@ -42,6 +43,14 @@ class CreateHouse(BaseModel):
     roommates: list[str] = Field(default_factory=list, max_length=19)
     timezone: str = Field(default="America/New_York", max_length=64)
 
+    @field_validator("timezone")
+    @classmethod
+    def _known_zone(cls, value: str) -> str:
+        # Every house-time feature (use-soon dates, 9:00 round-ups, digests) needs a real zone.
+        if value not in available_timezones():
+            raise ValueError("unknown time zone")
+        return value
+
 
 @router.post("/houses", status_code=201)
 async def create_house(body: CreateHouse, request: Request, actor: Annotated[Actor, Depends(require_actor)]) -> Any:
@@ -62,7 +71,7 @@ async def create_house(body: CreateHouse, request: Request, actor: Annotated[Act
 @router.get("/houses")
 async def list_houses(request: Request, actor: Annotated[Actor, Depends(require_actor)]) -> list[dict[str, Any]]:
     c = ctx(request)
-    async with c.sessions() as db:
+    async with c.read_sessions() as db:
         rows = (
             await db.execute(
                 select(House, Member)
@@ -79,7 +88,7 @@ async def get_house(
     house_id: uuid.UUID, request: Request, response: Response, actor: Annotated[Actor, Depends(require_actor)]
 ) -> dict[str, Any]:
     c = ctx(request)
-    async with c.sessions() as db:
+    async with c.read_sessions() as db:
         me = await svc.membership(db, house_id, actor.user.id)
         require(Action.HOUSE_READ, actor=me)
         assert me is not None
@@ -260,7 +269,7 @@ async def join_info(
 ) -> dict[str, Any]:
     await _lockout_check(request)
     house = await _house_for_token(request, token)
-    async with ctx(request).sessions() as db:
+    async with ctx(request).read_sessions() as db:
         view = await svc.join_view(db, house, actor.user if actor else None)
     response.headers.update(LINK_HEADERS)
     return view

@@ -117,7 +117,8 @@ async def test_event_activity_and_outbox_share_one_commit(
         (1, "a", "cm-1", members[0].id),
         (2, "b", "cm-1", members[0].id),
     ]
-    assert [(a.type, a.house_event_seq) for a in activity] == [("a", 1)]
+    # DATA-06: every event has exactly one activity entry; "b" gets a house-level one (no bill).
+    assert sorted((a.type, a.house_event_seq, a.bill_id) for a in activity) == [("a", 1, None), ("b", 2, None)]
     assert [(o.kind, o.seq, o.status) for o in outbox] == [("share", 1, "pending"), ("tab", 1, "pending")]
 
 

@@ -25,7 +25,16 @@ import {
   reconcileDisplay,
 } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
+import {
+  clearScan,
+  dismissScan,
+  retryScan,
+  useScanJob,
+  type ScanPhase,
+} from "@/lib/receipts/scan-job";
 import { strings } from "@/lib/strings";
+import { writeThrough } from "@/lib/sync/write-cache";
+import { OfferBanner, ReceiptPhoto, ScanFailed, ScanReading } from "./ScanStates";
 
 /** Draft autosave cadence (FR-14). */
 export const AUTOSAVE_MS = 2000;
@@ -70,9 +79,64 @@ export function headerChanges(view: BillView, form: HeaderForm): HeaderPatch | n
 export function ReviewRoute({ id }: { id: string }) {
   return (
     <BillGate id={id} title={strings.review.title}>
-      {(view) => <ReviewScreen view={view} />}
+      {(view) => <ReviewOrScan view={view} />}
     </BillGate>
   );
+}
+
+const SCANNING: readonly ScanPhase[] = ["preparing", "uploading", "reading"];
+
+/**
+ * While this device reads the receipt: "READING YOUR RECEIPT…"; when it fails: Try again / Enter by
+ * hand (PRD §14A 2, EXTRACT-06). A draft left half-read (reload mid-scan) or failed on the server
+ * shows the failure state too, with "Choose the file again".
+ */
+function ReviewOrScan({ view }: { view: BillView }) {
+  const queryClient = useQueryClient();
+  const billId = view.bill.id;
+  const job = useScanJob(billId);
+  const [byHand, setByHand] = useState(false);
+  const phase = job?.phase;
+
+  useEffect(() => {
+    if (phase !== "done") return;
+    void queryClient.invalidateQueries({ queryKey: keys.bill(billId) }).then(() => clearScan(billId));
+  }, [phase, billId, queryClient]);
+
+  const enterByHand = () => {
+    dismissScan(billId);
+    setByHand(true);
+  };
+  // "done" keeps the reading card up until the refetched bill is in, so the form starts from it.
+  if (job && !job.dismissed && (SCANNING.includes(job.phase) || job.phase === "done")) {
+    return <ScanReading job={job} onEnterByHand={enterByHand} />;
+  }
+  if (job && !job.dismissed && job.phase === "failed") {
+    return (
+      <ScanFailed
+        billId={billId}
+        message={job.error}
+        onRetry={() => retryScan(billId)}
+        onEnterByHand={enterByHand}
+      />
+    );
+  }
+  const stuck =
+    !job &&
+    !byHand &&
+    view.items.length === 0 &&
+    (view.bill.extraction_status === "failed" || view.bill.extraction_status === "pending");
+  if (stuck) {
+    return (
+      <ScanFailed
+        billId={billId}
+        message={view.bill.extraction_status === "pending" ? strings.scan.interrupted : strings.scan.notReadable}
+        onRetry={null}
+        onEnterByHand={enterByHand}
+      />
+    );
+  }
+  return <ReviewScreen view={view} />;
 }
 
 function ReviewScreen({ view }: { view: BillView }) {
@@ -82,6 +146,9 @@ function ReviewScreen({ view }: { view: BillView }) {
   const { toast, show, dismiss } = useToast();
   const ids = { store: useId(), date: useId(), payer: useId(), tax: useId(), total: useId(), reason: useId() };
   const [form, setForm] = useState<HeaderForm>(() => formFrom(view));
+  // Fields typed here and not saved yet. Everything else follows the server (a scan that lands,
+  // another device), so a later save never sends stale values back.
+  const dirty = useRef<Set<keyof HeaderForm>>(new Set());
   const formRef = useRef(form);
   const viewRef = useRef(view);
   const saving = useRef<Promise<void> | null>(null);
@@ -101,6 +168,21 @@ function ReviewScreen({ view }: { view: BillView }) {
   viewRef.current = view;
   const currency = view.bill.currency;
 
+  useEffect(() => {
+    const fresh = formFrom(view);
+    setForm((old) => {
+      let changed = false;
+      const next = { ...old };
+      for (const key of Object.keys(fresh) as (keyof HeaderForm)[]) {
+        if (!dirty.current.has(key) && old[key] !== fresh[key]) {
+          next[key] = fresh[key];
+          changed = true;
+        }
+      }
+      return changed ? next : old;
+    });
+  }, [view]);
+
   // Only the payer (or the uploader of a draft) edits; everyone else sees the bill page.
   useEffect(() => {
     if (view.bill.state !== "draft" || !view.me.can_edit) router.replace(`/bills/${billId}`);
@@ -108,7 +190,7 @@ function ReviewScreen({ view }: { view: BillView }) {
 
   const setBill = useCallback(
     (update: (old: BillView) => BillView) =>
-      queryClient.setQueryData<BillView>(keys.bill(billId), (old) => (old ? update(old) : old)),
+      writeThrough<BillView>(queryClient, keys.bill(billId), update),
     [queryClient, billId],
   );
   const refetch = useCallback(() => queryClient.invalidateQueries({ queryKey: keys.bill(billId) }), [queryClient, billId]);
@@ -121,7 +203,8 @@ function ReviewScreen({ view }: { view: BillView }) {
     }
     if (saving.current) await saving.current;
     const current = viewRef.current;
-    const body = headerChanges(current, formRef.current);
+    const sent = formRef.current;
+    const body = headerChanges(current, sent);
     if (!body || Object.keys(body).length === 0) return;
     const run = (async () => {
       try {
@@ -143,11 +226,13 @@ function ReviewScreen({ view }: { view: BillView }) {
             ...(body.receipt_total_cents !== undefined ? { receipt_total_cents: body.receipt_total_cents } : {}),
           },
         }));
+        for (const key of [...dirty.current]) if (formRef.current[key] === sent[key]) dirty.current.delete(key);
         await refetch();
       } catch (error) {
         if (isApiError(error) && error.code === "VERSION_CONFLICT") {
           await refetch();
           const fresh = queryClient.getQueryData<BillView>(keys.bill(billId));
+          dirty.current.clear();
           if (fresh) setForm(formFrom(fresh));
           show({ message: strings.split.conflict });
         } else {
@@ -170,6 +255,7 @@ function ReviewScreen({ view }: { view: BillView }) {
 
   // Draft autosave: at most every 2 s while there are unsaved header changes (FR-14, BILL-06).
   function edit(patch: Partial<HeaderForm>): void {
+    for (const key of Object.keys(patch) as (keyof HeaderForm)[]) dirty.current.add(key);
     setForm((old) => ({ ...old, ...patch }));
     if (timer.current === null) {
       timer.current = window.setTimeout(() => {
@@ -309,6 +395,7 @@ function ReviewScreen({ view }: { view: BillView }) {
   const blockedReason =
     view.items.length === 0 ? strings.review.needsItems : !rec.ok ? strings.review.needsReconcile : undefined;
   const dup = !dupDismissed ? view.duplicate_of : null;
+  const offer = view.scanned_offer ?? null;
 
   return (
     <div className="kt-screen">
@@ -330,8 +417,11 @@ function ReviewScreen({ view }: { view: BillView }) {
           </div>
         ) : null}
 
+        {offer ? <OfferBanner view={view} offer={offer} onDone={(message) => show({ message })} /> : null}
+
         <ReceiptCard heading={strings.review.title} hideHeading>
           <div className="kt-review">
+            <ReceiptPhoto billId={billId} />
             <div className="kt-review__store">
               <label htmlFor={ids.store} className="kt-review__caption">
                 {strings.review.store}

@@ -14,9 +14,10 @@ export const keys = {
 };
 
 /** The signed-in user and their houses, or `null` when signed out (401). */
-export function useMe() {
+export function useMe({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: keys.me,
+    enabled,
     queryFn: async (): Promise<Me | null> => {
       try {
         return await api.get<Me>("/me");

@@ -1,0 +1,69 @@
+# Edge proxy for the TARGET=local-vercel rehearsal (ADR-0028). It plays Vercel's edge in front of
+# the two services and does only what Vercel does for this project:
+#   * routing exactly as vercel.json's rewrites, in order, keeping the full path:
+#       /api/blob-upload, /api/blob-view -> web;  /api/(.*) -> api;  /(.*) -> web
+#   * HTTPS on a local hostname with Caddy's internal CA (root: /data/caddy/pki/authorities/local/root.crt)
+#   * Hobby limits: request bodies over 4.5 MB -> 413, 300 s max duration per request
+# A second site stands in for the Blob store's own HTTPS origin (*.blob.vercel-storage.com): the
+# fake Blob service, with no body limit (client uploads go straight to Blob, up to 20 MB here).
+#
+# Environment (set by scripts/local_vercel.py through docker compose):
+#   LOCAL_VERCEL_HOST  hostname or IP in the certificate and the site address (default localhost)
+#   LV_EDGE_PORT       app origin port (8443)       LV_BLOB_PORT  blob origin port (8444)
+#   LV_WEB_UPSTREAM    next start (host.docker.internal:3030)
+#   LV_API_UPSTREAM    uvicorn app.vercel_entry:app (host.docker.internal:8030)
+#   LV_MAX_DURATION    Vercel's max duration (300s)
+
+{
+	admin off
+	skip_install_trust
+	auto_https disable_redirects
+	servers {
+		protocols h1 h2
+		timeouts {
+			# Go's WriteTimeout is a deadline from the end of the request headers to the end of
+			# the response: a request that runs longer is cut off, like a function past maxDuration.
+			write {$LV_MAX_DURATION:300s}
+			idle 5m
+		}
+	}
+	pki {
+		ca local {
+			name "KitchenTab local-vercel CA"
+		}
+	}
+}
+
+{$LOCAL_VERCEL_HOST:localhost}:{$LV_EDGE_PORT:8443} {
+	tls internal
+
+	# Vercel refuses request bodies over 4.5 MB before any function runs (FUNCTION_PAYLOAD_TOO_LARGE).
+	@too_big expression `{http.request.header.Content-Length} != "" && int({http.request.header.Content-Length}) > 4500000`
+	handle @too_big {
+		respond "Request Entity Too Large: FUNCTION_PAYLOAD_TOO_LARGE" 413 {
+			close
+		}
+	}
+	# Chunked bodies have no Content-Length: cap what is read.
+	request_body {
+		max_size 4500000
+	}
+
+	handle /api/blob-upload {
+		reverse_proxy {$LV_WEB_UPSTREAM:host.docker.internal:3030}
+	}
+	handle /api/blob-view {
+		reverse_proxy {$LV_WEB_UPSTREAM:host.docker.internal:3030}
+	}
+	handle /api/* {
+		reverse_proxy {$LV_API_UPSTREAM:host.docker.internal:8030}
+	}
+	handle {
+		reverse_proxy {$LV_WEB_UPSTREAM:host.docker.internal:3030}
+	}
+}
+
+{$LOCAL_VERCEL_HOST:localhost}:{$LV_BLOB_PORT:8444} {
+	tls internal
+	reverse_proxy lv-fake-blob:4012
+}

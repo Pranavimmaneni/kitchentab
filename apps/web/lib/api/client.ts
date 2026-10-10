@@ -11,9 +11,17 @@
  * - Errors are RFC 9457 problem details mapped to `ApiError`; show `title` to people.
  */
 
+import { noteServerDate } from "../server-time";
+import { rememberMutation } from "../sync/echo";
+import { readAnswered, staleClient, unauthorized, writeEnded, writeStarted } from "./signals";
+
 export const API_PREFIX = "/api/v1";
 export const CSRF_COOKIE = "kt_csrf";
-export const CLIENT_VERSION = "web/0.1.0";
+/**
+ * The API compatibility level this build speaks (an integer: the API answers 426 STALE_CLIENT when
+ * it is below MIN_CLIENT_VERSION; PRD §21.6). Bump it with a breaking API change.
+ */
+export const CLIENT_VERSION = "1";
 
 export type ProblemBody = {
   type?: string;
@@ -36,7 +44,8 @@ export class ApiError extends Error {
   readonly requestId?: string;
 
   constructor(status: number, body: ProblemBody, retryAfterSeconds?: number) {
-    const title = typeof body.title === "string" && body.title ? body.title : "Something jammed. Try again.";
+    const title =
+      typeof body.title === "string" && body.title ? body.title : "Something jammed. Try again.";
     super(title);
     this.name = "ApiError";
     this.status = status;
@@ -93,6 +102,8 @@ export type ApiClientConfig = {
   cookie?: (name: string) => string | undefined;
   /** Id generator for Idempotency-Key / X-Client-Mutation-Id. */
   newId?: () => string;
+  /** Connection state (default `navigator.onLine`): writes are never sent or retried offline. */
+  isOnline?: () => boolean;
 };
 
 export type RequestOptions = {
@@ -122,6 +133,8 @@ export function createApiClient(config: ApiClientConfig = {}) {
   const retryDelay = config.retryDelayMs ?? ((attempt: number) => 250 * 2 ** (attempt - 1));
   const cookie = config.cookie ?? ((name: string) => readCookie(name));
   const makeId = config.newId ?? newId;
+  const online =
+    config.isOnline ?? (() => typeof navigator === "undefined" || navigator.onLine !== false);
   let csrfPromise: Promise<string> | null = null;
 
   async function csrfToken(force = false): Promise<string> {
@@ -158,13 +171,17 @@ export function createApiClient(config: ApiClientConfig = {}) {
       controller.abort(TIMEOUT);
     }, timeoutMs);
     try {
-      return await doFetch(url, {
+      const sentAt = Date.now();
+      const res = await doFetch(url, {
         method,
         headers,
         body,
         credentials: "same-origin",
         signal: controller.signal,
       });
+      // Relative times run on the server's clock (PRD §21.6 "Time", CHAOS-08).
+      noteServerDate(res.headers?.get?.("Date") ?? null, sentAt, Date.now());
+      return res;
     } catch (error) {
       if (signal?.aborted && !timedOut) throw error;
       throw new ApiError(0, {
@@ -189,8 +206,14 @@ export function createApiClient(config: ApiClientConfig = {}) {
     return new ApiError(res.status, { status: res.status, ...body }, seconds);
   }
 
-  async function request<T>(method: Method, path: string, options: RequestOptions = {}): Promise<T> {
-    const url = path.startsWith("http") ? path : `${baseUrl}${path.startsWith("/api/") ? "" : API_PREFIX}${path}`;
+  async function request<T>(
+    method: Method,
+    path: string,
+    options: RequestOptions = {},
+  ): Promise<T> {
+    const url = path.startsWith("http")
+      ? path
+      : `${baseUrl}${path.startsWith("/api/") ? "" : API_PREFIX}${path}`;
     const unsafe = method !== "GET";
     const headers: Record<string, string> = {
       Accept: "application/json, application/problem+json",
@@ -200,44 +223,61 @@ export function createApiClient(config: ApiClientConfig = {}) {
     const body = options.body === undefined ? undefined : JSON.stringify(options.body);
     if (body !== undefined) headers["Content-Type"] = "application/json";
     if (unsafe) {
-      headers["X-Client-Mutation-Id"] = options.mutationId ?? makeId();
+      const mutationId = options.mutationId ?? makeId();
+      // Its echo on the house stream is ignored as already applied (PRD §21.6).
+      rememberMutation(mutationId);
+      headers["X-Client-Mutation-Id"] = mutationId;
       if (method === "POST") headers["Idempotency-Key"] = options.idempotencyKey ?? makeId();
       if (options.ifMatch !== undefined) headers["If-Match"] = `"${options.ifMatch}"`;
     }
+    // Nothing is queued while offline (PRD §21.6, OFFLINE-04): a write is refused here, not held.
+    if (unsafe && !online()) {
+      throw new ApiError(0, { code: "OFFLINE", title: "Needs a connection" });
+    }
     // Reads retry through TanStack Query; guarded edits never retry (a replay conflicts).
-    const retries =
-      options.retries ?? (unsafe && options.ifMatch === undefined ? maxRetries : 0);
+    const retries = options.retries ?? (unsafe && options.ifMatch === undefined ? maxRetries : 0);
     let csrfRefreshed = false;
-
-    for (let n = 0; ; n++) {
-      if (unsafe) headers["X-CSRF-Token"] = await csrfToken();
-      let res: Response;
-      try {
-        res = await attempt(method, url, headers, body, options.signal);
-      } catch (error) {
-        if (isApiError(error) && error.transient && n < retries) {
-          await sleep(retryDelay(n + 1));
-          continue;
+    if (unsafe) writeStarted();
+    let wrote = false;
+    try {
+      for (let n = 0; ; n++) {
+        if (unsafe) headers["X-CSRF-Token"] = await csrfToken();
+        let res: Response;
+        try {
+          res = await attempt(method, url, headers, body, options.signal);
+        } catch (error) {
+          if (isApiError(error) && error.transient && n < retries) {
+            await sleep(retryDelay(n + 1));
+            // Went offline meanwhile: stop here rather than send it once the connection is back.
+            if (unsafe && !online()) throw error;
+            continue;
+          }
+          throw error;
+        }
+        if (res.ok) {
+          if (unsafe) wrote = true;
+          else readAnswered(path, res);
+          if (res.status === 204) return undefined as T;
+          const text = await res.text();
+          return (text ? JSON.parse(text) : undefined) as T;
+        }
+        const error = await toError(res);
+        if (res.status === 426) staleClient();
+        if (res.status === 401) unauthorized(path);
+        if (unsafe && res.status === 403 && error.code === "FORBIDDEN" && !csrfRefreshed) {
+          // Stale double-submit token (e.g. signed in on another tab): refresh once and resend.
+          const before = headers["X-CSRF-Token"];
+          const fresh = await csrfToken(true);
+          csrfRefreshed = true;
+          if (fresh && fresh !== before) {
+            n--;
+            continue;
+          }
         }
         throw error;
       }
-      if (res.ok) {
-        if (res.status === 204) return undefined as T;
-        const text = await res.text();
-        return (text ? JSON.parse(text) : undefined) as T;
-      }
-      const error = await toError(res);
-      if (unsafe && res.status === 403 && error.code === "FORBIDDEN" && !csrfRefreshed) {
-        // Stale double-submit token (e.g. signed in on another tab): refresh once and resend.
-        const before = headers["X-CSRF-Token"];
-        const fresh = await csrfToken(true);
-        csrfRefreshed = true;
-        if (fresh && fresh !== before) {
-          n--;
-          continue;
-        }
-      }
-      throw error;
+    } finally {
+      if (unsafe) writeEnded(method, path, wrote);
     }
   }
 

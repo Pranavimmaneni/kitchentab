@@ -72,3 +72,28 @@ class FakeExtractor:
             raise ExtractionFailed("no fixture for these images")
         data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
         return data
+
+
+# ---- the optional plugin (BUILD_ALL C1, ADR-0010) -------------------------------------------------
+
+PLUGIN_TIMEOUT_SECONDS = 30  # PRD §9: "temperature 0, timeout 30 s"
+FAKE_EXTRACTOR_FIXTURES = Path(__file__).resolve().parents[4] / "packages" / "fixtures" / "extractor"
+
+
+def plugin_enabled(settings: Any) -> bool:
+    """The vision-model plugin runs only when EXTRACTOR_API_KEY is set (EXTRACT-15); with no key every
+    receipt goes through the local pipeline (text PDF parser or browser OCR)."""
+    return settings.extractor_provider != "local" and settings.extractor_api_key is not None
+
+
+def build_plugin(settings: Any, redis: Redis | None = None) -> ReceiptExtractor | None:
+    """`fake` → FakeExtractor (tests). `llm` has no vendor adapter in this build, so it is reported
+    once and the local pipeline is used (never a silent failure of every photo)."""
+    if not plugin_enabled(settings):
+        return None
+    if settings.extractor_provider == "fake":
+        return FakeExtractor(FAKE_EXTRACTOR_FIXTURES, redis)
+    import logging
+
+    logging.getLogger(__name__).warning("EXTRACTOR_PROVIDER=llm has no adapter yet; using local extraction")
+    return None

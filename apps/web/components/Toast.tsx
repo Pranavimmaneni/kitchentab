@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { strings } from "@/lib/strings";
 
 export const TOAST_DURATION_MS = 4000;
@@ -20,7 +20,11 @@ export type ToastProps = {
   placement?: "fixed" | "inline";
 };
 
-/** Ink pill above the bottom bar, 4 s, optional Undo, announced politely (PRD §14A). */
+/**
+ * Ink pill above the bottom bar, 4 s, optional Undo, announced politely (PRD §14A).
+ * The 4 s timer pauses while the pointer is over the toast or focus is inside it, and resumes
+ * with the time that was left (WCAG 2.2.1 Timing Adjustable), so Undo can always be reached.
+ */
 export function Toast({
   message,
   variant = "info",
@@ -31,15 +35,34 @@ export function Toast({
   placement = "fixed",
 }: ToastProps) {
   const dismissRef = useRef(onDismiss);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const remaining = useRef(duration);
+  const paused = hovered || focused;
+
   useEffect(() => {
     dismissRef.current = onDismiss;
   }, [onDismiss]);
 
+  // A new message gets the full duration. When the toast goes away while hovered or focused,
+  // no leave/blur event follows, so the pause is cleared here.
   useEffect(() => {
-    if (!message || !Number.isFinite(duration)) return;
-    const timer = window.setTimeout(() => dismissRef.current?.(), duration);
-    return () => window.clearTimeout(timer);
+    remaining.current = duration;
+    if (!message) {
+      setHovered(false);
+      setFocused(false);
+    }
   }, [message, duration]);
+
+  useEffect(() => {
+    if (!message || !Number.isFinite(duration) || paused) return;
+    const startedAt = Date.now();
+    const timer = window.setTimeout(() => dismissRef.current?.(), Math.max(0, remaining.current));
+    return () => {
+      window.clearTimeout(timer);
+      remaining.current = Math.max(0, remaining.current - (Date.now() - startedAt));
+    };
+  }, [message, duration, paused]);
 
   return (
     <div
@@ -50,7 +73,17 @@ export function Toast({
       aria-atomic="true"
     >
       {message ? (
-        <div className="kt-toast" data-variant={variant}>
+        <div
+          className="kt-toast"
+          data-variant={variant}
+          data-paused={paused || undefined}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onFocus={() => setFocused(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
+          }}
+        >
           <span className="kt-toast__message">{message}</span>
           {onUndo ? (
             <button

@@ -18,9 +18,18 @@ export const ICONS = {
   any512: "/icons/icon-512.png",
   maskable512: "/icons/icon-maskable-512.png",
   apple180: "/icons/apple-touch-icon.png",
+  monochrome: "/icons/badge.svg",
+  badge96: "/icons/badge-96.png",
 } as const;
 
-/** Web app manifest (PRD §20.1). Screenshots arrive with install flows in Milestone 9. */
+/** Android's richer install sheet: two narrow screenshots, Kitchen and Split (PRD §20.1). */
+export const SCREENSHOTS = [
+  { src: "/screenshots/kitchen.png", label: "Your kitchen: who owns what, and what's open to share" },
+  { src: "/screenshots/split.png", label: "Tick who's eating what; the shares add up to the cent" },
+] as const;
+export const SCREENSHOT_SIZE = "780x1688";
+
+/** Web app manifest (PRD §20.1, PWA-01). */
 export function buildManifest(): MetadataRoute.Manifest {
   return {
     id: "/",
@@ -38,7 +47,15 @@ export function buildManifest(): MetadataRoute.Manifest {
       { src: ICONS.any192, sizes: "192x192", type: "image/png", purpose: "any" },
       { src: ICONS.any512, sizes: "512x512", type: "image/png", purpose: "any" },
       { src: ICONS.maskable512, sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: ICONS.monochrome, sizes: "any", type: "image/svg+xml", purpose: "monochrome" },
     ],
+    screenshots: SCREENSHOTS.map((s) => ({
+      src: s.src,
+      sizes: SCREENSHOT_SIZE,
+      type: "image/png",
+      form_factor: "narrow" as const,
+      label: s.label,
+    })),
     shortcuts: [
       { name: strings.header.snapReceipt, short_name: strings.header.snapShort, url: "/bills/new" },
       { name: strings.kitchen.fridge, url: "/kitchen/fridge" },

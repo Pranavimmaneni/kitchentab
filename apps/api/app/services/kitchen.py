@@ -10,7 +10,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.kitchen import default_shelf_life, generic_icon, place_for, short_name
@@ -130,34 +130,44 @@ async def restock_item(db: AsyncSession, rows: BillRows, item: ItemRow, now: dat
     inv.updated_at = now
 
 
-async def sync_owners(db: AsyncSession, rows: BillRows, now: datetime) -> None:
-    """FR-62: owners follow allocations while the bill is open, in the same transaction."""
+async def sync_owners(
+    db: AsyncSession, rows: BillRows, now: datetime, *, item_ids: list[uuid.UUID] | None = None
+) -> None:
+    """FR-62: owners follow allocations while the bill is open, in the same transaction.
+
+    One statement (two data-modifying CTEs over one snapshot): add owners for allocated members,
+    drop owners without an allocation. Reading owners and allocations in separate SELECTs let a
+    concurrent commit land in between (READ COMMITTED; found by SYNC-24). `item_ids` limits it to
+    the lines a tick touched, whose row locks the tick already holds (ADR-0023).
+    """
     if rows.bill.state != "open":
         return
-    by_item = {i.id: i for i in rows.items}
-    inventory = (
-        await db.scalars(
-            select(InventoryItem).where(InventoryItem.bill_id == rows.bill.id, InventoryItem.status == "in_stock")
-        )
-    ).all()
-    for inv in inventory:
-        if inv.item_id not in by_item:
-            continue
-        wanted = set(_owner_ids(rows, inv.item_id))
-        current = {
-            o.member_id: o
-            for o in (await db.scalars(select(InventoryOwner).where(InventoryOwner.inventory_item_id == inv.id))).all()
-        }
-        defaults = await _share_defaults(db, sorted(wanted - set(current)))
-        for member_id in wanted - set(current):
-            db.add(
-                InventoryOwner(
-                    inventory_item_id=inv.id,
-                    member_id=member_id,
-                    open_to_share=defaults.get(member_id, False),
-                    updated_by_member_id=member_id,
-                    updated_at=now,
-                )
-            )
-        for member_id in set(current) - wanted:
-            await db.delete(current[member_id])
+    await db.flush()
+    scope = "AND i.item_id = ANY(:items) " if item_ids is not None else ""
+    sql = (
+        "WITH added AS ("  # noqa: S608 - `scope` is a constant fragment
+        "INSERT INTO inventory_owners "
+        "(inventory_item_id, member_id, open_to_share, updated_by_member_id, updated_at) "
+        "SELECT DISTINCT i.id, a.member_id, COALESCE(u.share_by_default, false), a.member_id, "
+        "CAST(:now AS timestamptz) "
+        "FROM inventory_items i "
+        "JOIN items it ON it.id = i.item_id AND it.deleted_at IS NULL "
+        "JOIN allocations a ON a.item_id = i.item_id AND a.member_id IS NOT NULL "
+        "JOIN members m ON m.id = a.member_id "
+        "LEFT JOIN users u ON u.id = m.user_id "
+        "WHERE i.bill_id = :bill AND i.status = 'in_stock' " + scope + ""
+        "ON CONFLICT (inventory_item_id, member_id) DO NOTHING RETURNING 1), "
+        "dropped AS ("
+        "DELETE FROM inventory_owners o USING inventory_items i "
+        "WHERE o.inventory_item_id = i.id AND i.bill_id = :bill AND i.status = 'in_stock' "
+        "AND i.item_id IS NOT NULL " + scope + ""
+        "AND NOT EXISTS (SELECT 1 FROM allocations a WHERE a.item_id = i.item_id AND a.member_id = o.member_id) "
+        "RETURNING 1) "
+        "SELECT (SELECT count(*) FROM added), (SELECT count(*) FROM dropped)"
+    )
+    params: dict[str, object] = {"bill": rows.bill.id, "now": now}
+    if item_ids is not None:
+        params["items"] = item_ids
+    await db.execute(text(sql), params)
+    for obj in [o for o in db.identity_map.values() if isinstance(o, InventoryOwner)]:
+        db.expunge(obj)  # owners changed under the ORM; later reads fetch them fresh
