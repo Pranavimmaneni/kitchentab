@@ -156,3 +156,22 @@ and share the invite link (WhatsApp/iMessage show a preview card).
 | Neon free: 0.5 GB storage, autosuspend | Cold start adds ~1 s to the first request after idle |
 | Blob free tier | Receipt images are deleted 2 years after a tab settles |
 | Function invocations / bandwidth | A household is far below the Hobby allowance |
+
+## Launch log (2026-10-10)
+
+Live at **https://kitchentab.vercel.app** (team `ed-i-th`, project `kitchentab`), sign-in codes from
+a dedicated KitchenTab Gmail. What differed from the plan above, all fixed in the scripts:
+
+- Vercel CLI 54: `blob create-store` replaces `blob store add`; Production/Preview variables are
+  sensitive by default (`env pull` reads them back empty), so plain settings go in with
+  `--no-sensitive`; Preview variables need a Git branch, so without Git set
+  `KT_VERCEL_ENVIRONMENTS=production` (only production is deployed).
+- `vercel deploy` uploads the folder, not Git: `.vercelignore` keeps it under the 100 MB limit.
+- Vercel Services can't deploy Edge output: `middleware.ts` runs on the Node.js runtime.
+- Neon was added from the dashboard (Storage → Neon) so its terms are accepted there.
+- Run the scripts from a normal Windows terminal: apps that sandbox AppData (such as the Claude
+  desktop app) don't see a globally installed `vercel` or its login. `scripts\set-email.cmd` is
+  the double-click version of `make set-email`; `--provider other --smtp-host …` works with any
+  STARTTLS relay if Gmail isn't an option.
+- `make deploy`'s own lint+test gate was run separately (make lint, web unit 229/229, API suite
+  538 passed, slow load/race/chaos groups excluded) before deploying.
