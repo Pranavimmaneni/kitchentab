@@ -29,14 +29,15 @@ A. Requests screen (kitchen/requests, RequestsScreen.tsx; API routes/kitchen.py 
      allocations removed). Closed bill: chip-in amount = round(p * line total) through the existing
      ledger path. Integer cents, largest remainder (compute_shares). Preview before confirming; Undo works.
      Tests first (money, policy, sync), new TEST_PLAN IDs, FR in PRD §19.
-B. Settings (SettingsScreen.tsx): one place for
-   - your name (exists: Profile → Save name; check it also renames you in every house you're in),
-   - notification preferences (exists at /settings/notifications: make it a clear row on Settings),
-   - "Add KitchenTab to your home screen": iPhone (Safari → Share → Add to Home Screen, then sign in
-     again there, then allow notifications) and Android (Chrome → Install) steps, with an Install button
-     when the browser offers one (lib/pwa prompts), hidden when already installed,
-   - plus the obvious extras: theme, sign out / sign out everywhere, leave house, delete account.
-   Copy goes in lib/strings.ts; 44 px targets, both themes, axe clean.
+B. Settings: DONE on branch feat/settings-hub (PR open; no migration).
+   - FR-83: Save name used to change only the account; roommates kept seeing the old name. Now PATCH /me
+     renames your member in every house (policy member.rename_self, one house write + member_renamed
+     event per house, cut to 24 characters); a house where the name is taken keeps the old one and
+     Settings says so (SET-01).
+   - FR-84: order is name, NOTIFICATIONS (N2 link + email switch), Add KitchenTab to your home screen
+     (iPhone/Android/computer steps, this device's first, Install button when offered, hidden in the
+     home screen app), appearance, kitchen default, sign-in methods, payment handles, YOUR HOUSE
+     (House settings link + Leave house), data and account (SET-02, SET-03).
 Ship both behind the usual gate; ask the user before redeploying production.
 
 Open, in order (overnight queue):
@@ -179,7 +180,7 @@ IDs: SYNC-01..35, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VE
 - [ ] Gate (both profiles)
 
 ## Milestone 7: Tabs and balances
-IDs: FR-50..FR-54, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · Screens 1, Settings, House, Balances
+IDs: FR-50..FR-54, FR-83, FR-84, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14, SET-01..03 · Screens 1, Settings, House, Balances
 
 - [x] API: balances (per-pair netting, carried), tabs lists with 20-per-page history, search, CSV export,
       sign-in methods, payment handles, data export, account deletion (anonymize, keep amounts)
