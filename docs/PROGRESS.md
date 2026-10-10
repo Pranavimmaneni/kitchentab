@@ -14,6 +14,28 @@ bills, split grid, send + share link, payments/confirm/settle, tabs and balances
 in-app notifications; local production-like run `make house` (http://localhost:3100, localhost only).
 Gate before the last deploy: make lint green, web unit 229/229, API 538 passed (slow groups excluded).
 
+NEW FEATURES REQUESTED BY THE USER (2026-10-10), do these FIRST, before the queue below:
+A. Requests screen (kitchen/requests, RequestsScreen.tsx; API routes/kitchen.py + services/inventory.py):
+   - Show the item's full price (its bill line total; "no price" for leftovers/manual items) under the
+     item icon on every request card, both tabs.
+   - Custom split when answering an ask: quick choices 25% / 50% / 100% plus "Custom %" (1-100). Today
+     "Add to split" adds weight 1 (an equal share) and "Chip in" is a free amount with a suggestion.
+     Proposed meaning (confirm with the user before building; PRD §6/§19 money rule change, needs an ADR):
+     the asker pays that percentage of the item's line total. Open bill: allocation weight for the asker
+     w = p*W/(1-p), W = the owners' total weight on that line; 100% = asker takes the whole line (owners'
+     allocations removed). Closed bill: chip-in amount = round(p * line total) through the existing
+     ledger path. Integer cents, largest remainder (compute_shares). Preview before confirming; Undo works.
+     Tests first (money, policy, sync), new TEST_PLAN IDs, FR in PRD §19.
+B. Settings (SettingsScreen.tsx): one place for
+   - your name (exists: Profile → Save name; check it also renames you in every house you're in),
+   - notification preferences (exists at /settings/notifications: make it a clear row on Settings),
+   - "Add KitchenTab to your home screen": iPhone (Safari → Share → Add to Home Screen, then sign in
+     again there, then allow notifications) and Android (Chrome → Install) steps, with an Install button
+     when the browser offers one (lib/pwa prompts), hidden when already installed,
+   - plus the obvious extras: theme, sign out / sign out everywhere, leave house, delete account.
+   Copy goes in lib/strings.ts; 44 px targets, both themes, axe clean.
+Ship both behind the usual gate; ask the user before redeploying production.
+
 Open, in order (overnight queue):
 1. Full browser suite not green: last run 245 passed / 27 failed / 83 skipped, partly machine load.
    Possibly real: SYNC-32 tick flicker (WebKit), SYNC-31 leader hand-over > 3 s, SYNC-12 (WebKit/Firefox),
