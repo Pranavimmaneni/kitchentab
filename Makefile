@@ -130,7 +130,7 @@ test-chaos: ## CHAOS-03/04/05/07: connections killed mid-write, Toxiproxy, worke
 	$(PY_TEST) -q tests/test_chaos.py
 
 .PHONY: house
-house: ## Run KitchenTab for the household on this Wi-Fi: http://<this computer>:3100 (scripts/house.py; ARGS=--skip-build)
+house: ## Run the production build on this computer only: http://localhost:3100 (scripts/house.py; ARGS=--skip-build)
 	$(UV) python scripts/house.py $(ARGS)
 
 .PHONY: simulate

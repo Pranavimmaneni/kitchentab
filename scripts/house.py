@@ -1,20 +1,17 @@
-"""Run KitchenTab for real on this computer, for the household on the same Wi-Fi (`make house`).
+"""Run KitchenTab on this computer only, as it will run for real, to try it before deploying (`make house`).
 
 A production build of the web app, the API, the notification worker, Postgres, Redis and MinIO, with
-its own database (`kitchentab_house`, kept between runs). Phones open http://<this computer>:3100.
+its own database (`kitchentab_house`, kept between runs). Open http://localhost:3100. Everything
+listens on 127.0.0.1 only: nothing is reachable from the network. To try several roommates at once,
+use separate browser profiles or private windows, one per person.
 
-Sign-in codes go by email. Put a Gmail address and an app password in `.env.house` (gitignored):
+Sign-in codes land in Mailpit: http://localhost:8025. (Optional: real email through Gmail with
+SMTP_USER / SMTP_PASSWORD / EMAIL_FROM in `.env.house`, gitignored.)
 
-    SMTP_USER=you@gmail.com
-    SMTP_PASSWORD=abcd efgh ijkl mnop        # myaccount.google.com/apppasswords
-    EMAIL_FROM=KitchenTab <you@gmail.com>
+Plain http means no install-to-home-screen, no service worker and no Web Push; those come with the
+HTTPS deployment (docs/LAUNCH.md).
 
-Without it, codes land in Mailpit (http://<this computer>:8025), which anyone on the Wi-Fi can open.
-
-Plain http on the LAN means no install-to-home-screen, no service worker and no Web Push: those
-need the HTTPS deployment (`make deploy`, docs/LAUNCH.md). Everything else works.
-
-    uv run --project apps/api python scripts/house.py [--ip 192.168.1.20] [--skip-build] [--port 3100]
+    uv run --project apps/api python scripts/house.py [--skip-build] [--port 3100]
 """
 
 from __future__ import annotations
@@ -24,7 +21,6 @@ import json
 import os
 import secrets
 import shutil
-import socket
 import subprocess
 import sys
 import time
@@ -47,14 +43,6 @@ DIST = (
 def exe(name: str) -> str:
     """Full path, so Windows finds `pnpm.cmd` and friends."""
     return shutil.which(name) or name
-
-
-def lan_ip() -> str:
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        s.connect(
-            ("10.255.255.255", 1)
-        )  # no packet is sent; this only picks the outgoing interface
-        return str(s.getsockname()[0])
 
 
 def secrets_once() -> dict[str, str]:
@@ -84,8 +72,8 @@ def dotenv(path: Path) -> dict[str, str]:
     return out
 
 
-def env_for(ip: str, port: int) -> dict[str, str]:
-    origin = f"http://{ip}:{port}"
+def env_for(port: int) -> dict[str, str]:
+    origin = f"http://localhost:{port}"
     mail = dotenv(ROOT / ".env.house")
     env = {
         **os.environ,
@@ -97,7 +85,7 @@ def env_for(ip: str, port: int) -> dict[str, str]:
         "WEB_ORIGIN": origin,
         "PUBLIC_LINK_BASE": origin,
         "STORAGE_PROVIDER": "s3",
-        "S3_ENDPOINT": f"http://{ip}:9000",  # phones upload receipts straight to MinIO
+        "S3_ENDPOINT": "http://localhost:9000",  # the browser uploads receipts straight to MinIO
         "S3_ACCESS_KEY": "minioadmin",
         "S3_SECRET_KEY": "minioadmin",
         "EXTRACTOR_PROVIDER": "local",
@@ -109,7 +97,6 @@ def env_for(ip: str, port: int) -> dict[str, str]:
         # web
         "KT_API_ORIGIN": f"http://127.0.0.1:{API_PORT}",
         "KT_DIST_DIR": DIST,
-        "KT_STORAGE_ORIGINS": f"http://{ip}:9000",
         "NODE_ENV": "production",
     }
     if mail.get("SMTP_USER") and mail.get("SMTP_PASSWORD"):
@@ -183,16 +170,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument(
-        "--ip", default=None, help="this computer's Wi-Fi address (detected if omitted)"
-    )
     parser.add_argument("--port", type=int, default=3100)
     parser.add_argument(
         "--skip-build", action="store_true", help="reuse the last web build"
     )
     args = parser.parse_args()
-    ip = args.ip or lan_ip()
-    env = env_for(ip, args.port)
+    env = env_for(args.port)
     run([exe("docker"), "compose", "-f", "infra/docker-compose.yml", "up", "-d", "postgres", "redis", "minio", "mailpit"],
         ROOT, env, "postgres, redis, minio, mailpit")  # fmt: skip
     database(env)
@@ -228,7 +211,7 @@ def main() -> int:
     }
     wait_for(f"http://127.0.0.1:{API_PORT}/api/v1/health", "API")
     procs["web"] = start(
-        [exe("pnpm"), "exec", "next", "start", "-H", "0.0.0.0", "-p", str(args.port)],
+        [exe("pnpm"), "exec", "next", "start", "-H", "127.0.0.1", "-p", str(args.port)],
         WEB_DIR,
         env,
         "web",
@@ -237,10 +220,10 @@ def main() -> int:
     mail = (
         "Gmail"
         if env["EMAIL_PROVIDER"] == "smtp"
-        else f"Mailpit at http://{ip}:8025 (no .env.house yet)"
+        else "Mailpit at http://localhost:8025"
     )
     print(
-        f"\nKitchenTab is up: http://{ip}:{args.port}  (sign-in codes: {mail})",
+        f"\nKitchenTab is up: http://localhost:{args.port}  (sign-in codes: {mail})",
         flush=True,
     )
     print(

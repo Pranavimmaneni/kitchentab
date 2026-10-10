@@ -2,6 +2,8 @@
 # mock Google OIDC issuer, the in-repo fake Web Push service and the in-repo fake Vercel Blob
 # service. Never used in staging or prod.
 name: kitchentab
+# Every port is published on loopback only (IPv4 and IPv6, so `localhost` works on Windows):
+# nothing here is reachable from the network.
 
 services:
   postgres:
@@ -12,7 +14,7 @@ services:
       POSTGRES_USER: kitchentab
       POSTGRES_PASSWORD: kitchentab
       POSTGRES_DB: kitchentab
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432", "[::1]:5432:5432"]
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -24,7 +26,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports: ["6379:6379"]
+    ports: ["127.0.0.1:6379:6379", "[::1]:6379:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s
@@ -39,7 +41,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
       MINIO_DEFAULT_BUCKETS: kitchentab-receipts
-    ports: ["9000:9000", "9001:9001"]
+    ports: ["127.0.0.1:9000:9000", "[::1]:9000:9000", "127.0.0.1:9001:9001", "[::1]:9001:9001"]
     volumes: [miniodata:/bitnami/minio/data]
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
@@ -49,7 +51,7 @@ services:
 
   mailpit:
     image: axllent/mailpit:v1.24
-    ports: ["1025:1025", "8025:8025"]
+    ports: ["127.0.0.1:1025:1025", "[::1]:1025:1025", "127.0.0.1:8025:8025", "[::1]:8025:8025"]
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: "1"
       MP_SMTP_AUTH_ALLOW_INSECURE: "1"
@@ -61,7 +63,7 @@ services:
     command: ["uvicorn", "--factory", "fakeservices.mock_oidc:create_app", "--host", "0.0.0.0", "--port", "4011"]
     environment:
       MOCK_OIDC_ISSUER: http://localhost:4011
-    ports: ["4011:4011"]
+    ports: ["127.0.0.1:4011:4011", "[::1]:4011:4011"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4011/.well-known/openid-configuration')"]
       interval: 3s
@@ -75,7 +77,7 @@ services:
     command: ["uvicorn", "--factory", "fakeservices.fake_push:create_app", "--host", "0.0.0.0", "--port", "4010"]
     environment:
       FAKE_PUSH_BASE_URL: http://localhost:4010
-    ports: ["4010:4010"]
+    ports: ["127.0.0.1:4010:4010", "[::1]:4010:4010"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4010/health')"]
       interval: 3s
@@ -91,7 +93,7 @@ services:
     environment:
       FAKE_BLOB_BASE_URL: http://localhost:4012
       # FAKE_BLOB_RW_TOKEN defaults to the built-in local token (same default as the API)
-    ports: ["4012:4012"]
+    ports: ["127.0.0.1:4012:4012", "[::1]:4012:4012"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4012/health')"]
       interval: 3s
@@ -104,7 +106,7 @@ services:
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy:2.9.0
     profiles: ["chaos"]
-    ports: ["8474:8474", "26400-26409:26400-26409"]
+    ports: ["127.0.0.1:8474:8474", "[::1]:8474:8474", "127.0.0.1:26400-26409:26400-26409", "[::1]:26400-26409:26400-26409"]
     extra_hosts: ["host.docker.internal:host-gateway"]
     healthcheck:
       test: ["CMD", "/toxiproxy-cli", "list"]
@@ -124,7 +126,7 @@ services:
       POSTGRES_USER: kitchentab
       POSTGRES_PASSWORD: kitchentab
       POSTGRES_DB: kitchentab_lv
-    ports: ["127.0.0.1:5442:5432"]
+    ports: ["127.0.0.1:5442:5432", "[::1]:5442:5432"]
     volumes: [lvpgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kitchentab -d kitchentab_lv"]
@@ -139,7 +141,7 @@ services:
     volumes:
       - ./local-vercel/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
       - ./local-vercel/userlist.txt:/etc/pgbouncer/userlist.txt:ro
-    ports: ["127.0.0.1:6432:6432"]
+    ports: ["127.0.0.1:6432:6432", "[::1]:6432:6432"]
     depends_on:
       lv-postgres: { condition: service_healthy }
     healthcheck:
@@ -171,7 +173,7 @@ services:
     command: ["uvicorn", "--factory", "fakeservices.fake_push:create_app", "--host", "0.0.0.0", "--port", "4010"]
     environment:
       FAKE_PUSH_BASE_URL: http://localhost:${LV_PUSH_PORT:-4020}
-    ports: ["127.0.0.1:${LV_PUSH_PORT:-4020}:4010"]
+    ports: ["127.0.0.1:${LV_PUSH_PORT:-4020}:4010", "[::1]:${LV_PUSH_PORT:-4020}:4010"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:4010/health')"]
       interval: 3s
@@ -193,8 +195,10 @@ services:
       - ./local-vercel/Caddyfile:/etc/caddy/Caddyfile:ro
       - ../.cache/local-vercel/caddy:/data  # the local CA lives here (gitignored)
     ports:
-      - "${LV_EDGE_PORT:-8443}:${LV_EDGE_PORT:-8443}"
-      - "${LV_BLOB_PORT:-8444}:${LV_BLOB_PORT:-8444}"
+      - "127.0.0.1:${LV_EDGE_PORT:-8443}:${LV_EDGE_PORT:-8443}"
+      - "[::1]:${LV_EDGE_PORT:-8443}:${LV_EDGE_PORT:-8443}"
+      - "127.0.0.1:${LV_BLOB_PORT:-8444}:${LV_BLOB_PORT:-8444}"
+      - "[::1]:${LV_BLOB_PORT:-8444}:${LV_BLOB_PORT:-8444}"
     depends_on:
       lv-fake-blob: { condition: service_healthy }
 
