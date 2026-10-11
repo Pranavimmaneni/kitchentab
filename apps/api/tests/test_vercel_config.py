@@ -116,3 +116,27 @@ def test_VERCEL_08_python_bundle_small_and_no_ocr_libraries() -> None:
                     total += f.stat().st_size
     assert seen, "runtime dependency graph is empty"
     assert total < 250 * 1024 * 1024, f"runtime packages are {total // 2**20} MB; Vercel's limit is 500 MB"
+
+
+@tid("VERCEL-11")
+def test_VERCEL_11_serverless_engine_keeps_a_small_pool_without_statement_caches() -> None:
+    """ADR-0032: the API keeps DB_SERVERLESS_POOL_SIZE connections per instance (pre-pinged, recycled)
+    and still never caches prepared statements (PgBouncer transaction mode); 0, and the queue
+    subscriber, open a connection per session."""
+    from sqlalchemy.pool import NullPool, QueuePool
+
+    from app.db import make_engine
+
+    url = "postgresql+asyncpg://u:p@localhost:5432/db"
+    pooled = make_engine(url, serverless=True, serverless_pool_size=10)
+    assert isinstance(pooled.pool, QueuePool) and pooled.pool.size() == 10
+    assert pooled.pool._pre_ping and pooled.pool._recycle == 300
+    db_src = (API_DIR / "app" / "db.py").read_text(encoding="utf-8")
+    assert '"statement_cache_size": 0' in db_src and "prepared_statement_name_func" in db_src
+    none = make_engine(url, serverless=True, serverless_pool_size=0)
+    assert isinstance(none.pool, NullPool)
+    queue_src = (API_DIR / "app" / "queues" / "outbox.py").read_text(encoding="utf-8")
+    assert "serverless_pool_size" not in queue_src, "the queue subscriber keeps NullPool"
+    from app.settings import Settings
+
+    assert Settings.model_fields["db_serverless_pool_size"].default == 10

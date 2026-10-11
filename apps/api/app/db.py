@@ -4,19 +4,35 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncIterator
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
 
-def make_engine(database_url: str, *, pool_size: int = 10, serverless: bool = False) -> AsyncEngine:
-    """`serverless` (PROFILE=vercel): no client-side pool and no prepared-statement caches, because
-    Neon's pooled URL is PgBouncer in transaction mode and Vercel runs many short-lived instances."""
+def make_engine(
+    database_url: str, *, pool_size: int = 10, serverless: bool = False, serverless_pool_size: int = 0
+) -> AsyncEngine:
+    """`serverless` (PROFILE=vercel): no prepared-statement caches, because Neon's pooled URL is
+    PgBouncer in transaction mode. `serverless_pool_size` > 0 keeps that many connections per
+    instance (ADR-0032): a fresh connection per request cost ~120 ms of setup and per-connection
+    type lookups, some of it inside the house lock (7 ticks/s instead of 58, SYNC-24). 0 = open a
+    connection per session (NullPool), for code that may run in a new event loop each time."""
     server_settings = {"timezone": "UTC", "application_name": "kitchentab-api"}
     if serverless:
+        pooling: dict[str, Any] = (
+            {
+                "pool_size": serverless_pool_size,
+                "max_overflow": serverless_pool_size // 2,
+                "pool_pre_ping": True,  # a frozen instance may wake up with dead connections
+                "pool_recycle": 300,
+            }
+            if serverless_pool_size > 0
+            else {"poolclass": NullPool}
+        )
         return create_async_engine(
             database_url,
-            poolclass=NullPool,
+            **pooling,
             connect_args={
                 "server_settings": server_settings,
                 "statement_cache_size": 0,

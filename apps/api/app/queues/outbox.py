@@ -19,6 +19,7 @@ from app.settings import get_settings
 @lru_cache(maxsize=1)
 def _deps() -> NotifyDeps:
     settings = get_settings()
+    # No pool here (ADR-0032): a queue invocation may run in a fresh event loop.
     engine = make_engine(settings.database_url, serverless=settings.profile == "vercel")
     return build_deps(settings, make_sessionmaker(engine), ControllableClock(), kicker(settings))
 
