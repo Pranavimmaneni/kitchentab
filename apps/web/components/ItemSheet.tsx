@@ -17,6 +17,7 @@ import {
 import type { ItemEditBody } from "@/lib/kitchen-writes";
 import { colorIndexOf } from "@/lib/bills";
 import { strings } from "@/lib/strings";
+import { gestureStrings } from "@/features/kitchen/gestures/strings";
 import { BottomSheet } from "./BottomSheet";
 import { FoodIcon, foodPastel } from "./FoodIcon";
 import { MemberAvatar } from "./MemberAvatar";
@@ -34,6 +35,10 @@ export type ItemSheetActions = {
   edit: (item: InventoryItem, body: ItemEditBody) => Promise<void>;
   ask: (item: InventoryItem, amount: AskAmount, note: string, key: string) => Promise<void>;
   cancel: (item: InventoryItem, requestId: string) => Promise<void>;
+  /** Kitchen gestures' no-gesture paths (SPEC §8): move to another place, and my own order. */
+  move?: (item: InventoryItem, to: Place) => Promise<void>;
+  reorder?: (item: InventoryItem, delta: -1 | 1) => Promise<void>;
+  orderEnds?: (item: InventoryItem) => { first: boolean; last: boolean };
 };
 
 export type ItemSheetProps = {
@@ -108,6 +113,10 @@ function SheetBody({
         </ul>
       </div>
 
+      {!editing && (actions.move || actions.reorder) ? (
+        <MoveControls item={item} actions={actions} />
+      ) : null}
+
       {mode === "owner" ? (
         editing ? (
           <EditForm
@@ -148,6 +157,75 @@ function SheetBody({
         </>
       ) : null}
     </div>
+  );
+}
+
+/** Move to (the two other places) and Move earlier / later in my own order (SPEC §8). */
+function MoveControls({ item, actions }: { item: InventoryItem; actions: ItemSheetActions }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const others = (["freezer", "fridge", "pantry"] as const).filter((p) => p !== item.place);
+  const ends = actions.orderEnds?.(item) ?? { first: true, last: true };
+  async function run(kind: string, fn: () => Promise<void>) {
+    setBusy(kind);
+    try {
+      await fn();
+    } catch {
+      // the screen shows the error toast
+    } finally {
+      setBusy(null);
+    }
+  }
+  return (
+    <>
+      {item.moved ? (
+        <p className="kt-item-sheet__moved">
+          {gestureStrings.movedBy(gestureStrings.placeLower[item.place], item.moved.by)}
+        </p>
+      ) : null}
+      {actions.move ? (
+        <div className="kt-field">
+          <span className="kt-field__label">{gestureStrings.moveToLabel}</span>
+          <div className="kt-two-up">
+            {others.map((p) => (
+              <PillButton
+                key={p}
+                variant="secondary"
+                size={44}
+                loading={busy === p}
+                onClick={() => void run(p, () => actions.move!(item, p))}
+              >
+                {gestureStrings.places[p]}
+              </PillButton>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {actions.reorder ? (
+        <div className="kt-field">
+          <span className="kt-field__label">{gestureStrings.yourOrder}</span>
+          <div className="kt-two-up">
+            <PillButton
+              variant="secondary"
+              size={44}
+              disabled={ends.first}
+              loading={busy === "earlier"}
+              onClick={() => void run("earlier", () => actions.reorder!(item, -1))}
+            >
+              {gestureStrings.moveEarlier}
+            </PillButton>
+            <PillButton
+              variant="secondary"
+              size={44}
+              disabled={ends.last}
+              loading={busy === "later"}
+              onClick={() => void run("later", () => actions.reorder!(item, 1))}
+            >
+              {gestureStrings.moveLater}
+            </PillButton>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 

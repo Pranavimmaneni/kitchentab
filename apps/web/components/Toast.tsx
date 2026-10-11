@@ -9,6 +9,8 @@ export type ToastProps = {
   /** The message to show; null hides the toast but keeps the live region mounted. */
   message: string | null;
   variant?: "info" | "error";
+  /** What screen readers hear instead of `message` (e.g. without arrows). */
+  spoken?: string;
   /** Shows an action button (Undo by default). */
   onUndo?: () => void;
   /** Label of the action button, e.g. "Retry" (default "Undo"). */
@@ -27,6 +29,7 @@ export type ToastProps = {
  */
 export function Toast({
   message,
+  spoken,
   variant = "info",
   onUndo,
   actionLabel = strings.toast.undo,
@@ -81,10 +84,20 @@ export function Toast({
           onMouseLeave={() => setHovered(false)}
           onFocus={() => setFocused(true)}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+              setFocused(false);
           }}
         >
-          <span className="kt-toast__message">{message}</span>
+          {spoken ? (
+            <>
+              <span className="kt-toast__message" aria-hidden="true">
+                {message}
+              </span>
+              <span className="sr-only">{spoken}</span>
+            </>
+          ) : (
+            <span className="kt-toast__message">{message}</span>
+          )}
           {onUndo ? (
             <button
               type="button"

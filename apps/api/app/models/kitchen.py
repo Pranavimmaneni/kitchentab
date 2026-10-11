@@ -6,6 +6,7 @@ import uuid
 from datetime import date, datetime
 
 from sqlalchemy import Boolean, CheckConstraint, Date, Index, Integer, PrimaryKeyConstraint, Text, text
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models import enums
@@ -53,6 +54,9 @@ class InventoryItem(Base):
     used_up_by_member_id: Mapped[uuid.UUID | None] = fk("members.id", nullable=True)
     used_up_at: Mapped[datetime | None] = ts(nullable=True)
     created_by: Mapped[uuid.UUID] = fk("members.id")
+    # Last move between Freezer, Fridge and Pantry: "Moved to pantry by Arjun" (gestures SPEC §5.2)
+    moved_at: Mapped[datetime | None] = ts(nullable=True)
+    moved_by_member_id: Mapped[uuid.UUID | None] = fk("members.id", nullable=True)
     version: Mapped[int] = version_col()
     created_at: Mapped[datetime] = ts()
     updated_at: Mapped[datetime] = ts()
@@ -67,6 +71,24 @@ class InventoryOwner(Base):
     open_to_share: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     # Last-writer stamps for the set-state sharing switch (§21.8)
     updated_by_member_id: Mapped[uuid.UUID | None] = fk("members.id", nullable=True)
+    updated_at: Mapped[datetime] = ts()
+
+
+class MemberItemOrder(Base):
+    """One member's own order of a section (gestures SPEC §5.1). Set-state: the client sends the whole
+    list; ids that are gone are skipped on read, never an error."""
+
+    __tablename__ = "member_item_order"
+    __table_args__ = (
+        PrimaryKeyConstraint("house_id", "member_id", "location"),
+        enum_check("location", enums.PLACES),
+        CheckConstraint("cardinality(item_ids) <= 1000", name="item_ids_bounded"),
+    )
+
+    house_id: Mapped[uuid.UUID] = fk("houses.id")
+    member_id: Mapped[uuid.UUID] = fk("members.id")
+    location: Mapped[str] = mapped_column(Text, nullable=False)
+    item_ids: Mapped[list[uuid.UUID]] = mapped_column(ARRAY(UUID(as_uuid=True)), nullable=False)
     updated_at: Mapped[datetime] = ts()
 
 

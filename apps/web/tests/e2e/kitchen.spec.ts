@@ -93,7 +93,7 @@ test("KITCH-07 filters ALL / MINE / OPEN / USE SOON show live counts and dim non
   await expect(tile(page, "Whole milk 1 gal")).toHaveCSS("opacity", "0.22");
   await expect(tile(page, "Baby spinach")).toHaveCSS("opacity", "1");
   await expect(tile(page, "Baby spinach")).toHaveAccessibleName(
-    "Baby spinach, owned by you, ask first, use soon",
+    "Baby spinach, owned by you, ask first, use soon, in the fridge",
   );
   // The choice is remembered on this device.
   await page.reload();

@@ -100,6 +100,10 @@ def test_range_expansion() -> None:
     assert ct.expand("FR-01..FR-03") == ["FR-01", "FR-02", "FR-03"]
     assert ct.expand("AUTH-14..16") == ["AUTH-14", "AUTH-15", "AUTH-16"]
     assert ct.expand("Screens") == []
+    assert ct.expand("FR-G01..G03") == ["FR-G01", "FR-G02", "FR-G03"]
+    assert ct.expand("SYNC-G1..G3") == ["SYNC-G1", "SYNC-G2", "SYNC-G3"]
+    assert ct.expand("A11Y-G1") == ["A11Y-G1"]
+    assert ct.expand("FR-G11") == ["FR-G11"]
 
 
 def test_each_titles_count_and_skipped_tests_do_not(tmp_path: Path) -> None:

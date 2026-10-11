@@ -170,6 +170,11 @@ export function planEvent(event: HouseEvent, ctx: PlanContext): Plan {
     case "house":
       plan.invalidate.push({ kind: "house" }, { kind: "me" });
       break;
+    case "item_order":
+      // Someone's own fridge order: only their other devices refetch (gestures SPEC §5.1).
+      if (ctx.myMemberId && aggregate.id === ctx.myMemberId)
+        plan.invalidate.push({ kind: "house" });
+      break;
     default:
       // Kitchen, asks and anything newer than this client: refetch what the house shows.
       plan.invalidate.push({ kind: "house" });

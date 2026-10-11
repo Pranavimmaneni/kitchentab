@@ -37,8 +37,9 @@ class User(Base):
     auto_remind: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     notify_kitchen_digest: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     # Push settings (§20.2). Quiet hours are on by default; NULL start/end means off.
-    quiet_start: Mapped[time | None] = mapped_column(Time, server_default=text("'22:00'"))
-    quiet_end: Mapped[time | None] = mapped_column(Time, server_default=text("'08:00'"))
+    # Quiet hours are off until the person sets them (owner's call 2026-10-11, PRD §20.2).
+    quiet_start: Mapped[time | None] = mapped_column(Time)
+    quiet_end: Mapped[time | None] = mapped_column(Time)
     private_lock_screen: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     prompt_snoozed_until: Mapped[datetime | None] = ts(nullable=True)
     created_at: Mapped[datetime] = ts()

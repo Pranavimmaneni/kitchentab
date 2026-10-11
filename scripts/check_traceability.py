@@ -26,8 +26,9 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
-ID_RE = r"(?:EDGE-(?:15|19)-\d{2}|[A-Z][A-Z0-9]*-\d{2})"
-FR_RE = r"FR-\d{2}"
+# Feature specs number their own rows with a G (kitchen gestures: GEST-01, SYNC-G1, FR-G01).
+ID_RE = r"(?:EDGE-(?:15|19)-\d{2}|[A-Z][A-Z0-9]*-(?:\d{2}|G\d(?!\d)))"
+FR_RE = r"FR-G?\d{2}"
 SKIP_FILES = {
     "test_check_traceability.py"
 }  # its synthetic fixtures contain bogus IDs on purpose
@@ -85,13 +86,14 @@ def parse_catalog(root: Path) -> Catalog:
 
 
 def expand(token: str) -> list[str]:
-    """`FR-01..FR-09`, `AUTH-01..16`, `SYNC-01..34` or a single ID."""
+    """`FR-01..FR-09`, `AUTH-01..16`, `SYNC-01..34`, `FR-G01..G11`, `SYNC-G1..G6` or a single ID."""
     token = token.strip().rstrip(",")
-    m = re.fullmatch(r"([A-Z][A-Z0-9]*)-(\d{2})\.\.(?:\1-)?(\d{2})", token)
+    m = re.fullmatch(r"([A-Z][A-Z0-9]*)-(G?)(\d{1,2})\.\.(?:\1-)?\2(\d{1,2})", token)
     if m:
-        prefix, lo, hi = m.group(1), int(m.group(2)), int(m.group(3))
-        return [f"{prefix}-{n:02d}" for n in range(lo, hi + 1)]
-    if re.fullmatch(ID_RE, token):
+        prefix, g, lo, hi = m.group(1), m.group(2), m.group(3), int(m.group(4))
+        out = [f"{prefix}-{g}{n:0{len(lo)}d}" for n in range(int(lo), hi + 1)]
+        return [i for i in out if re.fullmatch(ID_RE, i) or re.fullmatch(FR_RE, i)]
+    if re.fullmatch(ID_RE, token) or re.fullmatch(FR_RE, token):
         return [token]
     return []
 

@@ -17,7 +17,7 @@ from app.models.bills import (
 )
 from app.models.house import House, Member
 from app.models.identity import AuthIdentity, OtpCode, PaymentHandle, Session, User
-from app.models.kitchen import InventoryGrant, InventoryItem, InventoryOwner, ShareRequest
+from app.models.kitchen import InventoryGrant, InventoryItem, InventoryOwner, MemberItemOrder, ShareRequest
 from app.models.notify import Notification, NotificationPref, PushSubscription
 from app.models.platform import RateLimitHit, TestInboxMessage
 from app.models.sync import ActivityEvent, HouseEvent, IdempotencyKey, OutboxRow
@@ -40,6 +40,7 @@ __all__ = [
     "Item",
     "LedgerEntry",
     "Member",
+    "MemberItemOrder",
     "Notification",
     "NotificationPref",
     "OtpCode",

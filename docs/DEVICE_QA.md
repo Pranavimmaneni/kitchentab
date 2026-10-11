@@ -102,6 +102,24 @@ Time needed: about 60 minutes for everything; the starred lines (★) are the 15
       gmail.com and Google publishes those records; if KitchenTab ever sends from its own domain,
       that domain needs SPF, DKIM and DMARC set up first.
 
+## 10. Kitchen gestures and haptics (Milestone 11)
+
+Emulation can't judge long-press feel or haptics. On one iPhone (Safari and the Home Screen app,
+iOS 17.4+ for haptics) and one Android phone (Chrome), in the Fridge:
+
+- [ ] Hold an item: it lifts at about a third of a second with one tick/buzz; scrolling the list
+      with a finger that starts on an item still scrolls (no lift, no buzz).
+- [ ] Slide onto each bubble: a tick on each; release on Pantry moves it with a success buzz and
+      an Undo toast; release elsewhere does nothing. No text selection, no callout, no link preview.
+- [ ] Drag an item along its row: neighbours slide aside, lighter ticks; release, reload: your order
+      stays; a roommate's phone keeps theirs.
+- [ ] Drag and rest on two other items: each joins the stack with a buzz; drop on Pantry; HERE
+      refuses with a double buzz. The page never scrolls under the finger.
+- [ ] Select mode: tap three, move them; Done, Escape (keyboard) and Back leave it.
+- [ ] Settings › Kitchen › Haptics off: no buzzes anywhere; on: back. Hidden on a laptop.
+- [ ] Review & send: tap Send; the food flies into its bins and lands within about half a second;
+      with Reduce Motion on, counts just fade in.
+
 ## What to look at first if something is off
 
 1. **Push on iPhone**: only works from the Home Screen app on iOS 16.4+, and only after a tap on

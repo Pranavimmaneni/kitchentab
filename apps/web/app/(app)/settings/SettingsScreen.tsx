@@ -19,10 +19,12 @@ import { keys, useAuthMethods, useMe } from "@/lib/api/hooks";
 import { tabKeys, useIdentities, usePaymentHandles } from "@/lib/api/tabs-hooks";
 import type { Identity, PaymentHandles } from "@/lib/api/tabs-types";
 import type { User } from "@/lib/api/types";
+import { hapticSupport, hapticsEnabled, setHapticsEnabled } from "@/lib/haptics";
 import { forgetHouse, useCurrentHouse } from "@/lib/house";
 import { isIos, isStandalone } from "@/lib/pwa/device";
 import { promptInstall, usePrompts } from "@/lib/pwa/prompts";
 import { strings } from "@/lib/strings";
+import { settingsStrings } from "@/app/(app)/settings/strings";
 import { announceSignedOut } from "@/lib/sync/session";
 import { setPreference, useTheme, type ThemePreference } from "@/lib/theme";
 
@@ -43,7 +45,7 @@ export function SettingsScreen() {
   const user = me.data?.user;
   return (
     <div className="kt-screen kt-settings">
-      <AppHeader back={{ href: "/tabs" }} title={strings.settings.title} />
+      <AppHeader back={{ href: "/tabs" }} title={settingsStrings.title} />
       <main className="kt-screen__main">
         {me.isError ? <ErrorCard error={me.error} onRetry={() => void me.refetch()} /> : null}
         {!user && !me.isError ? <Skeleton variant="card" lines={6} /> : null}
@@ -101,8 +103,8 @@ function Profile({ user, notify }: { user: User; notify: Notify }) {
       const taken = out.name_taken_in ?? [];
       notify(
         taken.length > 0
-          ? strings.settings.nameSavedTaken(taken.join(", "), out.display_name)
-          : strings.settings.saved,
+          ? settingsStrings.nameSavedTaken(taken.join(", "), out.display_name)
+          : settingsStrings.saved,
       );
     } catch (error) {
       notify(errorText(error), "error");
@@ -113,7 +115,7 @@ function Profile({ user, notify }: { user: User; notify: Notify }) {
   return (
     <form className="kt-field" onSubmit={(e) => void submit(e)}>
       <label htmlFor={id} className="kt-field__label">
-        {strings.settings.profile}
+        {settingsStrings.profile}
       </label>
       <div className="kt-inline-form">
         <input
@@ -131,7 +133,7 @@ function Profile({ user, notify }: { user: User; notify: Notify }) {
           disabled={!changed}
           loading={saving}
         >
-          {strings.settings.saveName}
+          {settingsStrings.saveName}
         </PillButton>
       </div>
     </form>
@@ -152,7 +154,7 @@ function SignInMethods({ notify }: { notify: Notify }) {
     setRemoving(identity.id);
     try {
       await api.del(`/me/identities/${identity.id}`);
-      notify(strings.settings.removed);
+      notify(settingsStrings.removed);
     } catch (error) {
       notify(errorText(error), "error");
     } finally {
@@ -167,7 +169,7 @@ function SignInMethods({ notify }: { notify: Notify }) {
   return (
     <section className="kt-field" aria-labelledby="methods-heading">
       <h2 id="methods-heading" className="kt-field__label">
-        {strings.settings.methods}
+        {settingsStrings.methods}
       </h2>
       {identities.isPending ? <Skeleton lines={2} /> : null}
       <ul className="kt-list kt-methods">
@@ -178,7 +180,7 @@ function SignInMethods({ notify }: { notify: Notify }) {
             <button
               type="button"
               className="kt-icon-button"
-              aria-label={strings.settings.remove(identity.label)}
+              aria-label={settingsStrings.remove(identity.label)}
               aria-describedby={onlyOne ? lastId : undefined}
               disabled={onlyOne || removing === identity.id}
               onClick={() => void remove(identity)}
@@ -190,7 +192,7 @@ function SignInMethods({ notify }: { notify: Notify }) {
       </ul>
       {onlyOne ? (
         <p id={lastId} className="kt-hint">
-          {strings.settings.lastMethod}
+          {settingsStrings.lastMethod}
         </p>
       ) : null}
       {adding ? (
@@ -199,7 +201,7 @@ function SignInMethods({ notify }: { notify: Notify }) {
           onCancel={() => setAdding(null)}
           onAdded={async () => {
             setAdding(null);
-            notify(strings.settings.added);
+            notify(settingsStrings.added);
             await client.invalidateQueries({ queryKey: tabKeys.identities });
             await client.invalidateQueries({ queryKey: keys.me, exact: true });
           }}
@@ -208,12 +210,12 @@ function SignInMethods({ notify }: { notify: Notify }) {
         <div className="kt-two-up">
           {methods.data?.email !== false ? (
             <PillButton variant="dashed" size={52} onClick={() => setAdding("email")}>
-              {strings.settings.addEmail}
+              {settingsStrings.addEmail}
             </PillButton>
           ) : null}
           {methods.data?.phone ? (
             <PillButton variant="dashed" size={52} onClick={() => setAdding("phone")}>
-              {strings.settings.addPhone}
+              {settingsStrings.addPhone}
             </PillButton>
           ) : null}
         </div>
@@ -284,7 +286,7 @@ function AddMethod({
           void verify(code);
         }}
       >
-        <p className="kt-hint">{strings.settings.codeSent(masked)}</p>
+        <p className="kt-hint">{settingsStrings.codeSent(masked)}</p>
         <OTPInput
           value={code}
           onChange={setCode}
@@ -294,10 +296,10 @@ function AddMethod({
         />
         <div className="kt-two-up">
           <PillButton variant="secondary" size={52} onClick={onCancel}>
-            {strings.settings.cancel}
+            {settingsStrings.cancel}
           </PillButton>
           <PillButton type="submit" size={52} loading={busy} disabled={code.length !== 6}>
-            {strings.settings.verify}
+            {settingsStrings.verify}
           </PillButton>
         </div>
       </form>
@@ -306,7 +308,7 @@ function AddMethod({
   return (
     <form className="kt-form kt-card" onSubmit={(e) => void send(e)}>
       <label htmlFor={id} className="kt-field__label">
-        {channel === "email" ? strings.settings.emailLabel : strings.settings.phoneLabel}
+        {channel === "email" ? settingsStrings.emailLabel : settingsStrings.phoneLabel}
       </label>
       <input
         id={id}
@@ -325,10 +327,10 @@ function AddMethod({
       ) : null}
       <div className="kt-two-up">
         <PillButton variant="secondary" size={52} onClick={onCancel}>
-          {strings.settings.cancel}
+          {settingsStrings.cancel}
         </PillButton>
         <PillButton type="submit" size={52} loading={busy} disabled={destination.trim().length < 3}>
-          {strings.settings.sendCode}
+          {settingsStrings.sendCode}
         </PillButton>
       </div>
     </form>
@@ -340,10 +342,10 @@ const HANDLE_FIELDS: readonly {
   label: string;
   autoComplete?: string;
 }[] = [
-  { key: "venmo", label: strings.settings.venmo },
-  { key: "cashapp", label: strings.settings.cashapp },
-  { key: "paypal", label: strings.settings.paypal },
-  { key: "zelle", label: strings.settings.zelle, autoComplete: "email" },
+  { key: "venmo", label: settingsStrings.venmo },
+  { key: "cashapp", label: settingsStrings.cashapp },
+  { key: "paypal", label: settingsStrings.paypal },
+  { key: "zelle", label: settingsStrings.zelle, autoComplete: "email" },
 ];
 
 function Handles({ notify }: { notify: Notify }) {
@@ -374,7 +376,7 @@ function Handles({ notify }: { notify: Notify }) {
       );
       const out = await api.put<PaymentHandles>("/me/payment-handles", body);
       client.setQueryData(tabKeys.handles, out);
-      notify(strings.settings.handlesSaved);
+      notify(settingsStrings.handlesSaved);
     } catch (error) {
       notify(errorText(error), "error");
     } finally {
@@ -385,9 +387,9 @@ function Handles({ notify }: { notify: Notify }) {
   return (
     <form className="kt-field" aria-labelledby={`${baseId}-h`} onSubmit={(e) => void submit(e)}>
       <h2 id={`${baseId}-h`} className="kt-field__label">
-        {strings.settings.handles}
+        {settingsStrings.handles}
       </h2>
-      <p className="kt-hint">{strings.settings.handlesHint}</p>
+      <p className="kt-hint">{settingsStrings.handlesHint}</p>
       {!values ? <Skeleton lines={2} /> : null}
       {values
         ? HANDLE_FIELDS.map((f) => (
@@ -414,7 +416,7 @@ function Handles({ notify }: { notify: Notify }) {
         loading={saving}
         disabled={!values}
       >
-        {strings.settings.saveHandles}
+        {settingsStrings.saveHandles}
       </PillButton>
     </form>
   );
@@ -441,24 +443,56 @@ function Preferences({ user, notify }: { user: User; notify: Notify }) {
     <>
       <section className="kt-field" aria-labelledby="kitchen-pref">
         <h2 id="kitchen-pref" className="kt-field__label">
-          {strings.settings.kitchen}
+          {settingsStrings.kitchen}
         </h2>
         <div className="kt-share-row">
           <div className="kt-share-row__text">
-            <span className="kt-share-row__title">{strings.settings.shareDefault}</span>
+            <span className="kt-share-row__title">{settingsStrings.shareDefault}</span>
             <span id={shareNote} className="kt-share-row__note">
-              {strings.settings.shareDefaultNote}
+              {settingsStrings.shareDefaultNote}
             </span>
           </div>
           <Switch
             checked={user.share_by_default}
-            label={strings.settings.shareDefault}
+            label={settingsStrings.shareDefault}
             describedBy={shareNote}
             onChange={(v) => void set("share_by_default", v)}
           />
         </div>
+        <HapticsRow />
       </section>
     </>
+  );
+}
+
+/** Settings › Kitchen › Haptics (FR-G09): on by default, hidden where the device can't buzz. */
+function HapticsRow() {
+  const note = useId();
+  const [shown, setShown] = useState(false);
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    setShown(hapticSupport() !== null);
+    setOn(hapticsEnabled());
+  }, []);
+  if (!shown) return null;
+  return (
+    <div className="kt-share-row" data-testid="haptics-row">
+      <div className="kt-share-row__text">
+        <span className="kt-share-row__title">{settingsStrings.haptics}</span>
+        <span id={note} className="kt-share-row__note">
+          {settingsStrings.hapticsNote}
+        </span>
+      </div>
+      <Switch
+        checked={on}
+        label={settingsStrings.haptics}
+        describedBy={note}
+        onChange={(v) => {
+          setHapticsEnabled(v);
+          setOn(v);
+        }}
+      />
+    </div>
   );
 }
 
@@ -485,7 +519,7 @@ function Notifications({ user, notify }: { user: User; notify: Notify }) {
   return (
     <section className="kt-field" aria-labelledby="notify-heading">
       <h2 id="notify-heading" className="kt-field__label">
-        {strings.settings.notifications}
+        {settingsStrings.notifications}
       </h2>
       {/* N2 · Settings › Notifications (PRD §20.2) */}
       <Link href="/settings/notifications" className="kt-link-row">
@@ -498,10 +532,10 @@ function Notifications({ user, notify }: { user: User; notify: Notify }) {
         </span>
       </Link>
       <div className="kt-share-row">
-        <span className="kt-share-row__title">{strings.settings.notifyEmail}</span>
+        <span className="kt-share-row__title">{settingsStrings.notifyEmail}</span>
         <Switch
           checked={user.notify_email}
-          label={strings.settings.notifyEmail}
+          label={settingsStrings.notifyEmail}
           onChange={(v) => void setEmail(v)}
         />
       </div>
@@ -544,42 +578,42 @@ function HomeScreen({ notify }: { notify: Notify }) {
   const iphone = (
     <InstallSteps
       key="ios"
-      title={strings.settings.iphone}
-      steps={strings.settings.iphoneSteps}
+      title={settingsStrings.iphone}
+      steps={settingsStrings.iphoneSteps}
       testId="install-iphone"
     />
   );
   const android = (
     <InstallSteps
       key="android"
-      title={strings.settings.android}
-      steps={strings.settings.androidSteps}
+      title={settingsStrings.android}
+      steps={settingsStrings.androidSteps}
       testId="install-android"
     />
   );
   return (
     <section className="kt-field" aria-labelledby={headingId} data-testid="home-screen">
       <h2 id={headingId} className="kt-field__label">
-        {strings.settings.homeScreen}
+        {settingsStrings.homeScreen}
       </h2>
-      <p className="kt-hint">{strings.settings.homeScreenBody}</p>
+      <p className="kt-hint">{settingsStrings.homeScreenBody}</p>
       {prompts.canInstall ? (
         <PillButton
           size={52}
           fullWidth
           onClick={() =>
             void promptInstall().then((outcome) => {
-              if (outcome === "accepted") notify(strings.settings.installed);
+              if (outcome === "accepted") notify(settingsStrings.installed);
             })
           }
         >
-          {strings.settings.install}
+          {settingsStrings.install}
         </PillButton>
       ) : null}
       {device.ios ? [iphone, android] : [android, iphone]}
       <div className="kt-install-steps">
-        <h3 className="kt-install-steps__title">{strings.settings.computer}</h3>
-        <p className="kt-install-steps__line">{strings.settings.computerStep}</p>
+        <h3 className="kt-install-steps__title">{settingsStrings.computer}</h3>
+        <p className="kt-install-steps__line">{settingsStrings.computerStep}</p>
       </div>
     </section>
   );
@@ -612,19 +646,19 @@ function YourHouse({ notify }: { notify: Notify }) {
   return (
     <section className="kt-field" aria-labelledby="house-heading">
       <h2 id="house-heading" className="kt-field__label">
-        {strings.settings.yourHouse}
+        {settingsStrings.yourHouse}
       </h2>
       <Link href="/house" className="kt-link-row">
         <span className="kt-link-row__text">
-          <span className="kt-link-row__title">{strings.settings.houseLink}</span>
-          <span className="kt-link-row__hint">{strings.settings.houseLinkHint(current.name)}</span>
+          <span className="kt-link-row__title">{settingsStrings.houseLink}</span>
+          <span className="kt-link-row__hint">{settingsStrings.houseLinkHint(current.name)}</span>
         </span>
         <span className="kt-link-row__chevron" aria-hidden="true">
           ›
         </span>
       </Link>
       <PillButton variant="secondary" size={52} fullWidth onClick={() => setConfirming(true)}>
-        {strings.settings.leaveHouse(current.name)}
+        {settingsStrings.leaveHouse(current.name)}
       </PillButton>
       <Dialog
         open={confirming}
@@ -646,7 +680,7 @@ function Appearance() {
   return (
     <section className="kt-field" aria-labelledby="appearance">
       <h2 id="appearance" className="kt-field__label">
-        {strings.settings.appearance}
+        {settingsStrings.appearance}
       </h2>
       <SegmentedControl<ThemePreference>
         label={strings.theme.appearance}
@@ -709,7 +743,7 @@ function DataAndAccount({ notify }: { notify: Notify }) {
   return (
     <section className="kt-field" aria-labelledby="data-heading">
       <h2 id="data-heading" className="kt-field__label">
-        {strings.settings.data}
+        {settingsStrings.data}
       </h2>
       <a
         className="kt-pill"
@@ -719,7 +753,7 @@ function DataAndAccount({ notify }: { notify: Notify }) {
         href="/api/v1/me/export"
         download
       >
-        <span>{strings.settings.export}</span>
+        <span>{settingsStrings.export}</span>
       </a>
       <div className="kt-two-up">
         <PillButton
@@ -728,7 +762,7 @@ function DataAndAccount({ notify }: { notify: Notify }) {
           loading={busy === "out"}
           onClick={() => void leave("/auth/logout", "out")}
         >
-          {strings.settings.signOut}
+          {settingsStrings.signOut}
         </PillButton>
         <PillButton
           variant="secondary"
@@ -736,11 +770,11 @@ function DataAndAccount({ notify }: { notify: Notify }) {
           loading={busy === "all"}
           onClick={() => void leave("/auth/logout-all", "all")}
         >
-          {strings.settings.signOutAll}
+          {settingsStrings.signOutAll}
         </PillButton>
       </div>
       <PillButton variant="danger" size={52} fullWidth onClick={() => setConfirming(true)}>
-        {strings.settings.delete}
+        {settingsStrings.delete}
       </PillButton>
       <Dialog
         open={confirming}
@@ -749,16 +783,16 @@ function DataAndAccount({ notify }: { notify: Notify }) {
           setTyped("");
           setError(null);
         }}
-        title={strings.settings.deleteTitle}
+        title={settingsStrings.deleteTitle}
         variant="danger"
-        confirmLabel={strings.settings.delete}
-        confirmDisabled={typed.trim() !== strings.settings.deleteWord}
+        confirmLabel={settingsStrings.delete}
+        confirmDisabled={typed.trim() !== settingsStrings.deleteWord}
         confirmLoading={busy === "delete"}
         onConfirm={() => void remove()}
       >
-        <p>{strings.settings.deleteBody}</p>
+        <p>{settingsStrings.deleteBody}</p>
         <label htmlFor={typeId} className="kt-field__label">
-          {strings.settings.deleteType}
+          {settingsStrings.deleteType}
         </label>
         <input
           id={typeId}

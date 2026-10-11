@@ -6,6 +6,7 @@
 import { formatMoney } from "./format";
 import { parseCents } from "./bills";
 import { strings } from "./strings";
+import { requestsStrings } from "@/lib/requests-strings";
 import type {
   InventoryItem,
   KitchenFilter,
@@ -141,11 +142,11 @@ export function sourceLine(item: InventoryItem): string {
 /** "12 MIN AGO", "1 HOUR AGO", "2 DAYS AGO". */
 export function ageLabel(createdAt: string, now: Date): string {
   const minutes = Math.floor((now.getTime() - new Date(createdAt).getTime()) / 60_000);
-  if (minutes < 1) return strings.requests.justNow;
-  if (minutes < 60) return strings.requests.minAgo(minutes);
+  if (minutes < 1) return requestsStrings.justNow;
+  if (minutes < 60) return requestsStrings.minAgo(minutes);
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return strings.requests.hoursAgo(hours);
-  return strings.requests.daysAgo(Math.floor(hours / 24));
+  if (hours < 24) return requestsStrings.hoursAgo(hours);
+  return requestsStrings.daysAgo(Math.floor(hours / 24));
 }
 
 /** "5 MIN" for the waiting stamp. */
@@ -154,9 +155,9 @@ export function waitingFor(createdAt: string, now: Date): string {
 }
 
 export function coOwnersLine(coOwners: readonly string[]): string {
-  if (coOwners.length === 0) return strings.requests.coOwnersNone;
-  if (coOwners.length === 1) return strings.requests.coOwnersOne(coOwners[0]!);
-  return strings.requests.coOwnersMany(joinNames(coOwners));
+  if (coOwners.length === 0) return requestsStrings.coOwnersNone;
+  if (coOwners.length === 1) return requestsStrings.coOwnersOne(coOwners[0]!);
+  return requestsStrings.coOwnersMany(joinNames(coOwners));
 }
 
 /** Signed delta chip text: "KABIR +$3.83", "YOU −$1.92" (U+2212). */
@@ -182,7 +183,7 @@ export function splitDeltaChips(
     .map(([key, cents]) => {
       const id = key.replace(/^[mg]:/, "");
       const name =
-        id === meMemberId ? strings.people.youTag : (names[id] ?? strings.requests.someone);
+        id === meMemberId ? strings.people.youTag : (names[id] ?? requestsStrings.someone);
       return deltaChip(name, cents);
     });
 }
@@ -229,7 +230,7 @@ export function partBody(
 /** The price under the item icon on a request card (FR-82): its bill line total, or "No price". */
 export function requestPrice(req: Pick<ShareRequest, "line_total_cents">): string {
   const cents = req.line_total_cents;
-  return cents === null || cents === undefined ? strings.requests.noPrice : formatMoney(cents);
+  return cents === null || cents === undefined ? requestsStrings.noPrice : formatMoney(cents);
 }
 
 /** Chip-in amount in cents when it is within $0.01..line total, else null (FR-72, ASK-05). */
@@ -249,43 +250,43 @@ export function requestStamp(
   switch (req.status as RequestStatus) {
     case "pending":
       return {
-        text: strings.requests.stamps.waiting(waitingFor(req.created_at, now)),
+        text: requestsStrings.stamps.waiting(waitingFor(req.created_at, now)),
         tone: "paper",
       };
     case "declined":
-      return { text: strings.requests.stamps.declined, tone: "paper" };
+      return { text: requestsStrings.stamps.declined, tone: "paper" };
     case "expired":
-      return { text: strings.requests.stamps.expired, tone: "paper" };
+      return { text: requestsStrings.stamps.expired, tone: "paper" };
     case "cancelled":
-      return { text: strings.requests.stamps.cancelled, tone: "paper" };
+      return { text: requestsStrings.stamps.cancelled, tone: "paper" };
     case "approved": {
       const resolution = req.resolution as Resolution | null;
-      if (resolution === "split") return { text: strings.requests.stamps.split, tone: "lime" };
+      if (resolution === "split") return { text: requestsStrings.stamps.split, tone: "lime" };
       if (resolution === "chip_in")
         return {
-          text: strings.requests.stamps.chipIn(formatMoney(req.chip_in_cents ?? 0)),
+          text: requestsStrings.stamps.chipIn(formatMoney(req.chip_in_cents ?? 0)),
           tone: "lime",
         };
-      return { text: strings.requests.stamps.free, tone: "lime" };
+      return { text: requestsStrings.stamps.free, tone: "lime" };
     }
   }
 }
 
 /** One line under an answered incoming ask. */
 export function doneNote(req: ShareRequest, meMemberId: string | null): string {
-  const who = req.requester.display_name ?? strings.requests.someone;
+  const who = req.requester.display_name ?? requestsStrings.someone;
   const store = req.source?.store_name ?? strings.bill.untitled;
   let line: string;
-  if (req.status === "declined") line = strings.requests.done.declined(who);
-  else if (req.status === "expired") line = strings.requests.done.expired;
-  else if (req.status === "cancelled") line = strings.requests.done.cancelled;
-  else if (req.resolution === "split") line = strings.requests.done.split(who, store);
+  if (req.status === "declined") line = requestsStrings.done.declined(who);
+  else if (req.status === "expired") line = requestsStrings.done.expired;
+  else if (req.status === "cancelled") line = requestsStrings.done.cancelled;
+  else if (req.resolution === "split") line = requestsStrings.done.split(who, store);
   else if (req.resolution === "chip_in")
-    line = strings.requests.done.chipIn(who, formatMoney(req.chip_in_cents ?? 0));
-  else line = strings.requests.done.free(who);
+    line = requestsStrings.done.chipIn(who, formatMoney(req.chip_in_cents ?? 0));
+  else line = requestsStrings.done.free(who);
   const by = req.answered_by;
   if (by && by.id !== meMemberId && by.display_name)
-    return `${strings.requests.done.by(by.display_name)} ${line}`;
+    return `${requestsStrings.done.by(by.display_name)} ${line}`;
   return line;
 }
 
@@ -301,6 +302,6 @@ export function itemWords(req: Pick<ShareRequest, "item">): string {
 }
 
 export function outgoingText(req: ShareRequest): string {
-  const owners = joinNames(req.owners ?? []) || strings.requests.theOwners;
-  return strings.requests.outgoing(owners, req.amount_words, itemWords(req));
+  const owners = joinNames(req.owners ?? []) || requestsStrings.theOwners;
+  return requestsStrings.outgoing(owners, req.amount_words, itemWords(req));
 }

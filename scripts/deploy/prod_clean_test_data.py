@@ -117,6 +117,7 @@ HOUSE_DELETES = [
         "inventory_owners",
         f"DELETE FROM inventory_owners WHERE inventory_item_id IN ({TI})",
     ),
+    ("member_item_order", f"DELETE FROM member_item_order WHERE house_id IN ({TH})"),
     ("ledger_entries", f"DELETE FROM ledger_entries WHERE house_id IN ({TH})"),
     ("share_requests", f"DELETE FROM share_requests WHERE house_id IN ({TH})"),
     ("inventory_items", f"DELETE FROM inventory_items WHERE house_id IN ({TH})"),

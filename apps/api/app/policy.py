@@ -48,6 +48,10 @@ class Action(StrEnum):
     ITEM_OWNER_ACT = "kitchen.item.owner"  # sharing, used up, restore, still good, edit, answer, undo
     ASK_CREATE = "kitchen.ask.create"  # only non-owners ask (§19.4 step 1)
     ASK_CANCEL = "kitchen.ask.cancel"
+    # Kitchen gestures (docs/features/kitchen-gestures/SPEC.md §5): where food sits is physical, not
+    # ownership, so any current member moves any item; your own order is yours alone.
+    ITEM_MOVE = "kitchen.item.move"
+    ITEM_ORDER_SET = "kitchen.item_order.set"
 
 
 @dataclass(frozen=True)
@@ -218,6 +222,9 @@ def decide(
         return ALLOW  # signed-in members of the house (PRD §7, FR-18, EXTRACT-10)
     if action in (Action.HOUSE_READ, Action.INVITE_READ, Action.HOUSE_LEAVE, Action.BILL_CREATE):
         # Leave: business checks (admin hand-over, open bills as payer) live in the service.
+        return ALLOW
+    if action in (Action.ITEM_MOVE, Action.ITEM_ORDER_SET):
+        # The order is keyed by the actor's own member id, so nobody can set someone else's.
         return ALLOW
     if action == Action.MEMBER_RENAME_SELF:
         if target is None or target.member_id != actor.member_id:

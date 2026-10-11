@@ -96,6 +96,7 @@ class Settings(BaseSettings):
     email_from: str = "KitchenTab <hello@example.com>"
     rate_limit_writes_per_min: int = 60  # per user (PRD §11, SEC-05); 0 disables (load tests only)
     rate_limit_reads_per_min: int = 300  # per IP
+    rate_limit_moves_per_min: int = 60  # item move requests per user (gestures SPEC §5.2); 0 disables (tests)
     email_postal_address: str = ""  # footer of notification emails (EMAIL-01); set before launch
     smtp_url: str = "smtp://localhost:1025"
     smtp_host: str | None = None
@@ -211,7 +212,7 @@ class Settings(BaseSettings):
                 not self.google_redirect_uri.startswith("https://") or "localhost" in self.google_redirect_uri
             ):
                 problems.append("GOOGLE_REDIRECT_URI must be the https production callback")
-            if not (self.rate_limit_writes_per_min and self.rate_limit_reads_per_min):
+            if not (self.rate_limit_writes_per_min and self.rate_limit_reads_per_min and self.rate_limit_moves_per_min):
                 problems.append("rate limits can't be turned off in production")
             if self.queue != "vercel":
                 problems.append(f"QUEUE_PROVIDER must be vercel in {self.app_env}")

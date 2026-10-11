@@ -133,7 +133,7 @@ test("E2E-04 Kabir filters MINE, asks for the locked chicken, Pranav's phone get
   const apt = await aptWith(browser, baseURL, page, ["arjun", "kabir"]);
   const { kabir } = apt.pages as Required<typeof apt.pages>;
   const { billId } = await seedOpenShopRite(page, apt);
-  // Pranav's phone takes pushes at any hour (quiet hours, on by default, would hold them overnight).
+  // Pranav's phone takes pushes at any hour, whatever quiet hours might be set to.
   const device = `pranav-phone-${Date.now().toString(36)}`;
   await pushDevice(page, device);
   await call(page, "PUT", "/me/notification-prefs", { quiet_hours: false });

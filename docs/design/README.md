@@ -23,6 +23,13 @@ the `mode` prop set to `dark`; every screen also has a working theme toggle.
 | Notify.dc.html | N1 · Turn on notifications (iPhone / Android tabs) | sheet, PRD §20.2 |
 | NotifySettings.dc.html | N2 · Settings › Notifications | `/settings/notifications` |
 
+**Kitchen gestures** (Milestone 11): `gestures/` holds the sources (`Gestures.dc.html` canvas,
+`GR*`/`GM*`/`GS*`/`GC*` states, `Haptics.dc.html`, `SortStory.dc.html`, and `SortLive.dc.html`, a
+working prototype of the stocking animation) and `renders/gestures/` the PNGs (r1–r3 reorder, m1–m4
+quick actions, s1–s3 select mode, c1–c4 drag to collect, sort-before / sort-after / sort-storyboard,
+haptics-spec, two dark references). Spec: `docs/features/kitchen-gestures/SPEC.md` (PRD §19.10). The
+renders use literal hex values; the app uses the tokens.
+
 ## How to read the files
 
 They are written in a small template format, not plain HTML, so they will not render

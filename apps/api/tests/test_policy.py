@@ -48,7 +48,17 @@ def test_SEC_01_non_members_and_departed_members_get_nothing(action: Action) -> 
 
 
 @tid("SEC-01")
-@pytest.mark.parametrize("action", [Action.HOUSE_READ, Action.INVITE_READ, Action.HOUSE_LEAVE, Action.BILL_CREATE])
+@pytest.mark.parametrize(
+    "action",
+    [
+        Action.HOUSE_READ,
+        Action.INVITE_READ,
+        Action.HOUSE_LEAVE,
+        Action.BILL_CREATE,
+        Action.ITEM_MOVE,  # gestures SPEC §5.2: location is physical, not ownership
+        Action.ITEM_ORDER_SET,
+    ],
+)
 def test_SEC_01_any_active_member(action: Action) -> None:
     assert decide(action, actor=MEMBER).allowed and decide(action, actor=ADMIN).allowed
 

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Haptics spec</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1400px; height: 1120px; box-sizing: border-box; padding: 48px 56px; background: #FBFAF6; color: #121210; font-family: 'Work Sans', sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #5A5850">HAPTICS · ONE HELPER, haptic(&quot;event&quot;)</span>
+      <h2 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 34px; font-weight: 700">Where the phone taps back</h2>
+    </div>
+    <div style="display: flex; gap: 10px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">
+      <sc-for list="{{legend}}" as="l" hint-placeholder-count="5">
+        <span style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; border: 2px solid #121210; border-radius: 999px"><span style="width: {{l.d}}px; height: {{l.d}}px; border-radius: 50%; background: {{l.bg}}; border: 1.5px solid #121210"></span>{{l.label}}</span>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="border: 2px solid #121210; box-shadow: 5px 5px 0 #121210; background: #FFFFFF">
+    <div style="display: grid; grid-template-columns: 300px 150px 200px 170px minmax(0, 1fr); background: #121210; color: #FBFAF6; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.04em">
+      <span style="padding: 10px 14px">MOMENT</span><span style="padding: 10px 14px">FEEL</span><span style="padding: 10px 14px">ANDROID · vibrate()</span><span style="padding: 10px 14px">IPHONE</span><span style="padding: 10px 14px">ALSO ON SCREEN</span>
+    </div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+      <div style="display: grid; grid-template-columns: 300px 150px 200px 170px minmax(0, 1fr); border-top: 1.5px solid #C9C6BB; font-size: 13px; line-height: 1.4; align-items: center">
+        <span style="padding: 10px 14px; font-weight: 600">{{r.moment}}</span>
+        <span style="padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700"><span style="width: {{r.d}}px; height: {{r.d}}px; flex: none; border-radius: 50%; background: {{r.bg}}; border: 1.5px solid #121210"></span>{{r.feel}}</span>
+        <span style="padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 12px">{{r.android}}</span>
+        <span style="padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 12px">{{r.ios}}</span>
+        <span style="padding: 10px 14px; color: #5A5850">{{r.screen}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #5A5850">ONE DRAG-TO-COLLECT GESTURE, FINGER DOWN TO LIFT</span>
+    <div style="position: relative; height: 92px">
+      <span style="position: absolute; left: 0; right: 0; top: 34px; height: 2px; background: #121210"></span>
+      <sc-for list="{{marks}}" as="m" hint-placeholder-count="7">
+        <span style="position: absolute; left: {{m.x}}px; top: {{m.top}}px; width: {{m.d}}px; height: {{m.d}}px; border-radius: 50%; background: {{m.bg}}; border: 2px solid #121210; box-sizing: border-box; transform: translateX(-50%)"></span>
+        <span style="position: absolute; left: {{m.x}}px; top: 56px; transform: translateX(-50%); font-family: 'Space Mono', monospace; font-size: 10px; text-align: center; white-space: nowrap; line-height: 1.35">{{m.t}}<br>{{m.label}}</span>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; font-size: 13px; line-height: 1.5">
+    <div style="border: 2px solid #121210; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">WHAT THE WEB CAN DO</span>Android Chrome supports the Vibration API (durations only, no strength). Safari on iPhone has no Vibration API; the only route is toggling a hidden switch control, which gives one light tick per call. A pattern is a few ticks in a row.</div>
+    <div style="border: 2px solid #121210; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">RULES</span>At least 60 ms between haptics. Only fire during the user&#39;s own gesture, never for other people&#39;s live changes. Nothing on scroll or on cancel. Haptics are never the only signal: every one has a visual twin.</div>
+    <div style="border: 2px solid #121210; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">SETTING</span>Settings › Kitchen › Haptics, on by default. If the device can&#39;t do it, the switch is hidden. Treat the iPhone path as best effort: if Safari changes, the app still works the same, just without the tap.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const FEEL = {
+      tick: { label: 'SELECTION', d: 10, bg: '#FBFAF6' },
+      light: { label: 'LIGHT', d: 13, bg: '#C6F432' },
+      medium: { label: 'MEDIUM', d: 17, bg: '#7FD3F7' },
+      success: { label: 'SUCCESS', d: 17, bg: '#6A4CFF' },
+      warn: { label: 'BLOCKED', d: 17, bg: '#FF8A65' }
+    };
+    const row = (moment, f, android, ios, screen) => Object.assign({ moment, android, ios, screen }, { feel: FEEL[f].label, d: FEEL[f].d, bg: FEEL[f].bg });
+    const rows = [
+      row('Hold reaches 350 ms: item lifts (menu opens with it)', 'medium', '18', '1 tick', 'Item grows to 115%, hard shadow, tilt'),
+      row('Finger slides onto a menu bubble or drop bin', 'tick', '6', '1 tick', 'Bubble or bin grows and fills lime'),
+      row('Reorder: dragged item passes a new slot', 'tick', '5 (max 1 per 80 ms)', '1 tick (same limit)', 'Neighbours slide 62 px to open a gap'),
+      row('Drag-to-collect: an item joins the stack', 'light', '10', '1 tick', 'Dwell ring completes, badge +1, stack bumps'),
+      row('Select mode: tap to check or uncheck', 'tick', '6', '1 tick', 'Lime check and violet ring'),
+      row('Release on a menu option, a bin, or a move button', 'success', '[12, 60, 24]', '2 ticks, 60 ms apart', 'Item flies out, toast with Undo'),
+      row('Drop not allowed (the HERE bin, or asking for your own item)', 'warn', '[24, 40, 24]', '2 quick ticks', 'Bin shakes 3 px, label explains why'),
+      row('Stocking animation finishes after Send', 'success', '[12, 60, 24]', '2 ticks, 60 ms apart', 'Bins show counts. Once, not per item'),
+      row('Cancel: lift elsewhere, scroll, or a second finger', 'tick', 'none', 'none', 'Items glide back in 180 ms')
+    ];
+    rows[8].feel = 'NONE'; rows[8].d = 10; rows[8].bg = 'transparent';
+    const legend = ['tick', 'light', 'medium', 'success', 'warn'].map((k) => ({ label: FEEL[k].label, d: FEEL[k].d, bg: FEEL[k].bg }));
+    const X0 = 40, W = 1200, T = 2400;
+    const x = (ms) => Math.round(X0 + ms / T * W);
+    const mk = (ms, f, label) => ({ x: x(ms), d: FEEL[f].d + 8, top: 35 - (FEEL[f].d + 8) / 2, bg: FEEL[f].bg, t: ms + ' ms', label });
+    const marks = [
+      { x: x(0), d: 14, top: 28, bg: '#121210', t: '0 ms', label: 'finger down' },
+      mk(350, 'medium', 'milk lifts'),
+      mk(900, 'light', 'yogurt joins'),
+      mk(1250, 'light', 'kimchi joins'),
+      mk(1900, 'tick', 'over PANTRY bin'),
+      mk(2250, 'success', 'release: moved')
+    ];
+    return { rows, legend, marks };
+  }
+}
+</script>
+</body>
+</html>

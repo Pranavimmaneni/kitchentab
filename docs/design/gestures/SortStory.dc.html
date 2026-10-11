@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stocking animation storyboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1400px; height: 1000px; box-sizing: border-box; padding: 48px 56px; background: #FBFAF6; color: #121210; font-family: 'Work Sans', sans-serif; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #5A5850">STOCKING ANIMATION · PLAYS WHEN YOU TAP SEND</span>
+      <h2 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 34px; font-weight: 700">Items sort themselves in about 500 ms</h2>
+    </div>
+    <span style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; padding: 6px 12px; background: #C6F432; border: 2px solid #121210; box-shadow: 3px 3px 0 #121210; transform: rotate(-2deg); white-space: nowrap">LIFT 60 · FLY 220 · STAGGER 20</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px">
+    <sc-for list="{{frames}}" as="f" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <span style="font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700">{{f.t}}</span>
+          <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #5A5850">{{f.label}}</span>
+        </div>
+        <div style="position: relative; height: 320px; background: #ECEAE2; border: 2px solid #121210; border-radius: 8px; overflow: hidden">
+          <sc-for list="{{f.rows}}" as="r" hint-placeholder-count="6">
+            <div style="position: absolute; left: 10px; right: 10px; top: {{r.top}}px; height: 26px; border-radius: 6px; background: #FBFAF6; border: 1.5px solid #C9C6BB; opacity: {{f.rowOp}}; display: flex; align-items: center; padding-left: 34px; box-sizing: border-box">
+              <span style="width: 70px; height: 6px; border-radius: 3px; background: #C9C6BB"></span>
+            </div>
+          </sc-for>
+          <sc-for list="{{f.bins}}" as="b" hint-placeholder-count="3">
+            <div style="position: absolute; left: {{b.x}}px; top: 246px; width: 60px; height: 58px; box-sizing: border-box; border: 2px solid #121210; border-radius: 8px; background: {{b.bg}}; box-shadow: 3px 3px 0 #121210; transform: {{b.squash}}; transform-origin: 50% 100%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px">
+              <span style="font-family: 'Space Mono', monospace; font-size: 8px; font-weight: 700">{{b.label}}</span>
+              <sc-if value="{{b.has}}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; top: -9px; right: -7px; min-width: 22px; height: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C6F432; border: 1.5px solid #121210; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{b.count}}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-for list="{{f.dots}}" as="d" hint-placeholder-count="6">
+            <span style="position: absolute; left: {{d.x}}px; top: {{d.y}}px; width: 22px; height: 22px; border-radius: 50%; background: {{d.bg}}; border: 1.5px solid #121210; box-sizing: border-box; box-shadow: 1.5px 1.5px 0 #121210; transform: translate(-50%, -50%) scale({{d.s}}); opacity: {{d.op}}"></span>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px; line-height: 1.45; color: #121210">{{f.note}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #5A5850">TIMELINE · 8 ITEMS</span>
+    <div style="position: relative; height: 252px; border-top: 2px solid #121210">
+      <sc-for list="{{ticks}}" as="k" hint-placeholder-count="6">
+        <span style="position: absolute; left: {{k.x}}px; top: 0; bottom: 18px; width: 1px; background: #C9C6BB"></span>
+        <span style="position: absolute; left: {{k.x}}px; bottom: 0; transform: translateX(-50%); font-family: 'Space Mono', monospace; font-size: 10px; color: #5A5850">{{k.label}}</span>
+      </sc-for>
+      <sc-for list="{{lanes}}" as="l" hint-placeholder-count="5">
+        <span style="position: absolute; left: 0; top: {{l.y}}px; width: 250px; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; line-height: 1.3">{{l.label}}</span>
+        <sc-for list="{{l.bars}}" as="b" hint-placeholder-count="1">
+          <span style="position: absolute; left: {{b.x}}px; top: {{b.y}}px; width: {{b.w}}px; height: {{b.h}}px; background: {{b.bg}}; border: 1.5px solid #121210; box-sizing: border-box; border-radius: 3px"></span>
+        </sc-for>
+      </sc-for>
+      <span style="position: absolute; left: {{hapticX}}px; top: 196px; transform: translateX(-50%); font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; padding: 2px 6px; background: #6A4CFF; color: #FFFFFF; border: 1.5px solid #121210; white-space: nowrap">SUCCESS HAPTIC</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; font-size: 13px; line-height: 1.5">
+    <div style="border: 2px solid #121210; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">EASING</span>Lift: cubic-bezier(.2,1.4,.4,1), a small overshoot. Fly: X on cubic-bezier(.25,.1,.35,1), Y on cubic-bezier(.55,0,.85,.4), so the path arcs like a toss. Bin squash: scale 1.08 × 0.92, 100 ms, same overshoot curve.</div>
+    <div style="border: 2px solid #121210; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">NEVER BLOCKS</span>Runs while the send request is in flight and ends by about 500 ms. More than 8 items: stagger shrinks to fit (140 ms ÷ items). If the send fails, icons fly back in 200 ms and an error toast shows.</div>
+    <div style="border: 2px solid #121210; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">REDUCED MOTION</span>No flying. Rows dim, the bin counts fade in over 120 ms, and the success haptic still fires. Transform and opacity only, so it stays at 60 fps on older phones.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const LIFT = 60, FLY = 220, ST = 20;
+    const BINS = [['FREEZER', 18, '#F4FBFC'], ['FRIDGE', 94, '#E3F1F3'], ['PANTRY', 170, '#F1EADB']];
+    const ITEMS = [[0, '#E3DDFF'], [0, '#FFE0D4'], [1, '#D6F0FB'], [1, '#E3DDFF'], [1, '#FFF0C2'], [1, '#FFE0D4'], [2, '#FFE0D4'], [2, '#FFF0C2']];
+    const clamp = (v) => Math.max(0, Math.min(1, v));
+    const ease = (p) => p * p * (1.4 - 0.4 * p);
+    const frameAt = (t, label, note) => {
+      const landed = [0, 0, 0];
+      const firstLand = [null, null, null];
+      const dots = ITEMS.map(([b, bg], i) => {
+        const sx = 25, sy = 26 + 26 * i;
+        const bx = BINS[b][1] + 30 + ((i % 2) ? 6 : -6), by = 262;
+        const lp = clamp(t / LIFT);
+        const p = clamp((t - LIFT - ST * i) / FLY);
+        const land = LIFT + ST * i + FLY;
+        if (t >= land) { landed[b]++; if (firstLand[b] === null) firstLand[b] = land; }
+        const x = sx + (bx - sx) * p;
+        const y = sy - 5 * lp * (1 - p) + (by - sy) * ease(p);
+        const s = p > 0 ? 1.15 - 0.5 * p : 1 + 0.15 * lp;
+        return { x: Math.round(x), y: Math.round(y), s: s.toFixed(2), bg, op: t >= land + 40 ? 0 : 1 };
+      });
+      const bins = BINS.map(([l, x, bg], b) => {
+        const fl = firstLand[b];
+        const sq = fl !== null && t - fl >= 0 && t - fl < 100;
+        return { label: l, x, bg, has: landed[b] > 0, count: '+' + landed[b], squash: sq ? 'scale(1.08, 0.92)' : 'none' };
+      });
+      return { t: t + ' ms', label, note, dots, bins, rowOp: t === 0 ? 1 : 0.4, rows: ITEMS.map((_, i) => ({ top: 13 + 26 * i })) };
+    };
+    const frames = [
+      frameAt(0, 'TAP SEND', 'Rows are at full strength. Each icon sits on its row.'),
+      frameAt(60, 'LIFT', 'Icons pop to 115% and rise 5 px. Rows dim to 40%.'),
+      frameAt(180, 'TOSS', 'Icons fly one after another, 20 ms apart, arcing down to their bins.'),
+      frameAt(320, 'LAND', 'The freezer and fridge have caught theirs. Each bin squashes on its first catch.'),
+      frameAt(500, 'DONE', 'All 8 are stocked and the counts show. The success haptic fires at 420 ms.')
+    ];
+    const X0 = 270, PX = 1.55;
+    const xa = (ms) => Math.round(X0 + ms * PX);
+    const ticks = [0, 100, 200, 300, 400, 500].map((m) => ({ x: xa(m), label: m + ' ms' }));
+    const bar = (a, b, y, h, bg) => ({ x: xa(a), w: Math.max(4, xa(b) - xa(a)), y, h, bg });
+    const fly = [];
+    for (let i = 0; i < 8; i++) fly.push(bar(LIFT + ST * i, LIFT + ST * i + FLY, 52 + i * 7, 6, '#6A4CFF'));
+    const lanes = [
+      { label: 'Icons lift', y: 14, bars: [bar(0, LIFT, 14, 16, '#C6F432')] },
+      { label: 'Fly, items 1–8', y: 66, bars: fly },
+      { label: 'Rows dim', y: 120, bars: [bar(0, 120, 120, 16, '#C9C6BB')] },
+      { label: 'Bin squash (first catch)', y: 150, bars: [bar(280, 380, 150, 12, '#D6F0FB'), bar(320, 420, 150, 12, '#E3F1F3'), bar(400, 500, 150, 12, '#F7A44A')] },
+      { label: 'Counts tick in', y: 172, bars: [bar(300, 390, 172, 12, '#C6F432'), bar(380, 470, 172, 12, '#C6F432'), bar(420, 510, 172, 12, '#C6F432')] }
+    ];
+    return { frames, ticks, lanes, hapticX: xa(420) };
+  }
+}
+</script>
+</body>
+</html>

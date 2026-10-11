@@ -15,8 +15,9 @@ import pytest
 
 F = TypeVar("F", bound=Callable[..., Any])
 
-TEST_ID = re.compile(r"^(?:[A-Z0-9]+-\d{2}|EDGE-(?:15|19)-\d{2})$")
-FR_ID = re.compile(r"^FR-\d{2}$")
+# Feature specs number their own rows with a G (kitchen gestures: SYNC-G1, FR-G01).
+TEST_ID = re.compile(r"^(?:[A-Z0-9]+-(?:\d{2}|G\d)|EDGE-(?:15|19)-\d{2})$")
+FR_ID = re.compile(r"^FR-G?\d{2}$")
 
 
 def tid(*ids: str) -> Callable[[F], F]:
