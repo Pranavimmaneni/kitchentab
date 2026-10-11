@@ -9,13 +9,14 @@ import {
 } from "./fixtures/app";
 import { API_ORIGIN } from "./fixtures/env";
 import {
+  apiSignIn,
   aptWith,
   closeApt,
   open,
   seedShopRite as seedOpenShopRite,
   tile,
 } from "./fixtures/household";
-import { expect, test } from "./fixtures/roommates";
+import { expect, profileFor, test } from "./fixtures/roommates";
 import { box, openBill } from "./fixtures/sync";
 
 /**
@@ -276,4 +277,60 @@ test("E2E-06 the payer settles with money still owed, it carries into house bala
   expect(again.Arjun!.net_cents).toBe(3391);
   expect(again.Arjun!.carried_cents).toBe(3391);
   await closeApt(apt);
+});
+
+test("E2E-10 the payer edits the same price on a phone and a laptop: the second save shows theirs vs yours, Keep mine re-applies and both devices agree [FR-33] @multi", async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(150_000);
+  const EGGS = "Eggs 18 ct";
+  // One payer, two devices: this phone (the project's device) and a laptop.
+  const email = uniqueEmail("pranav");
+  await apiSignIn(page, email);
+  const apt = await createHouse(page);
+  const { billId } = await seedShopRite(page, apt, { split: "all", send: true });
+  const laptopContext = await browser.newContext({ ...profileFor(browser, 3).options, baseURL });
+  const laptop = await laptopContext.newPage();
+  await apiSignIn(laptop, email);
+
+  for (const device of [page, laptop]) {
+    await openBill(device, billId);
+    await device.getByRole("tab", { name: "Items & splits" }).click();
+    await expect(device.getByRole("grid", { name: "Who's eating what" })).toBeVisible();
+  }
+
+  // The phone opens the editor first ...
+  await page.getByRole("button", { name: `Edit ${EGGS}` }).click();
+  const phoneEditor = page.getByRole("dialog", { name: "Edit item" });
+  await expect(phoneEditor.getByLabel("LINE TOTAL")).toHaveValue("5.49");
+  // ... the laptop changes the price to $6.00 and saves.
+  await laptop.getByRole("button", { name: `Edit ${EGGS}` }).click();
+  const laptopEditor = laptop.getByRole("dialog", { name: "Edit item" });
+  await laptopEditor.getByLabel("LINE TOTAL").fill("6.00");
+  await laptopEditor.getByRole("button", { name: "Save" }).click();
+  await expect(laptopEditor).toBeHidden();
+  await expect(
+    page.getByRole("row").filter({ hasText: EGGS }).getByText("$6.00", { exact: true }),
+  ).toBeAttached({ timeout: 2000 });
+
+  // The phone saves $7.00 on its stale version: the merge prompt shows both.
+  await phoneEditor.getByLabel("LINE TOTAL").fill("7.00");
+  await phoneEditor.getByRole("button", { name: "Save" }).click();
+  const conflict = page.getByRole("dialog", { name: "You just changed this" });
+  await expect(conflict.getByText("THEIRS", { exact: true })).toBeVisible();
+  await expect(conflict.getByText("$6.00", { exact: true })).toBeVisible();
+  await expect(conflict.getByText("YOURS", { exact: true })).toBeVisible();
+  await expect(conflict.getByText("$7.00", { exact: true })).toBeVisible();
+  await conflict.getByRole("button", { name: "Keep mine" }).click();
+  await expect(conflict).toBeHidden();
+
+  // Re-applied: both devices show $7.00.
+  for (const device of [page, laptop]) {
+    await expect(
+      device.getByRole("row").filter({ hasText: EGGS }).getByText("$7.00", { exact: true }),
+    ).toBeVisible({ timeout: 2000 });
+  }
+  await laptopContext.close();
 });
