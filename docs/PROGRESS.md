@@ -369,6 +369,7 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 53. Playwright blocks service workers by default; PWA/push/offline specs opt in, and push specs use the full Chromium build (`channel: "chromium"`) because the headless shell always reports notification permission as denied. ADR-0027.
 54. `X-Client-Version` is the integer API compatibility level (`1`), compared numerically with MIN_CLIENT_VERSION. ADR-0026.
 55. The first-bill notifications pre-prompt (N1) waits until the payer leaves E · Share: a write moment is decided on the next idle check and Share is marked busy (`data-kt-busy`), so the sheet never lands on the Share button (PUSH-01, E2E-01; PRD §20.2 rule 1 clarified).
+56. A CHECK? (flagged) line is cleared once the payer edits its name, quantity or price: they checked it. Tapping its storage tag leaves the stamp (EXTRACT-05, FR-12).
 
 ## Waivers
 

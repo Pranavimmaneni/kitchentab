@@ -3,10 +3,13 @@ import {
   call,
   createHouse,
   hydrated,
+  lastShared,
   seedShopRite,
   signInWithEmail,
+  stubShare,
   uniqueEmail,
 } from "./fixtures/app";
+import { receiptFile, waitForReading } from "./fixtures/receipts";
 import { API_ORIGIN } from "./fixtures/env";
 import {
   apiSignIn,
@@ -333,4 +336,68 @@ test("E2E-10 the payer edits the same price on a phone and a laptop: the second 
     ).toBeVisible({ timeout: 2000 });
   }
   await laptopContext.close();
+});
+
+test("E2E-01 a new payer signs in with an email code, sets up the house, invites, snaps a receipt read on the phone, fixes the flagged line, tags storage, splits, sends and shares [FR-02] [FR-03] [FR-04] [FR-10] [FR-12] [FR-15] [FR-21] [FR-24] [FR-30]", async ({
+  page,
+}) => {
+  test.setTimeout(420_000);
+  await stubShare(page);
+  await signInWithEmail(page, uniqueEmail("pranav"));
+  await expect(page.getByRole("heading", { name: "Who lives here?" })).toBeVisible();
+  await page.getByLabel("HOUSE NAME").fill("Apt 4B");
+  for (const name of ["Arjun", "Meera", "Kabir"]) {
+    await page.getByRole("textbox", { name: "Add a roommate" }).fill(name);
+    await page.getByRole("textbox", { name: "Add a roommate" }).press("Enter");
+    await expect(page.getByRole("button", { name: `Remove ${name}` })).toBeVisible();
+  }
+  await page.getByRole("button", { name: "Drop it in the group chat ↗" }).click();
+  expect((await lastShared(page))?.url).toMatch(/\/h\/[A-Za-z0-9]+$/);
+
+  // Snap: a Trader Joe's photo, read on the phone (tesseract.js from /ocr/).
+  await page.getByRole("link", { name: "Snap your first receipt →" }).click();
+  await expect(page.getByRole("dialog", { name: "Snap a receipt" })).toBeVisible();
+  await page.locator("[data-kt-capture-ready]").waitFor({ state: "attached" });
+  await page.locator('input[data-kt-input="library"]').setInputFiles(receiptFile("i14.png"));
+  expect(await waitForReading(page, 360_000)).toBe("review");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Did we read it right?" }),
+  ).toBeVisible();
+
+  // The smudged mozzarella line comes back flagged; fix its name.
+  const flagged = page.locator(".kt-item-row[data-flagged]").filter({ hasText: /mozz/i });
+  await expect(flagged).toHaveCount(1);
+  await expect(flagged.getByText("CHECK?")).toBeVisible();
+  await flagged.getByRole("button", { name: /^Edit / }).click();
+  const editor = page.getByRole("dialog");
+  await expect(editor.getByLabel("NAME")).toHaveValue(/mozz/i);
+  await editor.getByLabel("NAME").fill("Fresh mozzarella 8 oz");
+  await editor.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(editor).toBeHidden();
+  const fixed = page.locator(".kt-item-row").filter({ hasText: "Fresh mozzarella 8 oz" });
+  await expect(fixed).toBeVisible();
+  await expect(fixed.getByText("CHECK?")).toHaveCount(0);
+  await expect(page.getByText("*** MATHS CHECKS OUT ***")).toBeVisible();
+
+  // Tag storage: one tap cycles the cola's tag and saves.
+  const colaTag = page.getByRole("button", { name: /^Cola .* goes in: / });
+  const before = await colaTag.textContent();
+  await colaTag.click();
+  await expect(colaTag).not.toHaveText(before ?? "");
+
+  // Split: everyone on everything, then send.
+  await page.getByRole("button", { name: "Looks good → split it" }).click();
+  await page.waitForURL(/\/split$/);
+  await page.getByRole("button", { name: "✦ Split the rest with everyone" }).click();
+  await page.getByRole("link", { name: "All sorted → review" }).click();
+  await page.waitForURL(/\/send$/);
+  await expect(page.getByRole("heading", { name: "Here's the damage" })).toBeVisible();
+  await page.getByRole("button", { name: "Send it to the house ↗" }).click();
+
+  // E · Share: the card with the bill link.
+  await page.waitForURL(/\/share$/);
+  await expect(page.getByText("SENT!")).toBeVisible();
+  await expect(page.getByText(/^TRADER JOE'S · \$30\.37$/i)).toBeVisible();
+  await page.getByRole("button", { name: "Share ↗" }).click();
+  expect((await lastShared(page))?.url).toMatch(/\/b\/[A-Za-z0-9]+$/);
 });
