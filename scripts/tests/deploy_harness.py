@@ -75,6 +75,29 @@ def make_bin(bin_dir: Path) -> None:
             shim.chmod(shim.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
+DECOY_TEXT = "decoy: the Python vercel package's console script"
+
+
+def make_venv_decoy(venv: Path) -> Path:
+    """A virtualenv-shaped folder (pyvenv.cfg + Scripts/bin) holding a `vercel` that is not the CLI,
+    like the one the Vercel Queues SDK dependency installs in apps/api/.venv. Returns its bin folder."""
+    venv.mkdir(parents=True, exist_ok=True)
+    (venv / "pyvenv.cfg").write_text("home = /nowhere\n", encoding="utf-8")
+    bin_dir = venv / ("Scripts" if IS_WINDOWS else "bin")
+    bin_dir.mkdir(exist_ok=True)
+    if IS_WINDOWS:
+        (bin_dir / "vercel.cmd").write_text(
+            f"@echo {DECOY_TEXT} 1>&2\r\n@exit /b 9\r\n", encoding="utf-8"
+        )
+    else:
+        shim = bin_dir / "vercel"
+        shim.write_text(
+            f'#!/bin/sh\necho "{DECOY_TEXT}" >&2\nexit 9\n', encoding="utf-8"
+        )
+        shim.chmod(shim.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    return bin_dir
+
+
 @dataclass
 class Run:
     code: int

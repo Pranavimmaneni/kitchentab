@@ -321,6 +321,9 @@ IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08
 - [x] Morning scripts: `make deploy-setup deploy redeploy rollback set-email prod-clean-test-data` with
       `DRY_RUN=1` and 44 stubbed-CLI tests (VERCEL-10, ADR-0022). Production checks must sign up with
       `@launch-check.kitchentab.test` emails or `prod-clean-test-data` won't find their rows
+- [x] The scripts find the npm Vercel CLI under `uv run`: `vercel` folders inside a virtualenv (the Python
+      `vercel` package's console script in apps/api/.venv) are skipped, `VERCEL_CLI=<path>` overrides
+      (6 tests in scripts/tests/test_deploy_vercel_cli.py, VERCEL-10)
 - [x] `docs/LAUNCH.md` drafted (finalize after launch-check and the local-vercel rehearsal exist)
 - [x] local-vercel rehearsal (`make local-vercel-up/-down`, ADR-0028): `next build`/`next start` + `app.vercel_entry:app`
       behind a Caddy edge with vercel.json routing on https://localhost:8443 (local CA), 4.5 MB → 413, 300 s write
