@@ -157,7 +157,11 @@ async def item_views(
     today = house_today(house, now)
     out = []
     for item in items:
-        its_owners = [o for o in owners[item.id] if members[o.member_id].status == "active"]
+        # In house order, so "Pranav & Arjun" reads the same on every load (KITCH-08).
+        its_owners = sorted(
+            (o for o in owners[item.id] if members[o.member_id].status == "active"),
+            key=lambda o: (members[o.member_id].sort_order, str(o.member_id)),
+        )
         is_open = all(o.open_to_share for o in its_owners)  # no active owners: open to everyone
         mine = any(o.member_id == me.member_id for o in its_owners)
         fresh = freshness(item, today)
@@ -280,6 +284,7 @@ async def _active_owner_ids(db: AsyncSession, item_id: uuid.UUID) -> list[uuid.U
                 select(InventoryOwner.member_id)
                 .join(Member, Member.id == InventoryOwner.member_id)
                 .where(InventoryOwner.inventory_item_id == item_id, Member.status == "active")
+                .order_by(Member.sort_order, Member.id)
             )
         ).all()
     )
