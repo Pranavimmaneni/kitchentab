@@ -395,6 +395,59 @@ test("ASK-04 MONEY-09 Add to split shows KABIR +$3.83 · YOU −$1.92 · ARJUN �
   await closeApt(apt);
 });
 
+test("ASK-15 ASK-16 ASK-18 the owner picks 25% or types their own value, sees exactly what Kabir pays, and both tabs show the item price [FR-81] [FR-82]", async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(150_000);
+  const apt = await aptWith(browser, baseURL, page, ["arjun", "kabir"]);
+  const { kabir } = apt.pages as Required<typeof apt.pages>;
+  // shoprite_after_meera_joins_coffee → request_custom_split_* (packages/fixtures/money_cases.json).
+  const { billId } = await seedShopRite(page, apt, { meeraOnCoffee: true });
+  const before = await call<{ shares: Record<string, number> }>(page, "GET", `/bills/${billId}`);
+  const ids = await fridgeIds(page, apt.id);
+  await call(kabir, "POST", `/inventory/${ids["Chicken thighs 3 lb"]}/requests`, {
+    amount: "a_bit",
+  });
+
+  await open(kabir, "/kitchen/requests");
+  await kabir.getByRole("tab", { name: /YOU ASKED/ }).click();
+  await expect(kabir.getByTestId("request-price")).toHaveText("$11.37");
+
+  await open(page, "/kitchen/requests");
+  const card = page.getByRole("article", { name: "Kabir wants a bit of your chicken thighs" });
+  await expect(card.getByTestId("request-price")).toHaveText("$11.37");
+  await card.getByRole("radio", { name: /Add them to the split/ }).click();
+  await expect(card.getByRole("radio", { name: "Equal share" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await expect(card.getByTestId("split-deltas")).toHaveText("KABIR +$3.83YOU −$1.92ARJUN −$1.91");
+
+  await card.getByRole("radio", { name: "25%" }).click();
+  await expect(card.getByTestId("part-summary")).toHaveText("KABIR PAYS $2.84 OF $11.37");
+  await expect(card.getByTestId("split-deltas")).toHaveText("KABIR +$2.87ARJUN −$1.44YOU −$1.43");
+
+  await card.getByRole("radio", { name: "Custom" }).click();
+  await card.getByRole("tab", { name: "$" }).click();
+  const value = card.getByLabel("THEIR PART IN DOLLARS");
+  await value.fill("11.38");
+  await expect(card.getByText("Between $0.01 and $11.37.")).toBeVisible();
+  await expect(card.getByRole("button", { name: "Say yes" })).toBeDisabled();
+  await value.fill("5");
+  await expect(card.getByTestId("part-summary")).toHaveText("KABIR PAYS $5.00 OF $11.37");
+  await card.getByRole("button", { name: "Say yes" }).click();
+  await expect(card.getByText("YES · ADDED TO SPLIT")).toBeVisible();
+
+  // Exactly $5.00 of the line, plus Kabir's part of the tax (request_custom_split_amount).
+  const after = await call<{ shares: Record<string, number> }>(page, "GET", `/bills/${billId}`);
+  const delta = (who: "pranav" | "arjun" | "kabir") =>
+    after.shares[`m:${apt.member[who]}`]! - before.shares[`m:${apt.member[who]}`]!;
+  expect([delta("kabir"), delta("pranav"), delta("arjun")]).toEqual([505, -252, -253]);
+  await closeApt(apt);
+});
+
 test("ASK-05 EDGE-19-04 once the tab is settled, Chip in is prefilled with the would-be share and editable from $0.01 to the line total [FR-72] [FR-74]", async ({
   page,
   browser,
@@ -414,6 +467,11 @@ test("ASK-05 EDGE-19-04 once the tab is settled, Chip in is prefilled with the w
   const card = page.getByRole("article", { name: "Kabir wants half of your chicken thighs" });
   await expect(card.getByRole("radio", { name: /Add them to the split/ })).toHaveCount(0);
   await card.getByRole("radio", { name: /Ask them to chip in/ }).click();
+  await expect(card.getByTestId("part-summary")).toHaveText(
+    "KABIR OWES $3.79, SPLIT BETWEEN THE OWNERS",
+  );
+  // The owner's own value lives under Custom (FR-81), prefilled with the suggestion.
+  await card.getByRole("radio", { name: "Custom" }).click();
   const amount = card.getByLabel("CHIP IN");
   await expect(amount).toHaveValue("3.79");
   await amount.fill("11.38");

@@ -275,3 +275,64 @@ def test_inputs_must_be_integer_cents_and_known_fee_kinds() -> None:
     bad_fee = Fee("bribe", "x", 1)  # type: ignore[arg-type]
     with pytest.raises(MoneyError, match="fee kind"):
         compute_shares(BillInput((Participant("a", 0),), (Item("x", 100, (Allocation("a"),)),), 0, (bad_fee,), 101))
+
+
+reference = _load("compute_shares_reference", REPO_ROOT / "docs" / "reference" / "compute_shares_reference.py")
+
+
+@st.composite
+def bills_with_shares(draw: st.DrawFn) -> dict[str, Any]:
+    """The reference JSON shape, with fixed shares (custom split, ADR-0030) mixed into weighted lines."""
+    people = [{"id": f"p{i:02d}", "sort_order": draw(st.integers(0, 3))} for i in range(draw(st.integers(1, 8)))]
+    ids = [p["id"] for p in people]
+    items: list[dict[str, Any]] = []
+    for k in range(draw(st.integers(1, 12))):
+        who = draw(st.lists(st.sampled_from(ids), min_size=1, max_size=len(ids), unique=True))
+        allocs: list[dict[str, Any]] = []
+        for pid in who:
+            if draw(st.integers(0, 3)) == 0:
+                den = draw(st.sampled_from([1, 3, 4, 100, 1137, 999_983, 10_000_000]))
+                allocs.append({"participant": pid, "share_num": draw(st.integers(1, den)), "share_den": den})
+            else:
+                allocs.append({"participant": pid, "weight": draw(st.sampled_from(["1", "1", "0.5", "2", "0.001"]))})
+        items.append({"id": f"i{k}", "line_total_cents": draw(st.integers(-5000, 10_000_000)), "allocations": allocs})
+    tax = draw(st.integers(0, 5000))
+    return {
+        "participants": people,
+        "items": items,
+        "tax_cents": tax,
+        "fees": [],
+        "total_cents": sum(i["line_total_cents"] for i in items) + tax,
+    }
+
+
+@tid("MONEY-11")
+@fr("FR-81")
+@settings(max_examples=1500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(raw=bills_with_shares())
+def test_MONEY_11_fixed_shares_match_the_reference(raw: dict[str, Any]) -> None:
+    """Custom split: integer common-denominator weights == the reference's exact Fractions, and a
+    fixed share of a line gets exactly its fraction (to the cent) whenever someone weighted is left."""
+    bill = bill_from_dict(raw)
+    result = compute_shares(bill)
+    expected = reference.compute_shares(raw)
+    assert result.shares == expected["shares"]
+    assert result.item_subtotals == expected["item_subtotals"]
+    for item in bill.items:
+        fixed = [a for a in item.allocations if a.share]
+        if len(fixed) == 1 and len(item.allocations) > 1:
+            num, den = fixed[0].share  # type: ignore[misc]
+            got = abs(result.by_item[item.id][fixed[0].participant])
+            assert abs(got * den - abs(item.line_total_cents) * num) < den, "within a cent of the fraction"
+
+
+@tid("MONEY-11")
+def test_MONEY_11_value_split_lands_on_the_exact_cent() -> None:
+    """Owner types $5.00 of an $11.37 line: stored as 500/1137, the asker's line share is 500."""
+    people = (Participant("pranav", 0), Participant("arjun", 1), Participant("kabir", 3))
+    for total, value in [(1137, 500), (1137, 1), (1137, 1136), (99_999, 33_333), (10_000_000, 1)]:
+        line = Item("x", total, (Allocation("pranav"), Allocation("arjun"), Allocation("kabir", share=(value, total))))
+        result = compute_shares(BillInput(people, (line,), 0, (), total))
+        assert result.by_item["x"]["kabir"] == value
+    with pytest.raises(MoneyError, match="share"):
+        compute_shares(BillInput(people, (Item("x", 10, (Allocation("kabir", share=(2, 1)),)),), 0, (), 10))

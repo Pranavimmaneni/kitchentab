@@ -110,6 +110,17 @@ export type ShareRequest = {
   co_owners?: string[];
 };
 
+/** FR-81: how much of the line the asker pays, sent with a split or chip-in answer. */
+export type PartBody = { percent?: number; amount_cents?: number; chip_in_cents?: number };
+
+/** GET /requests/{id}/answer-preview: the asker's part and every share delta, nothing saved. */
+export type AnswerPreview = {
+  decision: "split" | "chip_in";
+  line_total_cents: number | null;
+  asker_cents: number | null;
+  deltas: Record<string, number>;
+};
+
 export type RequestsView = {
   box: "in" | "out";
   requests: ShareRequest[];

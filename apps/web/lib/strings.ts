@@ -47,17 +47,20 @@ export const strings = {
     nothingSoon: "NOTHING TO USE SOON",
     panelLabel: (place: string, n: number, soon: number) =>
       `Open the ${place}: ${n} ${n === 1 ? "item" : "items"}, ${soon} to use soon`,
-    soonRowLabel: (name: string, when: string, owners: string) => `${name}, ${when.toLowerCase()}, ${owners}`,
+    soonRowLabel: (name: string, when: string, owners: string) =>
+      `${name}, ${when.toLowerCase()}, ${owners}`,
   },
   // ---- Milestone 8: K2/K3 fridge and pantry, item sheet, add leftovers (PRD §19.8) ----
   place: {
     titles: { fridge: "The fridge", pantry: "The pantry" },
-    step: (house: string, n: number) => `${house.toUpperCase()} · ${n} ${n === 1 ? "ITEM" : "ITEMS"}`,
+    step: (house: string, n: number) =>
+      `${house.toUpperCase()} · ${n} ${n === 1 ? "ITEM" : "ITEMS"}`,
     filterLabel: "Filter items",
     filters: { all: "ALL", mine: "MINE", open: "OPEN", use_soon: "USE SOON" },
     filterChip: (label: string, n: number) => `${label} ${n}`,
     areas: { freezer: "FREEZER", fridge: "REFRIGERATED", pantry: "PANTRY" },
-    areaLabel: (area: string, n: number) => `${area.toLowerCase()}, ${n} ${n === 1 ? "item" : "items"}`,
+    areaLabel: (area: string, n: number) =>
+      `${area.toLowerCase()}, ${n} ${n === 1 ? "item" : "items"}`,
     emptyArea: "Nothing in here yet.",
     legendOpen: "OPEN TO SHARE",
     legendAsk: "ASK FIRST",
@@ -76,7 +79,8 @@ export const strings = {
   },
   item: {
     whoOwns: "WHO OWNS IT",
-    source: (store: string, date: string, price: string) => `${store.toUpperCase()} · ${date} · ${price}`,
+    source: (store: string, date: string, price: string) =>
+      `${store.toUpperCase()} · ${date} · ${price}`,
     leftovers: (date: string) => `LEFTOVERS · ADDED ${date}`,
     openToShare: "I'm open to sharing",
     coOff: "Off. Housemates have to ask first.",
@@ -113,7 +117,8 @@ export const strings = {
     ask: (owners: string) => `Ask ${owners} →`,
     asked: (who: string) => `ASKED · WAITING ON ${who.toUpperCase()}`,
     anOwner: "AN OWNER",
-    askedNote: "We'll ping you when they answer. They can say yes for free, or add you to that item's split.",
+    askedNote:
+      "We'll ping you when they answer. They can say yes for free, or add you to that item's split.",
     cancel: "Cancel request",
     sentToast: (owners: string) => `Request sent to ${owners}`,
     cancelledToast: "Request cancelled",
@@ -178,6 +183,24 @@ export const strings = {
     chipInWhy: (store: string) => `The ${store} tab is settled, so they pay the owners back.`,
     chipInLabel: "CHIP IN",
     chipInError: (max: string) => `Between $0.01 and ${max}.`,
+    noPrice: "NO PRICE",
+    priceLabel: (price: string) => `Item price ${price}`,
+    partLabel: "HOW MUCH DO THEY PAY?",
+    partEqual: "Equal share",
+    partSuggested: "Suggested",
+    partPercent: (n: number) => `${n}%`,
+    partCustom: "Custom",
+    partUnitLabel: "Custom by percent or by amount",
+    partUnitPercent: "%",
+    partUnitDollars: "$",
+    partPercentLabel: "PERCENT OF THE ITEM",
+    partDollarsLabel: "THEIR PART IN DOLLARS",
+    partPercentError: "A whole percent from 1 to 100.",
+    partPays: (name: string, part: string, total: string) =>
+      `${name.toUpperCase()} PAYS ${part} OF ${total}`,
+    partOwes: (name: string, part: string) =>
+      `${name.toUpperCase()} OWES ${part}, SPLIT BETWEEN THE OWNERS`,
+    partWorking: "WORKING IT OUT…",
     decline: "Not this time",
     yes: "Say yes",
     stamps: {
@@ -219,7 +242,8 @@ export const strings = {
     allSquare: "ALL SQUARE",
     seeAll: "See all",
     openTabs: "OPEN TABS",
-    meta: (date: string, payer: string, n: number) => `${date} · ${payer} paid · ${n} ${n === 1 ? "item" : "items"}`,
+    meta: (date: string, payer: string, n: number) =>
+      `${date} · ${payer} paid · ${n} ${n === 1 ? "item" : "items"}`,
     you: "you",
     paid: (paid: number, of: number) => `${paid}/${of} PAID`,
     youOweStamp: (amount: string) => `YOU OWE ${amount}`,
@@ -270,7 +294,13 @@ export const strings = {
     save: "Save",
     renamed: "House renamed",
     members: "MEMBERS",
-    status: { placeholder: "PLACEHOLDER", active: "JOINED", left: "LEFT", removed: "LEFT", anonymized: "LEFT" },
+    status: {
+      placeholder: "PLACEHOLDER",
+      active: "JOINED",
+      left: "LEFT",
+      removed: "LEFT",
+      anonymized: "LEFT",
+    },
     admin: "ADMIN",
     you: "YOU",
     memberMenu: (name: string) => `Options for ${name}`,
@@ -400,6 +430,7 @@ export const strings = {
     step: (store: string, date: string) => `STEP 2/3 · ${store.toUpperCase()} · ${date}`,
     fillRest: "✦ Split the rest with everyone",
     allOne: (name: string) => `ALL ${name}`,
+    customShare: (name: string) => `CUSTOM SPLIT · ${name}`,
     guest: "+ Guest",
     guestTitle: "Add a guest",
     guestName: "GUEST NAME",
@@ -702,7 +733,8 @@ export const strings = {
       `This tab has been open ${days} days. Stamp it settled once everyone's square. It never settles on its own.`,
     dismiss: "Dismiss",
     payerPaid: "PAID THE STORE",
-    paidBackTo: (paid: string, back: string, name: string) => `PAID ${paid} · ${back} BACK TO ${name}`,
+    paidBackTo: (paid: string, back: string, name: string) =>
+      `PAID ${paid} · ${back} BACK TO ${name}`,
     editSplits: "Edit splits",
     editMine: "Edit my items",
     stampIt: "Stamp it settled",
@@ -730,7 +762,8 @@ export const strings = {
     zelle: (handle: string) => `ZELLE · ${handle}`,
     copy: "Copy",
     copied: "Copied",
-    noHandles: (payer: string) => `${payer} hasn't added payment info. Pay however you usually do, then mark it.`,
+    noHandles: (payer: string) =>
+      `${payer} hasn't added payment info. Pay however you usually do, then mark it.`,
     markPaid: "I've paid — mark it",
     marked: (payer: string) => `Marked. ${payer} will confirm.`,
     duplicate: (amount: string, ago: string) => `You already recorded ${amount} ${ago}`,
@@ -771,9 +804,12 @@ export const strings = {
       ticks: (who: string, n: number) => `${who} changed ${n} ticks.`,
       guest: (who: string, guest: string) => `${who} added ${guest} as a guest.`,
       paid: (who: string, amount: string) => `${who} paid ${amount}.`,
-      recorded: (who: string, whom: string, amount: string) => `${who} recorded ${amount} from ${whom}.`,
-      confirmedPay: (who: string, whose: string, amount: string) => `${who} confirmed ${whose} ${amount}.`,
-      rejectedPay: (who: string, whose: string, amount: string) => `${who} rejected ${whose} ${amount}.`,
+      recorded: (who: string, whom: string, amount: string) =>
+        `${who} recorded ${amount} from ${whom}.`,
+      confirmedPay: (who: string, whose: string, amount: string) =>
+        `${who} confirmed ${whose} ${amount}.`,
+      rejectedPay: (who: string, whose: string, amount: string) =>
+        `${who} rejected ${whose} ${amount}.`,
       settled: (who: string) => `${who} stamped it settled.`,
       reopened: (who: string) => `${who} reopened the tab.`,
       voided: (who: string, reason: string) => `${who} voided the tab: ${reason}`,
@@ -857,13 +893,21 @@ export const strings = {
     sub: "Get a ping when someone wants your stuff, your share changes, or food needs eating.",
     examples: "Example notifications",
     pings: [
-      { title: "Kabir asked for your chicken thighs", body: "A bit, for tonight’s curry. Tap to answer.", when: "NOW" },
+      {
+        title: "Kabir asked for your chicken thighs",
+        body: "A bit, for tonight’s curry. Tap to answer.",
+        when: "NOW",
+      },
       {
         title: "Your ShopRite share changed",
         body: "Meera joined the coffee beans. You’re now at $21.82 (−$1.69).",
         when: "2M AGO",
       },
-      { title: "Spinach needs eating", body: "Yours and Meera’s. About a day left.", when: "9:00 AM" },
+      {
+        title: "Spinach needs eating",
+        body: "Yours and Meera’s. About a day left.",
+        when: "9:00 AM",
+      },
     ],
     brand: "KITCHENTAB",
     platform: "Your phone",
@@ -894,7 +938,8 @@ export const strings = {
     offHere: "This device doesn't get push yet.",
     blockedHelp:
       "Blocked in your browser. Allow notifications for this site in the browser's site settings. On iPhone, remove the Home Screen app and add it again.",
-    unsupported: "Push needs the Home Screen app on iPhone. Add KitchenTab to your Home Screen first.",
+    unsupported:
+      "Push needs the Home Screen app on iPhone. Add KitchenTab to your Home Screen first.",
     sendTest: "Send a test",
     testSent: "Sent. It should pop up in a few seconds.",
     turnOnShort: "Turn on",
@@ -929,7 +974,10 @@ export const strings = {
     since: (kind: string, date: string) => `${kind} · SINCE ${date}`,
     stale: "NOT REACHING IT",
     noDevices: "No devices get push yet.",
-    footer: ["Sign-in codes always come by text or email.", "Everything you turn off still shows in the app."],
+    footer: [
+      "Sign-in codes always come by text or email.",
+      "Everything you turn off still shows in the app.",
+    ],
     install: "INSTALL THE APP",
     installButton: "Install KitchenTab",
     installed: "Installed on this device.",

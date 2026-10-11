@@ -12,24 +12,29 @@ import { ErrorCard } from "@/components/screens/ErrorCard";
 import { HouseGate, type HouseContext } from "@/components/screens/HouseGate";
 import { isApiError, newId } from "@/lib/api/client";
 import { useHouse } from "@/lib/api/hooks";
-import { useRequests } from "@/lib/api/kitchen-hooks";
+import { useAnswerPreview, useRequests } from "@/lib/api/kitchen-hooks";
 import type { AnswerOption, ShareRequest } from "@/lib/api/kitchen-types";
 import { centsToInput, colorIndexOf } from "@/lib/bills";
 import { formatMoney } from "@/lib/format";
 import {
   ageLabel,
   canUndo,
-  chipInCents,
   coOwnersLine,
   doneNote,
   itemWords,
   outgoingText,
+  PART_PRESETS,
+  partBody,
+  requestPrice,
   requestStamp,
   splitDeltaChips,
+  type PartChoice,
+  type PartUnit,
   type Stamp,
 } from "@/lib/kitchen";
 import { useKitchenWrites, type KitchenWrites } from "@/lib/kitchen-writes";
 import { strings } from "@/lib/strings";
+import { useDebounced } from "@/lib/use-debounced";
 import { useServerNow } from "@/lib/use-server-time";
 
 type Box = "in" | "out";
@@ -112,6 +117,7 @@ function Requests({ house }: HouseContext) {
                   {box === "in" ? (
                     <IncomingCard
                       req={req}
+                      houseId={house.id}
                       meMemberId={house.member_id}
                       names={names}
                       now={now}
@@ -153,19 +159,31 @@ function StampText({ stamp }: { stamp: Stamp }) {
   );
 }
 
+/** The item icon with its full price underneath (FR-82): the bill line total, or NO PRICE. */
 function ItemBubble({ req, size = 44 }: { req: ShareRequest; size?: number }) {
+  const price = requestPrice(req);
   return (
-    <span
-      className="kt-food kt-food--bubble"
-      style={{ background: foodPastel(req.item.icon_key), width: size, height: size }}
-    >
-      <FoodIcon iconKey={req.item.icon_key} size={28} strokeWidth={1.5} />
+    <span className="kt-ask-item">
+      <span
+        className="kt-food kt-food--bubble"
+        style={{ background: foodPastel(req.item.icon_key), width: size, height: size }}
+      >
+        <FoodIcon iconKey={req.item.icon_key} size={28} strokeWidth={1.5} />
+      </span>
+      <span
+        className="kt-ask-item__price"
+        data-testid="request-price"
+        aria-label={strings.requests.priceLabel(price)}
+      >
+        {price}
+      </span>
     </span>
   );
 }
 
 function IncomingCard({
   req,
+  houseId,
   meMemberId,
   names,
   now,
@@ -173,6 +191,7 @@ function IncomingCard({
   onError,
 }: {
   req: ShareRequest;
+  houseId: string;
   meMemberId: string;
   names: Record<string, string>;
   now: Date;
@@ -209,6 +228,7 @@ function IncomingCard({
       {pending ? (
         <AnswerForm
           req={req}
+          houseId={houseId}
           meMemberId={meMemberId}
           names={names}
           writes={writes}
@@ -223,41 +243,55 @@ function IncomingCard({
 
 function AnswerForm({
   req,
+  houseId,
   meMemberId,
   names,
   writes,
   onError,
 }: {
   req: ShareRequest;
+  houseId: string;
   meMemberId: string;
   names: Record<string, string>;
   writes: KitchenWrites;
   onError: (error: unknown) => void;
 }) {
   const labelId = useId();
-  const chipId = useId();
-  const chipErrorId = useId();
   const options: AnswerOption[] = req.options ?? ["free"];
   const [choice, setChoice] = useState<AnswerOption>("free");
-  const [chip, setChip] = useState(centsToInput(req.chip_in_suggestion_cents ?? 0));
+  const [part, setPart] = useState<PartChoice>("base");
+  const [unit, setUnit] = useState<PartUnit>("dollars");
+  const [raw, setRaw] = useState(centsToInput(req.chip_in_suggestion_cents ?? 0));
   const [busy, setBusy] = useState<"yes" | "no" | null>(null);
   const [key, setKey] = useState(newId);
   const lineTotal = req.line_total_cents ?? 0;
-  const chipCents = chipInCents(chip, lineTotal);
-  const chipInvalid = choice === "chip_in" && chipCents === null;
   const who = req.requester.display_name ?? strings.requests.someone;
   const store = req.source?.store_name ?? strings.bill.untitled;
+  const paying = choice === "split" || choice === "chip_in";
+  const decision = choice === "chip_in" ? "chip_in" : "split";
+  const body = paying
+    ? partBody(decision, part, unit, raw, lineTotal, req.chip_in_suggestion_cents ?? null)
+    : {};
+  const invalid = body === null;
+  // Equal share and the suggestion come with the card; any other part asks the server (FR-81).
+  const custom = paying && part !== "base";
+  const previewBody = useDebounced(body, part === "custom" ? 300 : 0);
+  const preview = useAnswerPreview(houseId, req.id, decision, previewBody, custom);
+  const ready =
+    !custom || (JSON.stringify(previewBody) === JSON.stringify(body) && preview.isSuccess);
+  const deltas =
+    custom && choice === "split" ? (preview.data?.deltas ?? {}) : (req.split_deltas ?? {});
+  const askerCents = custom
+    ? (preview.data?.asker_cents ?? null)
+    : choice === "chip_in"
+      ? (req.chip_in_suggestion_cents ?? null)
+      : null;
 
-  async function answer(decision: "decline" | AnswerOption) {
-    if (decision === "chip_in" && chipCents === null) return;
-    setBusy(decision === "decline" ? "no" : "yes");
+  async function answer(next: "decline" | AnswerOption) {
+    if (next !== "decline" && body === null) return;
+    setBusy(next === "decline" ? "no" : "yes");
     try {
-      await writes.answer(
-        req,
-        decision,
-        decision === "chip_in" ? chipCents : null,
-        `${key}:${decision}`,
-      );
+      await writes.answer(req, next, body ?? {}, `${key}:${next}`);
     } catch (error) {
       onError(error);
       setBusy(null);
@@ -286,7 +320,7 @@ function AnswerForm({
           >
             <span>{strings.requests.splitWhy(who, store)}</span>
             <span className="kt-delta-chips" data-testid="split-deltas">
-              {splitDeltaChips(req.split_deltas ?? {}, names, meMemberId).map((d) => (
+              {splitDeltaChips(deltas, names, meMemberId).map((d) => (
                 <span key={d} className="kt-delta-chip">
                   {d}
                 </span>
@@ -304,26 +338,30 @@ function AnswerForm({
           </RadioCard>
         ) : null}
       </div>
-      {choice === "chip_in" ? (
-        <div className="kt-field">
-          <label htmlFor={chipId} className="kt-field__label">
-            {strings.requests.chipInLabel}
-          </label>
-          <input
-            id={chipId}
-            className="kt-input kt-input--big kt-input--mono"
-            inputMode="decimal"
-            value={chip}
-            aria-invalid={chipInvalid || undefined}
-            aria-describedby={chipInvalid ? chipErrorId : undefined}
-            onChange={(e) => setChip(e.target.value)}
-          />
-          {chipInvalid ? (
-            <p id={chipErrorId} className="kt-field-error">
-              {strings.requests.chipInError(formatMoney(lineTotal))}
-            </p>
-          ) : null}
-        </div>
+      {paying ? (
+        <PartPicker
+          decision={decision}
+          part={part}
+          unit={unit}
+          raw={raw}
+          lineTotal={lineTotal}
+          invalid={invalid}
+          onPart={setPart}
+          onUnit={(next) => {
+            setUnit(next);
+            setRaw(next === "percent" ? "" : centsToInput(req.chip_in_suggestion_cents ?? 0));
+          }}
+          onRaw={setRaw}
+        />
+      ) : null}
+      {paying && !invalid && (custom || askerCents !== null) ? (
+        <p className="kt-ask-card__part" data-testid="part-summary" aria-live="polite">
+          {!ready || askerCents === null
+            ? strings.requests.partWorking
+            : choice === "chip_in"
+              ? strings.requests.partOwes(who, formatMoney(askerCents))
+              : strings.requests.partPays(who, formatMoney(askerCents), formatMoney(lineTotal))}
+        </p>
       ) : null}
       <div className="kt-two-up kt-ask-card__actions">
         <PillButton
@@ -338,13 +376,109 @@ function AnswerForm({
         <PillButton
           size={52}
           loading={busy === "yes"}
-          disabled={busy === "no" || chipInvalid}
+          disabled={busy === "no" || (paying && (invalid || !ready))}
           onClick={() => void answer(choice)}
         >
           {strings.requests.yes}
         </PillButton>
       </div>
     </>
+  );
+}
+
+/** FR-81: Equal share (or the suggestion) · 25% · 50% · 100% · Custom (a percent or a value). */
+function PartPicker({
+  decision,
+  part,
+  unit,
+  raw,
+  lineTotal,
+  invalid,
+  onPart,
+  onUnit,
+  onRaw,
+}: {
+  decision: "split" | "chip_in";
+  part: PartChoice;
+  unit: PartUnit;
+  raw: string;
+  lineTotal: number;
+  invalid: boolean;
+  onPart: (part: PartChoice) => void;
+  onUnit: (unit: PartUnit) => void;
+  onRaw: (raw: string) => void;
+}) {
+  const groupId = useId();
+  const inputId = useId();
+  const errorId = useId();
+  const choices: { value: PartChoice; label: string }[] = [
+    {
+      value: "base",
+      label: decision === "split" ? strings.requests.partEqual : strings.requests.partSuggested,
+    },
+    ...PART_PRESETS.map((n) => ({ value: n, label: strings.requests.partPercent(n) })),
+    { value: "custom", label: strings.requests.partCustom },
+  ];
+  const inputLabel =
+    unit === "percent"
+      ? strings.requests.partPercentLabel
+      : decision === "chip_in"
+        ? strings.requests.chipInLabel
+        : strings.requests.partDollarsLabel;
+  return (
+    <div className="kt-part">
+      <span id={groupId} className="kt-field__label">
+        {strings.requests.partLabel}
+      </span>
+      <div className="kt-part__chips" role="radiogroup" aria-labelledby={groupId}>
+        {choices.map((c) => (
+          <button
+            key={String(c.value)}
+            type="button"
+            role="radio"
+            aria-checked={part === c.value}
+            className="kt-part__chip"
+            onClick={() => onPart(c.value)}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+      {part === "custom" ? (
+        <div className="kt-part__custom">
+          <SegmentedControl<PartUnit>
+            label={strings.requests.partUnitLabel}
+            value={unit}
+            onChange={onUnit}
+            options={[
+              { value: "percent", label: strings.requests.partUnitPercent },
+              { value: "dollars", label: strings.requests.partUnitDollars },
+            ]}
+          />
+          <div className="kt-field">
+            <label htmlFor={inputId} className="kt-field__label">
+              {inputLabel}
+            </label>
+            <input
+              id={inputId}
+              className="kt-input kt-input--big kt-input--mono"
+              inputMode={unit === "percent" ? "numeric" : "decimal"}
+              value={raw}
+              aria-invalid={invalid || undefined}
+              aria-describedby={invalid ? errorId : undefined}
+              onChange={(e) => onRaw(e.target.value)}
+            />
+            {invalid ? (
+              <p id={errorId} className="kt-field-error">
+                {unit === "percent"
+                  ? strings.requests.partPercentError
+                  : strings.requests.chipInError(formatMoney(lineTotal))}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

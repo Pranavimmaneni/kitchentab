@@ -6,8 +6,8 @@ import uuid
 from datetime import timedelta
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, Query, Request
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import or_, select
 
 from app.deps import Actor, client_mutation_id, ctx, idempotency, if_match, require_actor
@@ -312,9 +312,22 @@ async def split_preview(
         return await svc.split_preview(db, req, item)
 
 
+Percent = Annotated[int, Field(ge=1, le=100)]
+Cents = Annotated[int, Field(gt=0, le=10_000_000)]
+
+
 class Answer(BaseModel):
     decision: Literal["decline", "free", "split", "chip_in"]
-    chip_in_cents: Annotated[int, Field(gt=0, le=10_000_000)] | None = None
+    chip_in_cents: Cents | None = None
+    # FR-81 custom split (split or chip_in): a percent of the line, or the owner's own value.
+    percent: Percent | None = None
+    amount_cents: Cents | None = None
+
+    @model_validator(mode="after")
+    def _one_amount(self) -> Answer:
+        if sum(v is not None for v in (self.chip_in_cents, self.percent, self.amount_cents)) > 1:
+            raise ValueError("Give a percent or an amount, not both")
+        return self
 
 
 @router.post("/requests/{request_id}/answer")
@@ -331,7 +344,31 @@ async def answer(
         c.clock.now(),
         idempotency(request, actor, body.model_dump()),
         client_mutation_id(request),
+        svc.CustomSplit(body.percent, body.amount_cents),
     )
+
+
+@router.get("/requests/{request_id}/answer-preview")
+async def answer_preview(
+    request_id: uuid.UUID,
+    request: Request,
+    actor: Annotated[Actor, Depends(require_actor)],
+    decision: Literal["split", "chip_in"] = "split",
+    percent: Annotated[int | None, Query(ge=1, le=100)] = None,
+    amount_cents: Annotated[int | None, Query(gt=0, le=10_000_000)] = None,
+) -> dict[str, Any]:
+    """FR-81: the asker's part and every share delta for a custom split, before saying yes."""
+    if percent is not None and amount_cents is not None:
+        raise Problem(422, ErrorCode.VALIDATION_FAILED, "Give a percent or an amount, not both")
+    async with ctx(request).read_sessions() as db:
+        req = await db.get(ShareRequest, request_id)
+        if req is None:
+            raise Problem(404, ErrorCode.NOT_FOUND, "That ask is gone")
+        me = await membership(db, req.house_id, actor.user.id)
+        require(Action.HOUSE_READ, actor=me)
+        item = await db.get(InventoryItem, req.inventory_item_id)
+        assert item is not None
+        return await svc.answer_preview(db, req, item, decision, svc.CustomSplit(percent, amount_cents))
 
 
 @router.post("/requests/{request_id}/undo")

@@ -14,6 +14,9 @@ import {
   joinNames,
   matchesFilter,
   outgoingText,
+  parsePercent,
+  partBody,
+  requestPrice,
   requestStamp,
   sheetMode,
   showsOpenBadge,
@@ -217,5 +220,36 @@ describe("kitchen display logic", () => {
         }),
       ),
     ).toBe("You asked Arjun for half of the protein bars.");
+  });
+});
+
+describe("custom split on asks (FR-81, FR-82)", () => {
+  it("ASK-15 quick choices send a percent; Equal share sends nothing extra [FR-81]", () => {
+    expect(partBody("split", "base", "dollars", "", 1137, null)).toEqual({});
+    expect(partBody("split", 25, "dollars", "", 1137, null)).toEqual({ percent: 25 });
+    expect(partBody("split", 100, "dollars", "", 1137, null)).toEqual({ percent: 100 });
+    expect(partBody("chip_in", 50, "dollars", "", 1137, 379)).toEqual({ percent: 50 });
+    expect(partBody("chip_in", "base", "dollars", "", 1137, 379)).toEqual({ chip_in_cents: 379 });
+  });
+
+  it("ASK-16 Custom takes a whole percent or the owner's own value up to the price [FR-81]", () => {
+    expect(partBody("split", "custom", "percent", "33", 1137, null)).toEqual({ percent: 33 });
+    expect(partBody("split", "custom", "percent", "33%", 1137, null)).toEqual({ percent: 33 });
+    for (const bad of ["0", "101", "33.5", "", "abc"])
+      expect(partBody("split", "custom", "percent", bad, 1137, null)).toBeNull();
+    expect(partBody("split", "custom", "dollars", "5", 1137, null)).toEqual({ amount_cents: 500 });
+    expect(partBody("chip_in", "custom", "dollars", "$5.00", 1137, 379)).toEqual({
+      chip_in_cents: 500,
+    });
+    expect(partBody("split", "custom", "dollars", "11.38", 1137, null)).toBeNull();
+    expect(partBody("split", "custom", "dollars", "0", 1137, null)).toBeNull();
+    expect(parsePercent(" 100 ")).toBe(100);
+    expect(parsePercent("1000")).toBeNull();
+  });
+
+  it("ASK-18 request cards show the line total, or NO PRICE for leftovers [FR-82]", () => {
+    expect(requestPrice({ line_total_cents: 1137 })).toBe("$11.37");
+    expect(requestPrice({ line_total_cents: null })).toBe(strings.requests.noPrice);
+    expect(requestPrice({})).toBe(strings.requests.noPrice);
   });
 });

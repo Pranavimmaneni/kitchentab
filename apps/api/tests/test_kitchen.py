@@ -559,3 +559,117 @@ async def test_sharing_switch_races_an_untick_without_deadlock(
         assert share.status_code in (200, 403), share.text  # 403 if the untick committed first
     async with sessions() as db:
         assert await check_all(db, datetime.now(UTC)) == []
+
+
+MONEY_CASES = {c["name"]: c for c in __import__("tests.test_money", fromlist=["CASES"]).CASES}
+
+
+def fixture_shares(name: str) -> dict[str, int]:
+    shares: dict[str, int] = MONEY_CASES[name]["expected"]["shares"]
+    return shares
+
+
+@tid("ASK-15", "MONEY-11")
+@fr("FR-81", "FR-73")
+async def test_ASK_15_custom_percent_split_on_an_open_tab(api: ApiFactory) -> None:
+    """Pranav says yes at 25%: Kabir pays a quarter of the chicken line; preview == saved shares ==
+    the reference fixture; undo puts the tab back; 100% makes Kabir pay the whole line."""
+    w, bill_id, _, p = await kitchen_world(api)
+    chicken = find(await fridge(p["kabir"], w), "Chicken thighs")
+    before = (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()["shares"]
+    r = await p["kabir"].post(f"/api/v1/inventory/{chicken['id']}/requests", {"amount": "a_bit"})
+    rid = r.json()["id"]
+    quarter = fixture_shares("request_custom_split_quarter")
+    preview = await w.admin.get(f"/api/v1/requests/{rid}/answer-preview", params={"decision": "split", "percent": 25})
+    assert preview.status_code == 200, preview.text
+    names = ("pranav", "arjun", "meera", "kabir")
+    expected_deltas = {w.key(n): quarter[n] - before[w.key(n)] for n in names if quarter[n] != before[w.key(n)]}
+    assert preview.json()["deltas"] == expected_deltas
+    assert preview.json()["asker_cents"] == 284 and preview.json()["line_total_cents"] == 1137  # 284.25
+    yes = await w.admin.post(f"/api/v1/requests/{rid}/answer", {"decision": "split", "percent": 25})
+    assert yes.status_code == 200 and yes.json()["resolution"] == "split"
+    bill = (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()
+    assert {n: bill["shares"][w.key(n)] for n in names} == quarter
+    line = next(i for i in bill["items"] if i["name"].startswith("Chicken"))
+    kabir = next(a for a in line["allocations"] if a["participant"] == w.key("kabir"))
+    assert (kabir["share_num"], kabir["share_den"]) == (1, 4)
+    log = (await w.admin.get(f"/api/v1/bills/{bill_id}/activity")).json()["events"]
+    assert any(e["payload"].get("text") == "Kabir joined Chicken thighs (25%), approved by Pranav" for e in log)
+    assert find(await fridge(p["kabir"], w), "Chicken thighs")["mine"] is True
+    assert (await w.admin.post(f"/api/v1/requests/{rid}/undo")).json()["status"] == "pending"
+    assert (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()["shares"] == before, "undo removes it"
+    await p["arjun"].post(f"/api/v1/requests/{rid}/answer", {"decision": "split", "percent": 100})
+    bill = (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()
+    assert {n: bill["shares"][w.key(n)] for n in names} == fixture_shares("request_custom_split_all")
+
+
+@tid("ASK-16", "MONEY-11")
+@fr("FR-81")
+async def test_ASK_16_custom_value_split_lands_on_the_cent(api: ApiFactory) -> None:
+    """Pranav types his own value, $5.00 of the $11.37 line: Kabir's line share is exactly 500."""
+    w, bill_id, _, p = await kitchen_world(api)
+    chicken = find(await fridge(p["kabir"], w), "Chicken thighs")
+    rid = (await p["kabir"].post(f"/api/v1/inventory/{chicken['id']}/requests", {"amount": "half"})).json()["id"]
+    url = f"/api/v1/requests/{rid}/answer-preview"
+    assert (await w.admin.get(url, params={"amount_cents": 500})).json()["asker_cents"] == 500
+    both = await w.admin.get(url, params={"amount_cents": 500, "percent": 10})
+    assert both.status_code == 422
+    assert (await w.admin.get(url, params={"amount_cents": 1138})).status_code == 422, "not above the price"
+    over = await w.admin.post(f"/api/v1/requests/{rid}/answer", {"decision": "split", "amount_cents": 1138})
+    assert over.status_code == 422
+    mixed = await w.admin.post(f"/api/v1/requests/{rid}/answer", {"decision": "split", "amount_cents": 5, "percent": 5})
+    assert mixed.status_code == 422
+    for bad in (0, 101):
+        assert (
+            await w.admin.post(f"/api/v1/requests/{rid}/answer", {"decision": "split", "percent": bad})
+        ).status_code == 422
+    yes = await w.admin.post(f"/api/v1/requests/{rid}/answer", {"decision": "split", "amount_cents": 500})
+    assert yes.status_code == 200, yes.text
+    bill = (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()
+    names = ("pranav", "arjun", "meera", "kabir")
+    assert {n: bill["shares"][w.key(n)] for n in names} == fixture_shares("request_custom_split_amount")
+    log = (await w.admin.get(f"/api/v1/bills/{bill_id}/activity")).json()["events"]
+    assert any(e["payload"].get("text") == "Kabir joined Chicken thighs ($5.00), approved by Pranav" for e in log)
+
+
+@tid("ASK-17")
+@fr("FR-81", "FR-74")
+async def test_ASK_17_chip_in_by_percent_or_own_value_on_a_settled_tab(
+    api: ApiFactory, sessions: async_sessionmaker[AsyncSession]
+) -> None:
+    w, bill_id, _, p = await kitchen_world(api)
+    chicken = find(await fridge(p["kabir"], w), "Chicken thighs")
+    rid = (await p["kabir"].post(f"/api/v1/inventory/{chicken['id']}/requests", {"amount": "half"})).json()["id"]
+    await w.admin.post(f"/api/v1/bills/{bill_id}/settle", {"confirm_outstanding": True})
+    url = f"/api/v1/requests/{rid}/answer-preview"
+    half = (await w.admin.get(url, params={"decision": "chip_in", "percent": 50})).json()
+    assert half["asker_cents"] == 569 and half["deltas"] == {}, "568.5 rounds to the asker on the tie"
+    assert (await w.admin.get(url, params={"decision": "chip_in", "percent": 100})).json()["asker_cents"] == 1137
+    assert (await w.admin.get(url, params={"decision": "chip_in", "amount_cents": 700})).json()["asker_cents"] == 700
+    assert (await w.admin.get(url, params={"decision": "chip_in"})).json()["asker_cents"] == 379, "suggestion"
+    ok = await w.admin.post(f"/api/v1/requests/{rid}/answer", {"decision": "chip_in", "percent": 50})
+    assert ok.status_code == 200 and ok.json()["chip_in_cents"] == 569
+    async with sessions() as db:
+        entries = (await db.scalars(select(LedgerEntry).where(LedgerEntry.source == "chip_in"))).all()
+    assert sorted(e.amount_cents for e in entries) == [284, 285]
+    await w.admin.post(f"/api/v1/requests/{rid}/undo")
+    own = await w.admin.post(f"/api/v1/requests/{rid}/answer", {"decision": "chip_in", "amount_cents": 700})
+    assert own.json()["chip_in_cents"] == 700
+
+
+@tid("ASK-18")
+@fr("FR-82")
+async def test_ASK_18_request_cards_show_the_full_price_in_both_tabs(api: ApiFactory) -> None:
+    """Under the item icon: the bill line total on FOR YOU and YOU ASKED; leftovers have no price."""
+    w, _, _, p = await kitchen_world(api)
+    chicken = find(await fridge(p["kabir"], w), "Chicken thighs")
+    await p["kabir"].post(f"/api/v1/inventory/{chicken['id']}/requests", {"amount": "a_bit"})
+    dal = await p["meera"].post(f"/api/v1/houses/{w.hid}/inventory", {"name": "Dal leftovers", "place": "fridge"})
+    await p["kabir"].post(f"/api/v1/inventory/{dal.json()['id']}/requests", {"amount": "half"})
+    [card] = (await w.admin.get(f"/api/v1/houses/{w.hid}/requests", params={"box": "in"})).json()["requests"]
+    assert card["line_total_cents"] == 1137
+    out = (await p["kabir"].get(f"/api/v1/houses/{w.hid}/requests", params={"box": "out"})).json()["requests"]
+    assert {r["item"]["name"]: r["line_total_cents"] for r in out} == {
+        "Chicken thighs 3 lb": 1137,
+        "Dal leftovers": None,
+    }

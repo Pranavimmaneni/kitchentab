@@ -18,6 +18,8 @@ export interface Allocation {
   participant: string;
   /** Weight in thousandths (numeric(6,3) on the server); 1000 = weight 1. */
   weightMilli: number;
+  /** Fixed fraction of the line [num, den], 0 < num <= den (custom split, ADR-0030). */
+  share?: [number, number];
 }
 
 export interface Item {
@@ -69,7 +71,7 @@ export function weightToMilli(weight: number | string): number {
 /** Split integer `amount` across positive integer `weights` exactly (largest remainder). */
 export function largestRemainder(
   amount: number,
-  weights: Map<string, number>,
+  weights: Map<string, number | bigint>,
   order: Order,
 ): Map<string, number> {
   const out = new Map<string, number>();
@@ -110,6 +112,53 @@ export function largestRemainder(
   return out;
 }
 
+function gcd(a: bigint, b: bigint): bigint {
+  while (b !== 0n) [a, b] = [b, a % b];
+  return a;
+}
+
+/**
+ * Integer weight per allocation of one line (0n = gets nothing), mirroring `item_weights` in
+ * money.py: fixed shares take their exact fraction, weighted allocations split the rest by weight;
+ * if the fixed shares reach the whole line (or nobody is weighted) they split it alone.
+ */
+export function itemWeights(item: Item, known: Order): Map<string, bigint> {
+  if (item.allocations.length === 0) throw new MoneyError(`item ${item.id} has no allocations`);
+  const seen = new Set<string>();
+  for (const a of item.allocations) {
+    if (!known.has(a.participant)) {
+      throw new MoneyError(`item ${item.id} allocated to unknown participant ${a.participant}`);
+    }
+    if (seen.has(a.participant))
+      throw new MoneyError(`item ${item.id} allocates ${a.participant} twice`);
+    seen.add(a.participant);
+    if (a.share && !(a.share[0] > 0 && a.share[0] <= a.share[1]))
+      throw new MoneyError(`share must be in (0, 1]: ${a.share[0]}/${a.share[1]}`);
+  }
+  const fixed = item.allocations.filter((a) => a.share);
+  if (fixed.length === 0)
+    return new Map(item.allocations.map((a) => [a.participant, BigInt(a.weightMilli)]));
+  let den = 1n;
+  for (const a of fixed) {
+    const d = BigInt(a.share![1]);
+    den = (den / gcd(den, d)) * d;
+  }
+  const units = new Map(
+    fixed.map((a) => [a.participant, BigInt(a.share![0]) * (den / BigInt(a.share![1]))]),
+  );
+  let rest = den;
+  for (const u of units.values()) rest -= u;
+  let weightedTotal = 0n;
+  for (const a of item.allocations) if (!a.share) weightedTotal += BigInt(a.weightMilli);
+  const out = new Map<string, bigint>();
+  for (const a of item.allocations) {
+    const u = units.get(a.participant);
+    if (rest <= 0n || weightedTotal === 0n) out.set(a.participant, u ?? 0n);
+    else out.set(a.participant, u !== undefined ? u * weightedTotal : rest * BigInt(a.weightMilli));
+  }
+  return out;
+}
+
 export function billLevelAmounts(bill: Pick<BillInput, "taxCents" | "fees">): number[] {
   return [
     bill.taxCents,
@@ -124,17 +173,12 @@ export function computeShares(bill: BillInput): ShareResult {
   const seen = new Set<string>();
 
   for (const item of bill.items) {
-    if (item.allocations.length === 0) throw new MoneyError(`item ${item.id} has no allocations`);
-    const weights = new Map<string, number>();
-    for (const a of item.allocations) {
-      if (!order.has(a.participant)) {
-        throw new MoneyError(`item ${item.id} allocated to unknown participant ${a.participant}`);
-      }
-      if (weights.has(a.participant))
-        throw new MoneyError(`item ${item.id} allocates ${a.participant} twice`);
-      weights.set(a.participant, a.weightMilli);
-    }
-    for (const [pid, cents] of largestRemainder(item.lineTotalCents, weights, order)) {
+    const weights = itemWeights(item, order);
+    const split = new Map([...weights.keys()].map((pid) => [pid, 0]));
+    const positive = new Map([...weights].filter(([, w]) => w > 0n));
+    for (const [pid, cents] of largestRemainder(item.lineTotalCents, positive, order))
+      split.set(pid, cents);
+    for (const [pid, cents] of split) {
       itemSub.set(pid, itemSub.get(pid)! + cents);
       if (!seen.has(pid)) {
         seen.add(pid);
@@ -177,7 +221,12 @@ export interface RawBill {
   items: {
     id: string;
     line_total_cents: number;
-    allocations: { participant: string; weight?: number | string }[];
+    allocations: {
+      participant: string;
+      weight?: number | string;
+      share_num?: number;
+      share_den?: number;
+    }[];
   }[];
   tax_cents?: number;
   fees?: { kind: FeeKind; label: string; amount_cents: number }[];
@@ -190,10 +239,11 @@ export function billFromRaw(raw: RawBill): BillInput {
     items: raw.items.map((i) => ({
       id: i.id,
       lineTotalCents: i.line_total_cents,
-      allocations: i.allocations.map((a) => ({
-        participant: a.participant,
-        weightMilli: weightToMilli(a.weight ?? 1),
-      })),
+      allocations: i.allocations.map((a) =>
+        a.share_num != null && a.share_den != null
+          ? { participant: a.participant, weightMilli: 1000, share: [a.share_num, a.share_den] }
+          : { participant: a.participant, weightMilli: weightToMilli(a.weight ?? 1) },
+      ),
     })),
     taxCents: raw.tax_cents ?? 0,
     fees: (raw.fees ?? []).map((f) => ({

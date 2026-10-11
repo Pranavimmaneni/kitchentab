@@ -65,6 +65,7 @@ is filled in.
 | MONEY-08 | M | Pairwise balances net across bills (Arjun +33.91, Meera +8.14, you −1.68 in apt4b) | Net +40.37 |
 | MONEY-09 | M | Request add-to-split recompute (fixture `request_add_to_split`) | Kabir +383, Pranav −192, Arjun −191 cents |
 | MONEY-10 | S | Bills at limits: 200 items, 20 members, $100,000.00 | Correct and under 50 ms |
+| MONEY-11 | M | Fixed shares (custom split, ADR-0030): fixtures `request_custom_split_*` and `custom_share_*` in both languages; property test Python == reference with random fixed shares; a value split of X cents on any line gives exactly X | Exact cent match |
 
 ### 3.2 Sign-in and sessions (AUTH)
 
@@ -205,6 +206,10 @@ is filled in.
 | ASK-12 | M | Requester leaves house → pending asks cancelled | As stated |
 | ASK-13 | M | Requests inbox tabs and counts; Kitchen badge count | Exact |
 | ASK-14 | M | Every arrow in the PRD §19.4 request diagram has a test | Coverage map complete |
+| ASK-15 | M | Add to split with a custom percent (25% / 50% / 100% / custom): preview deltas == saved shares == fixture; activity names the percent; Undo restores the tab | Matches `request_custom_split_quarter` / `_all` |
+| ASK-16 | M | Add to split with the owner's own value ($5.00 of $11.37): asker's line share exactly 500; above the price, 0%, 101% or two amounts at once → 422 | Matches `request_custom_split_amount` |
+| ASK-17 | M | Settled tab: chip in by percent (50% of $11.37 = $5.69) or own value; ledger entries split between owners | As stated |
+| ASK-18 | M | Request cards show the item's full price under the icon on FOR YOU and YOU ASKED; leftovers "No price" | As stated |
 
 ### 3.7 Multi-user sync (SYNC)
 

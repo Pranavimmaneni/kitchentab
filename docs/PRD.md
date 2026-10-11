@@ -227,7 +227,9 @@ Each requirement is testable; "Must" ships in MVP, "Should" ships in MVP if time
 
 All money is stored and computed as integer cents; floats never touch money. One pure function, `compute_shares(bill)`, is the single source of truth, runs on the server, and is mirrored in TypeScript for instant UI updates; both are tested against the same fixture file.
 
-**Inputs per item:** `line_total_cents` (after line-level discounts), and a set of allocations `{member_id, weight}` where weight defaults to 1.
+**Inputs per item:** `line_total_cents` (after line-level discounts), and a set of allocations `{member_id, weight}` where weight defaults to 1. An allocation may instead hold a fixed share of its line, `share = share_num / share_den` with 0 < share ≤ 1 (the custom split on an ask, FR-81, ADR-0030).
+
+**Fixed shares (step 1 detail).** On a line with fixed shares f₁…fₖ and weighted allocations, each fixed allocation's exact part is fᵢ and the weighted allocations split 1 − Σf in proportion to weight. If Σf ≥ 1, or nobody on the line is weighted, the fixed shares split the whole line in proportion to f and the weighted allocations get 0 (they stay on the line). The exact parts then go through the same largest-remainder rounding, so the invariant is unchanged. A percent p is stored as p/100; an owner's own value of X cents on a line of L cents is stored as X/L, so the asker's line share is exactly X.
 
 **Algorithm**
 
@@ -1007,8 +1009,8 @@ Every request is answered once, by whichever owner gets there first; the others 
 2. **Deliver.** The request goes to every owner: in-app badge on the Kitchen screen and the Requests inbox, plus email if they've opted in. The asker sees "ASKED · WAITING ON MEERA" on the item and can cancel while it's pending.
 3. **Answer.** An owner taps "Not this time" or "Say yes" after choosing how it works:
    - **On the house:** free. The asker gets access to that item until it's used up. No money moves.
-   - **Add them to the split** (only while the source bill is open): the asker is added to that bill line with weight 1, shares recalculate with `compute_shares`, and the asker becomes a co-owner. The option shows the exact deltas before confirming ("KABIR +$3.83 · YOU −$1.92 · ARJUN −$1.91"). It's logged in the bill's activity ("Kabir joined Chicken thighs, approved by Pranav") and everyone on the bill gets the usual share-changed notice.
-   - **Chip in $X** (replaces "add to split" once the bill is settled): the amount is prefilled with what the asker's share would have been (line total ÷ (owners + 1), rounded largest-remainder) and is editable from $0.01 up to the line total. It creates `ledger_entries` from the asker to the owners, split between owners with largest-remainder, so it shows up in house balances. The asker gets access but doesn't become an owner.
+   - **Add them to the split** (only while the source bill is open): the asker is added to that bill line with weight 1 (an equal share), or with a custom split (FR-81): 25%, 50%, 100% or a custom percent of the line, or the owner's own dollar value; that part is stored as a fixed share of the line (section 6, ADR-0030) and the owners split the rest by their weights. Shares recalculate with `compute_shares`, and the asker becomes a co-owner (at 100% the owners stay ticked at $0.00 on that line). The option shows the exact deltas before confirming ("KABIR +$3.83 · YOU −$1.92 · ARJUN −$1.91"). It's logged in the bill's activity ("Kabir joined Chicken thighs, approved by Pranav"; with a custom split "Kabir joined Chicken thighs (25%), approved by Pranav") and everyone on the bill gets the usual share-changed notice.
+   - **Chip in $X** (replaces "add to split" once the bill is settled): the amount is prefilled with what the asker's share would have been (line total ÷ (owners + 1), rounded largest-remainder) and is editable from $0.01 up to the line total; the same 25% / 50% / 100% / custom percent choices set it to that part of the line total (largest-remainder, the asker winning a tie). It creates `ledger_entries` from the asker to the owners, split between owners with largest-remainder, so it shows up in house balances. The asker gets access but doesn't become an owner.
 4. **Close.** Declines show "Not this time" with no reason. Unanswered requests expire after 48 hours. Owners can undo an answer within 5 minutes; undoing "add to split" removes the allocation again (only if the bill is still open).
 5. **Limits.** One pending request per asker per item; at most 3 asks per asker per item per 7 days; at most 10 pending outgoing requests per user.
 
@@ -1063,6 +1065,8 @@ These are product defaults, not food-safety advice; the UI says "probably" and n
 | FR-78 | Must | Use-soon at 80% of shelf life, "Still there?" past 100%; "Still good" adds 3 days; never auto-remove | Nudges are in-app; weekly email digest is opt-in |
 | FR-79 | Should | Add leftovers / add something manually (no bill, no money) | Creator is default owner; editable owners, place, shelf life |
 | FR-80 | Should | Kitchen history: used-up items and answered requests for the last 30 days | Read-only list under House |
+| FR-81 | Must | Custom split when saying yes: 25% / 50% / 100% / custom percent (1–100) of the item's line, or the owner's own value ($0.01 up to the line total), for Add to split and Chip in | Open tab: the asker's line share is exactly that part (fixed share, section 6); settled tab: chip-in amount; preview of the asker's part and every share delta before confirming; Undo removes it |
+| FR-82 | Must | Every request card (FOR YOU and YOU ASKED) shows the item's full price, its bill line total, under the item icon | Leftovers and manual items show "No price" |
 
 ### 19.7 Data model, API and extraction changes
 
@@ -1094,7 +1098,8 @@ These are product defaults, not food-safety advice; the UI says "probably" and n
 | POST | `/inventory/{iid}/requests` | Body `{amount, note?}`; non-owners, item locked for caller |
 | GET | \`/houses/{id}/requests?box=in | out\` |
 | GET | `/requests/{rid}/split-preview` | Share deltas if requester joins the line (runs `compute_shares` without saving) |
-| POST | `/requests/{rid}/answer` | Body \`{decision: decline |
+| GET | `/requests/{rid}/answer-preview?decision=split\|chip_in&percent=&amount_cents=` | FR-81: the asker's part (`asker_cents`), `line_total_cents` and share `deltas` for a custom split; nothing saved |
+| POST | `/requests/{rid}/answer` | Body `{decision: decline / free / split / chip_in, chip_in_cents?, percent? (1-100), amount_cents?}`; at most one of the three amounts (FR-81) |
 | POST | `/requests/{rid}/undo`, `/requests/{rid}/cancel` | Owner undo within 5 min; requester cancel while pending |
 
 **Realtime and jobs:** house SSE channel adds `inventory_changed`, `request_created`, `request_answered`. Jobs: hourly request expiry; daily use-soon pass at 9:00 house time (one in-app nudge per item per state change); weekly digest Sunday 10:00 house time for opted-in users.
