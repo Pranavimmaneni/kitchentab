@@ -65,10 +65,27 @@ Open, in order (overnight queue):
    behaviour), VERCEL-11. Needs a real-deployment check before merging (ADR-0032).
    Earlier note: API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
    VERCEL-02, SYNC-25, write-helper load test. Re-measure on a quiet machine before deciding.
-3. Not yet run: `make test-load` (PERF-01/02), three 30-minute `make simulate` seeds plus browser
-   devices, PERF-03..06 (Lighthouse / bundle / extraction / 200 items; mobile perf 84-89 vs 90),
-   E2E-01/02/04-08/10, A11Y-08, EMAIL-04; `make test-all` three times; docs/TEST_REPORT.md via
-   scripts/test_report.py; finalize DEVICE_QA.md; fresh-eyes reviews per milestone; mark milestones [done].
+3. Verification (2026-10-11, branch test/e2e-journeys, stacked on perf/serverless-pool):
+   - Journeys written and green on WebKit, Chromium and Firefox: E2E-01 (full, scanned Trader Joe's
+     photo, flagged line fixed), E2E-02 (phone-code claim), E2E-04 (ask, push to the owner's device
+     through the fake push service, Add to split), E2E-05 (use soon, round-up push, Used up, Undo),
+     E2E-06 (settle with money owed, carry, reopen, settle again), E2E-10 (two payer devices, merge
+     prompt). E2E-07 (install + push for every roommate action) on Chromium. E2E-08 is the screen-5
+     offline test. Found and fixed on the way: a fixed CHECK? line kept its stamp (assumption 56).
+   - PERF-04 green (link page JS 148.9 KB gz of 150: almost no headroom). PERF-06 green (200 items:
+     fridge 445 ms, Kitchen 71 ms after data, CPU 4x).
+   - NOT MET, owner's call: PERF-03 link page LCP 2.9 s (< 2.5), TBT 249 ms (< 200), CLS 0; PWA-12
+     /start performance 0.89 (>= 0.90). The page is server-rendered; the late LCP looks like the web
+     fonts repainting the heading over slow 4G (fix = font-display optional / fewer weights: a visible
+     design trade-off). Lighthouse tests now run on Windows (path-with-space bug fixed).
+   - NOT MET on this laptop (generator, DB and 4 API workers on one machine): PERF-01 p95 1.26 s at
+     114 req/s (< 300 ms), PERF-02 delivery p95 10.6 s (< 2 s); 0 errors, 0 missed deliveries,
+     invariants clean. Re-measure on Linux (a workflow_dispatch CI job would do).
+   - PERF-05 green: 10 receipts read on the device in 2.5-3.8 s, p90 3.6 s (< 15 s).
+   - `make simulate` seed 1 (30 min): PASS, 32 checkpoints, 0 errors, 0 violations, 5 restarts,
+     75 stream reconnects.
+   - Left: A11Y-08 and EMAIL-04 are manual (waived to DEVICE_QA.md §7 and §9); seeds 2 and 3; `make test-all` three times; docs/TEST_REPORT.md; DEVICE_QA.md;
+     milestone reviews and [done] marks.
 4. EMAIL_POSTAL_ADDRESS (email footer) still empty: `make deploy-setup ARGS='--postal-address "..."'`
    then `make redeploy`. Push and install need checking on real phones (DEVICE_QA.md).
 5. `make deploy` still runs its own lint+test gate; the last deploy ran the gate by hand
@@ -369,9 +386,14 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 53. Playwright blocks service workers by default; PWA/push/offline specs opt in, and push specs use the full Chromium build (`channel: "chromium"`) because the headless shell always reports notification permission as denied. ADR-0027.
 54. `X-Client-Version` is the integer API compatibility level (`1`), compared numerically with MIN_CLIENT_VERSION. ADR-0026.
 55. The first-bill notifications pre-prompt (N1) waits until the payer leaves E · Share: a write moment is decided on the next idle check and Share is marked busy (`data-kt-busy`), so the sheet never lands on the Share button (PUSH-01, E2E-01; PRD §20.2 rule 1 clarified).
+56. A CHECK? (flagged) line is cleared once the payer edits its name, quantity or price: they checked it. Tapping its storage tag leaves the stamp (EXTRACT-05, FR-12).
 
 ## Waivers
 
+- A11Y-08: manual by definition (TEST_PLAN: a VoiceOver/TalkBack pass on real phones). The owner
+  runs DEVICE_QA.md §7 before a release and records it under "Device QA" in TEST_REPORT.md.
+- EMAIL-04: manual by definition (TEST_PLAN: a DNS check at release). The owner runs DEVICE_QA.md §9
+  (Show original: SPF, DKIM, DMARC PASS) and records it under "Device QA" in TEST_REPORT.md.
 - GHSA-vfj7-8cjw-p6xm (CVE-2026-93687; `braces@3.0.3`, high; dependency audit, ADR-0025): no patched
   release exists (the advisory lists no fixed version). Reached only through lint tooling
   (`eslint-config-next > @next/eslint-plugin-next > fast-glob > micromatch > braces`), which expands

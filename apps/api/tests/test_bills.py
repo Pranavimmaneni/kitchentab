@@ -489,3 +489,25 @@ async def test_delete_draft_and_policy(api: ApiFactory) -> None:
     assert (await meera.call("DELETE", f"/api/v1/bills/{bill_id}", idem=True)).status_code == 403
     assert (await w.admin.call("DELETE", f"/api/v1/bills/{bill_id}", idem=True)).status_code == 200
     assert (await w.admin.get(f"/api/v1/bills/{bill_id}")).status_code == 404
+
+
+@tid("EXTRACT-05")
+@fr("FR-12", "FR-15")
+async def test_EXTRACT_05_fixing_a_flagged_line_clears_check_retagging_does_not(
+    api: ApiFactory, sessions: async_sessionmaker[AsyncSession]
+) -> None:
+    """A CHECK? row is cleared once the payer edits its name, quantity or price (they checked it);
+    tapping its storage tag isn't checking the line, so the stamp stays."""
+    from app.models import Item as ItemRow
+
+    w = await world(api)
+    bill_id, ids = await draft_with_items(w)
+    async with sessions() as db, db.begin():
+        for iid in ids[:2]:
+            (await db.get(ItemRow, iid)).flagged = True  # type: ignore[union-attr]
+    items = {i["id"]: i for i in (await w.admin.get(f"/api/v1/bills/{bill_id}")).json()["items"]}
+    url = f"/api/v1/bills/{bill_id}/items"
+    retag = await w.admin.call("PATCH", f"{url}/{ids[0]}", {"storage": "freezer"}, if_match=items[ids[0]]["version"])
+    assert retag.status_code == 200 and retag.json()["flagged"] is True, "a tag tap leaves CHECK?"
+    fixed = await w.admin.call("PATCH", f"{url}/{ids[1]}", {"name": "Eggs 18 ct"}, if_match=items[ids[1]]["version"])
+    assert fixed.status_code == 200 and fixed.json()["flagged"] is False, "the payer checked it"
