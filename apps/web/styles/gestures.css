@@ -569,11 +569,13 @@
   .kt-stocking .kt-stock-row > :not(.kt-stock-row__slot) {
     transition: opacity 120ms linear;
   }
+  /* The counts fade in: an opacity transition from its starting style, not a keyframe animation
+     (A11Y-07 keeps every animation behind no-preference). */
   .kt-stock-bin__count {
-    animation: kt-count-fade 120ms linear both;
+    transition: opacity 120ms linear;
   }
-  @keyframes kt-count-fade {
-    from {
+  @starting-style {
+    .kt-stock-bin__count {
       opacity: 0;
     }
   }
