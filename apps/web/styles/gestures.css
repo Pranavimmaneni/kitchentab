@@ -1,0 +1,345 @@
+/*
+ * Kitchen gestures (docs/features/kitchen-gestures/SPEC.md; renders in docs/design/renders/gestures).
+ * Colors only from tokens.css (the mockups' literal hex values map to --accent, --accent-2, --ink,
+ * --paper, --shadow). Only transform and opacity animate; motion sits in the no-preference block.
+ * Layers: the action bar is 5, the gesture layer 40, sheets 50, toasts 70.
+ */
+
+@layer components {
+  /* ---------- Tiles under a finger ---------- */
+  .kt-place .kt-tile {
+    /* Native vertical scroll until the lift (SPEC §2 plumbing 2-4). */
+    touch-action: pan-y;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+  }
+  .kt-place[data-gesture="lifted"],
+  .kt-place[data-gesture="dragging"],
+  .kt-place[data-gesture="collecting"],
+  .kt-place[data-gesture="menu_tracking"] {
+    touch-action: none;
+  }
+  .kt-tile[data-gap] {
+    opacity: 0;
+  }
+  .kt-tile[data-ghost] .kt-tile__icon {
+    background: transparent !important;
+    border: 2px dashed var(--muted);
+    box-shadow: none;
+  }
+  .kt-tile[data-ghost] .kt-tile__icon > *,
+  .kt-tile[data-ghost] .kt-tile__name,
+  .kt-tile[data-ghost] .kt-tile__pick,
+  .kt-tile[data-ghost] .kt-owner-dots {
+    opacity: 0;
+  }
+  .kt-tile[data-ghost] .kt-tile__icon {
+    outline: none;
+  }
+
+  /* ---------- Select mode (FR-G05, render s1-s3) ---------- */
+  .kt-select-toggle {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 16px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-pill);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .kt-select-toggle[data-on] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .kt-tile__pick {
+    position: absolute;
+    top: -4px;
+    left: 2px;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--on-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .kt-tile[data-picked] .kt-tile__pick {
+    background: var(--accent);
+  }
+  .kt-tile[data-picked] .kt-tile__icon {
+    outline: 3px solid var(--accent-2);
+    outline-offset: 1px;
+  }
+  .kt-select-hint {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .kt-select-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .kt-select-bar__count {
+    margin: 0 auto 0 0;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-mono);
+    line-height: 1.1;
+  }
+  .kt-select-bar__n {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .kt-select-bar__word {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .kt-select-bar__move {
+    flex: 0 1 auto;
+    padding: 0 16px;
+  }
+
+  /* ---------- The lifted item, the stack (FR-G01, FR-G06) ---------- */
+  .kt-gesture-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+  }
+  .kt-gesture-layer[data-phase="menu_static"] {
+    pointer-events: auto;
+  }
+  .kt-gesture-scrim {
+    position: absolute;
+    inset: 0;
+    /* 45% scrim (SPEC §3), from the same token as the sheet backdrop. */
+    background: color-mix(in srgb, var(--till) 45%, transparent);
+  }
+  .kt-lifted {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    will-change: transform;
+  }
+  .kt-lifted__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--food-stroke);
+    /* Lifted: scale 1.15, rotate -4°, hard offset shadow (FR-G01). */
+    transform: scale(1.15) rotate(-4deg);
+    box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow);
+  }
+  .kt-lifted__count {
+    position: absolute;
+    top: -12px;
+    right: -14px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    border: 2px solid var(--ink);
+    background: var(--accent-2);
+    color: var(--on-accent-2);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .kt-gesture-note {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 4px 8px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* ---------- Quick-action fan (FR-G03, FR-G04, renders m1-m4) ---------- */
+  .kt-fan {
+    position: absolute;
+    inset: 0;
+  }
+  .kt-bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+  }
+  .kt-bubble__button {
+    position: absolute;
+    left: -26px;
+    top: -26px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 3px 3px 0 var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .kt-bubble[data-hot] .kt-bubble__button,
+  .kt-bubble__button:focus-visible {
+    left: -32px;
+    top: -32px;
+    width: 64px;
+    height: 64px;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .kt-bubble__label {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    translate: -50% 0;
+    padding: 2px 6px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .kt-bubble__chip {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    translate: -50% 0;
+    rotate: -2deg;
+    padding: 6px 12px;
+    border: 2px solid var(--ink);
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 3px 3px 0 var(--shadow);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* ---------- Drop bar (FR-G07, renders c1-c4) ---------- */
+  .kt-drop-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .kt-bin {
+    min-height: 64px;
+    border: 2px dashed var(--ink);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  .kt-bin[data-over] {
+    border-style: solid;
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 3px 3px 0 var(--shadow);
+  }
+  .kt-bin[data-here] {
+    border-color: var(--faint);
+    color: var(--muted);
+  }
+  .kt-bin[data-here][data-over] {
+    background: var(--paper);
+    box-shadow: none;
+  }
+  .kt-area[data-drop] {
+    outline: 3px dashed var(--accent-2);
+    outline-offset: -3px;
+  }
+  .kt-area[data-drop] .kt-area__label {
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+
+  .kt-item-sheet__moved {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kt-place .kt-tile {
+    transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .kt-tile[data-gap] {
+    transition: none;
+  }
+  .kt-bubble__button {
+    animation: kt-bubble-in 160ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    animation-delay: calc(var(--i, 0) * 30ms);
+  }
+  .kt-gesture-scrim {
+    animation: kt-fade-in 120ms ease-out both;
+  }
+  .kt-bin[data-here][data-over] {
+    animation: kt-bin-refuse 240ms ease-in-out;
+  }
+  @keyframes kt-bubble-in {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+  @keyframes kt-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes kt-bin-refuse {
+    25% {
+      transform: translateX(-4px);
+    }
+    75% {
+      transform: translateX(4px);
+    }
+  }
+}

@@ -35,6 +35,7 @@ os.environ.update(
         "QUEUE_PROVIDER": "inline",  # tests drive the outbox drain with the controllable clock
         # One test user makes hundreds of writes a minute (SYNC x200); SEC-05 tests the real limits.
         "RATE_LIMIT_WRITES_PER_MIN": "0",
+        "RATE_LIMIT_MOVES_PER_MIN": "0",
         "RATE_LIMIT_READS_PER_MIN": "0",
         "STORAGE_PROVIDER": "s3",
         "LOG_LEVEL": "WARNING",

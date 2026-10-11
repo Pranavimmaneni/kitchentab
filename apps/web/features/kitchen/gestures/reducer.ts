@@ -14,18 +14,20 @@ import {
   PRE_LIFT_SLOP_PX,
   STACK_MAX,
 } from "./constants";
-import { bubbleAt, distance, inCone, placeFan, type Fan, type Point, type Viewport } from "./geometry";
+import {
+  bubbleAt,
+  distance,
+  inCone,
+  placeFan,
+  type Fan,
+  type Point,
+  type Viewport,
+} from "./geometry";
 
 export type Loc = "freezer" | "fridge" | "pantry";
 
 export type Phase =
-  | "IDLE"
-  | "PRESSING"
-  | "LIFTED"
-  | "MENU_TRACKING"
-  | "MENU_STATIC"
-  | "DRAGGING"
-  | "COLLECTING";
+  "IDLE" | "PRESSING" | "LIFTED" | "MENU_TRACKING" | "MENU_STATIC" | "DRAGGING" | "COLLECTING";
 
 /** What is under the finger, as the hook measured it from the cached cell rects. */
 export type Hit =
@@ -138,13 +140,19 @@ const idle = (effects: Effect[] = []): Step => ({ state: initialGesture, effects
 /** When the hook should next send a `timer` event, or null for none. */
 export function nextDeadline(s: GestureState): number | null {
   if (s.phase === "PRESSING") return s.pressedAt + LONG_PRESS_MS;
-  if ((s.phase === "DRAGGING" || s.phase === "COLLECTING") && s.dwell) return s.dwell.since + COLLECT_DWELL_MS;
+  if ((s.phase === "DRAGGING" || s.phase === "COLLECTING") && s.dwell)
+    return s.dwell.since + COLLECT_DWELL_MS;
   return null;
 }
 
 /** True from the lift until IDLE: the screen blocks page scroll with a non-passive touchmove. */
 export function holdsPage(s: GestureState): boolean {
-  return s.phase === "LIFTED" || s.phase === "MENU_TRACKING" || s.phase === "DRAGGING" || s.phase === "COLLECTING";
+  return (
+    s.phase === "LIFTED" ||
+    s.phase === "MENU_TRACKING" ||
+    s.phase === "DRAGGING" ||
+    s.phase === "COLLECTING"
+  );
 }
 
 /** Every dragged item is already at `to`: that bin shows HERE and refuses the drop. */
@@ -158,7 +166,13 @@ function lift(s: GestureState): Step {
     const picked = s.picked.includes(id);
     const stack = picked ? [id, ...s.picked.filter((p) => p !== id)].slice(0, STACK_MAX) : [id];
     return {
-      state: { ...s, phase: picked ? "COLLECTING" : "DRAGGING", liftAt: s.finger, stack, order: picked ? s.original : s.order },
+      state: {
+        ...s,
+        phase: picked ? "COLLECTING" : "DRAGGING",
+        liftAt: s.finger,
+        stack,
+        order: picked ? s.original : s.order,
+      },
       effects: [{ type: "haptic", event: "lift" }],
     };
   }
@@ -169,7 +183,12 @@ function lift(s: GestureState): Step {
 }
 
 function withDwell(s: GestureState, hit: Hit, time: number): GestureState {
-  if (hit.kind !== "item" || hit.zone !== "centre" || s.stack.includes(hit.id) || s.stack.length >= STACK_MAX) {
+  if (
+    hit.kind !== "item" ||
+    hit.zone !== "centre" ||
+    s.stack.includes(hit.id) ||
+    s.stack.length >= STACK_MAX
+  ) {
     return s.dwell ? { ...s, dwell: null } : s;
   }
   if (s.dwell?.id === hit.id) return s;
@@ -177,11 +196,18 @@ function withDwell(s: GestureState, hit: Hit, time: number): GestureState {
 }
 
 function collectIfDue(s: GestureState, time: number): Step {
-  if (!s.dwell || time - s.dwell.since < COLLECT_DWELL_MS || s.stack.length >= STACK_MAX) return { state: s, effects: [] };
+  if (!s.dwell || time - s.dwell.since < COLLECT_DWELL_MS || s.stack.length >= STACK_MAX)
+    return { state: s, effects: [] };
   if (!(s.dwell.id in s.items)) return { state: { ...s, dwell: null }, effects: [] };
   return {
     // Collecting freezes the layout: the gap goes home and picked cells show dashed ghosts.
-    state: { ...s, phase: "COLLECTING", stack: [...s.stack, s.dwell.id], dwell: null, order: s.original },
+    state: {
+      ...s,
+      phase: "COLLECTING",
+      stack: [...s.stack, s.dwell.id],
+      dwell: null,
+      order: s.original,
+    },
     effects: [{ type: "haptic", event: "collect" }],
   };
 }
@@ -196,7 +222,8 @@ function placeGap(s: GestureState, target: string, zone: "before" | "after"): re
   return [...rest.slice(0, i), me, ...rest.slice(i)];
 }
 
-const sameOrder = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
+const sameOrder = (a: readonly string[], b: readonly string[]) =>
+  a.length === b.length && a.every((x, i) => x === b[i]);
 
 function track(s: GestureState, ev: { point: Point; time: number; hit: Hit }): Step {
   const effects: Effect[] = [];
@@ -211,7 +238,13 @@ function track(s: GestureState, ev: { point: Point; time: number; hit: Hit }): S
   const section = hit.kind === "item" || hit.kind === "section" ? hit.section : null;
   next.overSection = section && section !== s.section ? section : null;
 
-  if (s.phase === "DRAGGING" && hit.kind === "item" && hit.section === s.section && hit.zone !== "centre" && hit.id !== s.itemId) {
+  if (
+    s.phase === "DRAGGING" &&
+    hit.kind === "item" &&
+    hit.section === s.section &&
+    hit.zone !== "centre" &&
+    hit.id !== s.itemId
+  ) {
     const order = placeGap(next, hit.id, hit.zone);
     if (!sameOrder(order, next.order)) {
       next.order = order;
@@ -230,7 +263,12 @@ function drop(s: GestureState, hit: Hit): Step {
   // A stack only lands in a bin; a single drag may also land on the other section of the fridge.
   const to = hit.kind === "bin" ? hit.to : s.phase === "DRAGGING" ? s.overSection : null;
   if (to) {
-    if (isHere(s, to)) return idle([{ type: "haptic", event: "blocked" }, { type: "blocked", to }, { type: "home" }]);
+    if (isHere(s, to))
+      return idle([
+        { type: "haptic", event: "blocked" },
+        { type: "blocked", to },
+        { type: "home" },
+      ]);
     const itemIds = s.stack.filter((id) => s.items[id] !== to);
     return idle([{ type: "move", itemIds, to }]);
   }
@@ -246,7 +284,9 @@ export function reduce(s: GestureState, ev: GestureEvent): Step {
       if (s.phase === "MENU_STATIC") return idle();
       if (s.phase !== "IDLE") {
         // A second finger: cancel safely (SPEC §2 plumbing 5).
-        return ev.pointerId === s.pointerId ? { state: s, effects: [] } : idle(s.phase === "PRESSING" ? [] : [{ type: "home" }]);
+        return ev.pointerId === s.pointerId
+          ? { state: s, effects: [] }
+          : idle(s.phase === "PRESSING" ? [] : [{ type: "home" }]);
       }
       return {
         state: {
@@ -271,7 +311,8 @@ export function reduce(s: GestureState, ev: GestureEvent): Step {
     }
 
     case "pointer":
-      if (s.phase === "IDLE" || s.phase === "MENU_STATIC" || ev.pointerId === s.pointerId) return { state: s, effects: [] };
+      if (s.phase === "IDLE" || s.phase === "MENU_STATIC" || ev.pointerId === s.pointerId)
+        return { state: s, effects: [] };
       return idle(s.phase === "PRESSING" ? [] : [{ type: "home" }]);
 
     case "timer": {
@@ -288,7 +329,8 @@ export function reduce(s: GestureState, ev: GestureEvent): Step {
           if (distance(ev.point, s.start) > PRE_LIFT_SLOP_PX) return idle();
           return { state: { ...s, finger: ev.point }, effects: [] };
         case "LIFTED": {
-          if (distance(ev.point, s.liftAt) < DECIDE_PX) return { state: { ...s, finger: ev.point }, effects: [] };
+          if (distance(ev.point, s.liftAt) < DECIDE_PX)
+            return { state: { ...s, finger: ev.point }, effects: [] };
           if (s.fan && inCone(s.fan, ev.point)) {
             return trackMenu({ ...s, phase: "MENU_TRACKING" }, ev.point);
           }
@@ -313,10 +355,17 @@ export function reduce(s: GestureState, ev: GestureEvent): Step {
         case "LIFTED":
           if (s.selectMode || !s.fan) return idle([{ type: "home" }]);
           // A hold without travel leaves the bubbles open as ordinary buttons.
-          return { state: { ...s, phase: "MENU_STATIC", pointerId: null, hoverBubble: null }, effects: [] };
+          return {
+            state: { ...s, phase: "MENU_STATIC", pointerId: null, hoverBubble: null },
+            effects: [],
+          };
         case "MENU_TRACKING": {
           const index = s.fan ? bubbleAt(s.fan, ev.point) : null;
-          return idle(index === null ? [{ type: "home" }] : [{ type: "choose", itemId: s.itemId as string, index }]);
+          return idle(
+            index === null
+              ? [{ type: "home" }]
+              : [{ type: "choose", itemId: s.itemId as string, index }],
+          );
         }
         case "DRAGGING":
         case "COLLECTING": {
@@ -356,18 +405,26 @@ export function reduce(s: GestureState, ev: GestureEvent): Step {
     case "sync": {
       if (s.phase === "IDLE") return { state: s, effects: [] };
       const live = (id: string) => id in ev.items;
-      if (s.itemId && !live(s.itemId) && (s.phase === "PRESSING" || s.phase === "LIFTED" || s.phase.startsWith("MENU"))) {
+      if (
+        s.itemId &&
+        !live(s.itemId) &&
+        (s.phase === "PRESSING" || s.phase === "LIFTED" || s.phase.startsWith("MENU"))
+      ) {
         return idle([{ type: "home" }]);
       }
       const stack = s.stack.filter(live);
       const gone = s.stack.filter((id) => !live(id));
-      if ((s.phase === "DRAGGING" || s.phase === "COLLECTING") && stack.length === 0) return idle([{ type: "home" }]);
+      if ((s.phase === "DRAGGING" || s.phase === "COLLECTING") && stack.length === 0)
+        return idle([{ type: "home" }]);
       // New items join the end of the section; the dragged item stays where it is (SYNC-G6).
       const section = s.section;
       const added = section
         ? Object.keys(ev.items).filter((id) => ev.items[id] === section && !s.original.includes(id))
         : [];
-      const keep = (list: readonly string[]) => [...list.filter((id) => live(id) || id === s.itemId), ...added];
+      const keep = (list: readonly string[]) => [
+        ...list.filter((id) => live(id) || id === s.itemId),
+        ...added,
+      ];
       return {
         state: {
           ...s,
@@ -386,7 +443,8 @@ export function reduce(s: GestureState, ev: GestureEvent): Step {
 
 function trackMenu(s: GestureState, point: Point): Step {
   const index = s.fan ? bubbleAt(s.fan, point) : null;
-  const effects: Effect[] = index !== null && index !== s.hoverBubble ? [{ type: "haptic", event: "tick" }] : [];
+  const effects: Effect[] =
+    index !== null && index !== s.hoverBubble ? [{ type: "haptic", event: "tick" }] : [];
   return { state: { ...s, finger: point, hoverBubble: index }, effects };
 }
 

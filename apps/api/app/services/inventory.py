@@ -167,6 +167,7 @@ async def item_views(
         mine = any(o.member_id == me.member_id for o in its_owners)
         fresh = freshness(item, today)
         source = bills.get(item.bill_id) if item.bill_id else None
+        mover = members.get(item.moved_by_member_id) if item.moved_by_member_id else None
         out.append(
             {
                 "id": str(item.id),
@@ -205,6 +206,11 @@ async def item_views(
                 "soon_label": fresh.label,
                 "my_request": {"id": str(pending[item.id].id), "amount": pending[item.id].amount}
                 if item.id in pending
+                else None,
+                "created_at": item.created_at.isoformat(),
+                # "Moved to pantry by Arjun" on the item sheet (gestures SPEC §5.2)
+                "moved": {"by": mover.display_name, "at": item.moved_at.isoformat()}
+                if mover and item.moved_at
                 else None,
             }
         )

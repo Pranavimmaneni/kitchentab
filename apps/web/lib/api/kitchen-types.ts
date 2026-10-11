@@ -48,11 +48,25 @@ export type InventoryItem = {
   days_left: number;
   soon_label: string | null;
   my_request: { id: string; amount: AskAmount } | null;
+  created_at?: string;
+  /** Last move between Freezer, Fridge and Pantry: "Moved to pantry by Arjun" (gestures SPEC §5.2). */
+  moved?: { by: string; at: string } | null;
   /** Present on `/inventory` responses: whether the item matches the requested filter. */
   matches?: boolean;
 };
 
 export type FilterCounts = Record<KitchenFilter, number>;
+
+/** POST /houses/{id}/items/move (gestures SPEC §5.2). */
+export type MoveRequest = { item_id: string; to: Place; expect_from?: Place };
+export type MoveResultKind = "moved" | "skipped_already_there" | "skipped_gone" | "skipped_changed";
+export type MoveResult = {
+  item_id: string;
+  result: MoveResultKind;
+  place: Place | null;
+  version: number | null;
+};
+export type MoveResponse = { results: MoveResult[]; moved: number };
 
 export type InventoryArea = { area: Place; items: InventoryItem[] };
 

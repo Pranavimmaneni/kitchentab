@@ -50,6 +50,8 @@ EXPECTED_TABLES = {
     "inventory_owners",
     "inventory_grants",
     "share_requests",
+    # docs/features/kitchen-gestures/SPEC.md §5.1
+    "member_item_order",
     # §20.2
     "push_subscriptions",
     "notification_prefs",

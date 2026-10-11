@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { BUBBLE_HOVER_PX, BUBBLE_PX, COLLECT_DWELL_MS, LONG_PRESS_MS, STACK_MAX } from "@/features/kitchen/gestures/constants";
+import {
+  BUBBLE_HOVER_PX,
+  BUBBLE_PX,
+  COLLECT_DWELL_MS,
+  LONG_PRESS_MS,
+  MENU_RADIUS_PX,
+  STACK_MAX,
+} from "@/features/kitchen/gestures/constants";
 import { bubbleAt, inCone, placeFan } from "@/features/kitchen/gestures/geometry";
 import {
   initialGesture,
@@ -76,13 +83,20 @@ const lifted = (over: Partial<Extract<GestureEvent, { type: "down" }>> = {}) =>
 /** Lift, then leave the cone sideways: a drag. */
 const dragging = (over: Partial<Extract<GestureEvent, { type: "down" }>> = {}) =>
   run([move(CENTRE.x + 30, CENTRE.y + 5, LONG_PRESS_MS + 10)], lifted(over).state);
-const item = (id: string, zone: "before" | "centre" | "after" = "centre", section: Loc = ITEMS[id] as Loc): Hit => ({
+const item = (
+  id: string,
+  zone: "before" | "centre" | "after" = "centre",
+  section: Loc = ITEMS[id] as Loc,
+): Hit => ({
   kind: "item",
   id,
   zone,
   section,
 });
-const types = (effects: Effect[]) => effects.map((e) => (e.type === "haptic" ? `haptic:${e.event}` : e.type));
+const without = (items: Record<string, Loc>, id: string) =>
+  Object.fromEntries(Object.entries(items).filter(([k]) => k !== id)) as Record<string, Loc>;
+const types = (effects: Effect[]) =>
+  effects.map((e) => (e.type === "haptic" ? `haptic:${e.event}` : e.type));
 
 describe("press and lift (FR-G01)", () => {
   it("GEST-01 a 350 ms hold lifts the item with a lift haptic [FR-G01]", () => {
@@ -128,7 +142,10 @@ describe("menu or drag (FR-G03)", () => {
   });
 
   it("GEST-02 releasing in the cone but off the bubbles chooses nothing [FR-G03] [FR-G05]", () => {
-    const r = run([move(CENTRE.x, CENTRE.y - 20, 400), up(CENTRE.x, CENTRE.y - 20, 420)], lifted().state);
+    const r = run(
+      [move(CENTRE.x, CENTRE.y - 20, 400), up(CENTRE.x, CENTRE.y - 20, 420)],
+      lifted().state,
+    );
     expect(r.state.phase).toBe("IDLE");
     expect(r.effects.some((e) => e.type === "choose")).toBe(false);
   });
@@ -140,7 +157,10 @@ describe("menu or drag (FR-G03)", () => {
   });
 
   it("GEST-02 under 12 px of travel then release leaves the bubbles open as buttons [FR-G03] [FR-G05]", () => {
-    const r = run([move(CENTRE.x + 4, CENTRE.y - 4, 400), up(CENTRE.x + 4, CENTRE.y - 4, 450)], lifted().state);
+    const r = run(
+      [move(CENTRE.x + 4, CENTRE.y - 4, 400), up(CENTRE.x + 4, CENTRE.y - 4, 450)],
+      lifted().state,
+    );
     expect(r.state.phase).toBe("MENU_STATIC");
     expect(r.effects).toEqual([]);
     const chosen = run([{ type: "choose", index: 0 }], r.state);
@@ -185,6 +205,15 @@ describe("fan placement", () => {
     expect(inCone(fan, { x: 200, y: 90 })).toBe(false);
   });
 
+  it("GEST-03 a first-column tile on a 375 px phone turns the fan inward instead of squeezing it [FR-G03]", () => {
+    const origin = { x: 68, y: 356 };
+    const fan = placeFan(origin, { width: 375, height: 812 });
+    for (const c of fan.centres) {
+      expect(Math.hypot(c.x - origin.x, c.y - origin.y)).toBeCloseTo(MENU_RADIUS_PX, 5);
+    }
+    expect(fan.axis).toBeGreaterThan(-90);
+  });
+
   it("GEST-03 the fan rotates 30 degrees inward near the sides [FR-G03]", () => {
     expect(placeFan({ x: 40, y: 400 }, VIEW).axis).toBeGreaterThan(-90);
     expect(placeFan({ x: 350, y: 400 }, VIEW).axis).toBeLessThan(-90);
@@ -194,7 +223,9 @@ describe("fan placement", () => {
     const narrow = { width: 320, height: 640 };
     for (let x = 24; x <= 296; x += 8) {
       for (let y = 40; y <= 620; y += 10) {
-        expect(onScreen(placeFan({ x, y }, narrow), narrow.width, narrow.height), `${x},${y}`).toBe(true);
+        expect(onScreen(placeFan({ x, y }, narrow), narrow.width, narrow.height), `${x},${y}`).toBe(
+          true,
+        );
       }
     }
   });
@@ -221,8 +252,15 @@ describe("fan placement", () => {
 describe("reorder and collect (FR-G02, FR-G06, FR-G07)", () => {
   it("GEST-04 crossing a neighbour's edge moves the gap and commits the order on release [FR-G02] [FR-G06] [FR-G07]", () => {
     const d = dragging();
-    const r = run([move(300, 400, 500, item("yogurt", "after")), up(300, 400, 520, item("yogurt", "after"))], d.state);
-    expect(r.effects).toContainEqual({ type: "reorder", section: "fridge", order: ["milk", "yogurt", "eggs", "kimchi", "tofu"] });
+    const r = run(
+      [move(300, 400, 500, item("yogurt", "after")), up(300, 400, 520, item("yogurt", "after"))],
+      d.state,
+    );
+    expect(r.effects).toContainEqual({
+      type: "reorder",
+      section: "fridge",
+      order: ["milk", "yogurt", "eggs", "kimchi", "tofu"],
+    });
     expect(r.effects).toContainEqual({ type: "haptic", event: "tick", reorder: true });
   });
 
@@ -234,7 +272,11 @@ describe("reorder and collect (FR-G02, FR-G06, FR-G07)", () => {
   it("GEST-04 reorder ticks are capped at one per 80 ms [FR-G02] [FR-G06] [FR-G07]", () => {
     const d = dragging();
     const r = run(
-      [move(300, 400, 500, item("yogurt", "after")), move(350, 400, 540, item("kimchi", "after")), move(380, 400, 600, item("tofu", "after"))],
+      [
+        move(300, 400, 500, item("yogurt", "after")),
+        move(350, 400, 540, item("kimchi", "after")),
+        move(380, 400, 600, item("tofu", "after")),
+      ],
       d.state,
     );
     expect(r.effects.filter((e) => e.type === "haptic")).toHaveLength(2);
@@ -255,7 +297,10 @@ describe("reorder and collect (FR-G02, FR-G06, FR-G07)", () => {
 
   it("GEST-04 leaving the item before the dwell ends restarts it [FR-G02] [FR-G06] [FR-G07]", () => {
     const d = dragging();
-    const r = run([move(300, 400, 500, item("kimchi")), move(320, 400, 600, item("tofu")), timer(760)], d.state);
+    const r = run(
+      [move(300, 400, 500, item("kimchi")), move(320, 400, 600, item("tofu")), timer(760)],
+      d.state,
+    );
     expect(r.state.stack).toEqual(["eggs"]);
     expect(run([timer(850)], r.state).state.stack).toEqual(["eggs", "tofu"]);
   });
@@ -270,17 +315,25 @@ describe("reorder and collect (FR-G02, FR-G06, FR-G07)", () => {
     const edge = run([move(340, 400, 900, item("tofu", "after"))], collecting.state);
     expect(edge.state.order).toEqual(FRIDGE);
     // Releasing in the list sends the stack home with no write.
-    expect(run([up(340, 400, 950, item("tofu", "after"))], edge.state).effects).toEqual([{ type: "home" }]);
+    expect(run([up(340, 400, 950, item("tofu", "after"))], edge.state).effects).toEqual([
+      { type: "home" },
+    ]);
   });
 
   it(`GEST-04 a stack holds at most ${STACK_MAX} items [FR-G02] [FR-G06] [FR-G07]`, () => {
     const many: Record<string, Loc> = {};
     const ids = Array.from({ length: 25 }, (_, i) => `i${i}`);
     for (const id of ids) many[id] = "pantry";
-    let s = run([move(CENTRE.x + 30, CENTRE.y, 360)], run([down({ itemId: "i0", items: many, order: ids }), timer(LONG_PRESS_MS)]).state).state;
+    let s = run(
+      [move(CENTRE.x + 30, CENTRE.y, 360)],
+      run([down({ itemId: "i0", items: many, order: ids }), timer(LONG_PRESS_MS)]).state,
+    ).state;
     let t = 400;
     for (const id of ids.slice(1)) {
-      s = run([move(300, 400, t, item(id, "centre", "pantry")), timer(t + COLLECT_DWELL_MS)], s).state;
+      s = run(
+        [move(300, 400, t, item(id, "centre", "pantry")), timer(t + COLLECT_DWELL_MS)],
+        s,
+      ).state;
       t += 300;
     }
     expect(s.stack).toHaveLength(STACK_MAX);
@@ -290,7 +343,13 @@ describe("reorder and collect (FR-G02, FR-G06, FR-G07)", () => {
     const d = dragging();
     const c = run([move(300, 400, 500, item("dumplings")), timer(750)], d.state);
     expect(c.state.stack).toEqual(["eggs", "dumplings"]);
-    const r = run([move(200, 800, 800, { kind: "bin", to: "freezer" }), up(200, 800, 820, { kind: "bin", to: "freezer" })], c.state);
+    const r = run(
+      [
+        move(200, 800, 800, { kind: "bin", to: "freezer" }),
+        up(200, 800, 820, { kind: "bin", to: "freezer" }),
+      ],
+      c.state,
+    );
     expect(r.effects).toContainEqual({ type: "move", itemIds: ["eggs"], to: "freezer" });
     expect(r.effects).toContainEqual({ type: "haptic", event: "tick" });
   });
@@ -299,7 +358,11 @@ describe("reorder and collect (FR-G02, FR-G06, FR-G07)", () => {
     const d = dragging();
     expect(isHere(d.state, "fridge")).toBe(true);
     const r = run([up(200, 800, 600, { kind: "bin", to: "fridge" })], d.state);
-    expect(r.effects).toEqual([{ type: "haptic", event: "blocked" }, { type: "blocked", to: "fridge" }, { type: "home" }]);
+    expect(r.effects).toEqual([
+      { type: "haptic", event: "blocked" },
+      { type: "blocked", to: "fridge" },
+      { type: "home" },
+    ]);
   });
 
   it("GEST-04 dragging onto the freezer area of the fridge is a move, not a reorder [FR-G02] [FR-G06] [FR-G07]", () => {
@@ -326,7 +389,10 @@ describe("cancel paths (FR-G01..G07)", () => {
     ["LIFTED", () => lifted().state],
     ["MENU_TRACKING", () => run([move(CENTRE.x, CENTRE.y - 20, 400)], lifted().state).state],
     ["DRAGGING", () => dragging().state],
-    ["COLLECTING", () => run([move(300, 400, 500, item("kimchi")), timer(750)], dragging().state).state],
+    [
+      "COLLECTING",
+      () => run([move(300, 400, 500, item("kimchi")), timer(750)], dragging().state).state,
+    ],
   ];
   const cancels: Array<[string, GestureEvent]> = [
     ["a second pointer", { type: "pointer", pointerId: 2 }],
@@ -351,7 +417,10 @@ describe("cancel paths (FR-G01..G07)", () => {
 
   it("GEST-05 events from another pointer are ignored mid-drag [FR-G01] [FR-G06]", () => {
     const d = dragging();
-    const r = run([{ type: "move", pointerId: 9, point: { x: 0, y: 0 }, time: 500, hit: NONE }], d.state);
+    const r = run(
+      [{ type: "move", pointerId: 9, point: { x: 0, y: 0 }, time: 500, hit: NONE }],
+      d.state,
+    );
     expect(r.state).toBe(d.state);
   });
 });
@@ -359,7 +428,7 @@ describe("cancel paths (FR-G01..G07)", () => {
 describe("live changes under a gesture (SYNC-G2, SYNC-G6)", () => {
   it("SYNC-G2 an item used up mid-drag leaves the stack and the drop moves the rest [FR-G06]", () => {
     const c = run([move(300, 400, 500, item("kimchi")), timer(750)], dragging().state);
-    const { kimchi: _gone, ...rest } = ITEMS;
+    const rest = without(ITEMS, "kimchi");
     const synced = run([{ type: "sync", items: rest }], c.state);
     expect(synced.state.stack).toEqual(["eggs"]);
     expect(synced.state.dropped).toEqual(["kimchi"]);
@@ -368,7 +437,7 @@ describe("live changes under a gesture (SYNC-G2, SYNC-G6)", () => {
   });
 
   it("SYNC-G2 if the whole stack is gone the drag ends [FR-G06]", () => {
-    const { eggs: _gone, ...rest } = ITEMS;
+    const rest = without(ITEMS, "eggs");
     const r = run([{ type: "sync", items: rest }], dragging().state);
     expect(r.state.phase).toBe("IDLE");
   });

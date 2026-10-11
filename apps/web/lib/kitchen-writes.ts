@@ -3,19 +3,24 @@
 import { useQueryClient, type QueryClient, type QueryKey } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { api } from "./api/client";
+import { kitchenKeys } from "./api/kitchen-hooks";
 import type {
   AskAmount,
   InventoryItem,
   InventoryView,
+  KitchenPlace,
   KitchenView,
+  MoveRequest,
+  MoveResponse,
   PartBody,
   Place,
   ShareRequest,
 } from "./api/kitchen-types";
 
 /**
- * Kitchen writes, one per user action, using the PRD §21.3 write kinds: the sharing switch is a
- * set-state PUT (the only optimistic write, CLAUDE.md rule 5); edits are guarded PATCHes with
+ * Kitchen writes, one per user action, using the PRD §21.3 write kinds: the sharing switch and my
+ * own item order are set-state PUTs (the only optimistic writes, CLAUDE.md rule 5); moves are a
+ * state transition with an Idempotency-Key (never optimistic); edits are guarded PATCHes with
  * If-Match; used up / restore / still good / asks / answers / undo / cancel / leftovers are POSTs
  * with an Idempotency-Key. Nothing is queued offline: a failed write throws to the caller.
  */
@@ -70,6 +75,20 @@ function patchCached(
     };
   }
   return data;
+}
+
+/** My order, applied to a cached inventory view (the ids I sent first, the rest after). */
+export function withOrder(view: InventoryView, area: Place, ids: readonly string[]): InventoryView {
+  const rank = new Map(ids.map((id, n) => [id, n]));
+  return {
+    ...view,
+    areas: view.areas.map((a) => {
+      if (a.area !== area) return a;
+      const listed = a.items.filter((i) => rank.has(i.id));
+      listed.sort((x, y) => (rank.get(x.id) ?? 0) - (rank.get(y.id) ?? 0));
+      return { ...a, items: [...listed, ...a.items.filter((i) => !rank.has(i.id))] };
+    }),
+  };
 }
 
 export type LeftoversBody = {
@@ -177,6 +196,45 @@ export function kitchenWrites(client: QueryClient, houseId: string, meMemberId: 
     async undo(req: ShareRequest): Promise<void> {
       try {
         await api.post(`/requests/${req.id}/undo`);
+      } finally {
+        await refresh();
+      }
+    },
+
+    /** Up to 20 moves in one request; a result per item (gestures SPEC §5.2). */
+    async move(moves: MoveRequest[], idempotencyKey?: string): Promise<MoveResponse> {
+      try {
+        return await api.post<MoveResponse>(
+          `/houses/${houseId}/items/move`,
+          { moves },
+          { idempotencyKey },
+        );
+      } finally {
+        await refresh();
+      }
+    },
+
+    /** PUT set-state of my own order for one section; the cached list reorders at once. */
+    async setOrder(place: KitchenPlace, area: Place, ids: string[]): Promise<void> {
+      const key = kitchenKeys.inventory(houseId, place);
+      await client.cancelQueries({ queryKey: key });
+      const before = client.getQueryData<InventoryView>(key);
+      if (before) client.setQueryData(key, withOrder(before, area, ids));
+      try {
+        await api.put(`/houses/${houseId}/me/item-order/${area}`, { item_ids: ids });
+      } catch (error) {
+        if (before) client.setQueryData(key, before);
+        throw error;
+      }
+    },
+
+    /** The fan's Ask bubble: a bit, no note; returns the request so Undo can cancel it. */
+    async askQuick(item: InventoryItem): Promise<{ id: string }> {
+      try {
+        return await api.post<{ id: string }>(`/inventory/${item.id}/requests`, {
+          amount: "a_bit",
+          note: null,
+        });
       } finally {
         await refresh();
       }

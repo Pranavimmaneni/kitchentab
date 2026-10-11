@@ -9,6 +9,24 @@ import { FoodIcon, foodPastel } from "./FoodIcon";
 import { OwnerDots } from "./OwnerDots";
 import { CheckIcon, LockIcon } from "./icons";
 
+/** Kitchen gestures on a tile (docs/features/kitchen-gestures/SPEC.md). */
+export type TileGestures = {
+  handlers: (itemId: string) => {
+    onPointerDown: (e: React.PointerEvent<HTMLElement>) => void;
+    onContextMenu: (e: React.MouseEvent<HTMLElement>) => void;
+    onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
+  };
+  /** Reorder: slide aside by this much (transform only). */
+  shiftOf: (itemId: string) => { x: number; y: number } | null;
+  /** Select mode: every tile shows a check circle; picked ones are ticked. */
+  selectMode: boolean;
+  picked: ReadonlySet<string>;
+  /** The lifted item's own cell while it rides under the finger. */
+  gapId: string | null;
+  /** Collected items' cells show dashed ghosts. */
+  ghostIds: ReadonlySet<string>;
+};
+
 export type ItemTileProps = {
   item: InventoryItem;
   meMemberId: string | null;
@@ -17,6 +35,7 @@ export type ItemTileProps = {
   /** Pop in (first time this member sees the item; only when motion is allowed). */
   pop?: boolean;
   onOpen: (item: InventoryItem) => void;
+  gestures?: TileGestures;
 };
 
 /**
@@ -24,19 +43,47 @@ export type ItemTileProps = {
  * check = open, paper lock = ask first), SOON tag and dashed orange ring when due, mono 9 short
  * name, 13 px owner avatars. The label states name, owners, share state and use-soon.
  */
-export function ItemTile({ item, meMemberId, dimmed = false, pop = false, onOpen }: ItemTileProps) {
+export function ItemTile({
+  item,
+  meMemberId,
+  dimmed = false,
+  pop = false,
+  onOpen,
+  gestures,
+}: ItemTileProps) {
   const open = showsOpenBadge(item);
+  const shift = gestures?.shiftOf(item.id) ?? null;
+  const selectMode = gestures?.selectMode ?? false;
+  const picked = gestures?.picked.has(item.id) ?? false;
+  const label = tileLabel(item, meMemberId);
   return (
     <button
       type="button"
       className="kt-tile"
-      aria-label={tileLabel(item, meMemberId)}
+      aria-label={
+        selectMode
+          ? `${label}, ${picked ? strings.gestures.tileSelected : strings.gestures.tileNotSelected}`
+          : label
+      }
+      aria-pressed={selectMode ? picked : undefined}
       data-dim={dimmed || undefined}
       data-soon={item.use_soon || undefined}
       data-pop={pop || undefined}
+      data-picked={picked || undefined}
+      data-select={selectMode || undefined}
+      data-gap={gestures?.gapId === item.id || undefined}
+      data-ghost={gestures?.ghostIds.has(item.id) || undefined}
+      data-shifted={shift ? "" : undefined}
+      style={shift ? { transform: `translate3d(${shift.x}px, ${shift.y}px, 0)` } : undefined}
       data-item-id={item.id}
       onClick={() => onOpen(item)}
+      {...gestures?.handlers(item.id)}
     >
+      {selectMode ? (
+        <span className="kt-tile__pick" aria-hidden="true">
+          {picked ? <CheckIcon size={12} strokeWidth={3.5} /> : null}
+        </span>
+      ) : null}
       <span className="kt-tile__icon" style={{ background: foodPastel(item.icon_key, item.place) }}>
         <FoodIcon iconKey={item.icon_key} place={item.place} />
         <span className="kt-tile__badge" data-open={open || undefined}>
@@ -57,6 +104,7 @@ export type AreaGridProps = {
   label: string;
   popIds?: ReadonlySet<string>;
   onOpen: (item: InventoryItem) => void;
+  gestures?: TileGestures;
 };
 
 /**
@@ -64,7 +112,15 @@ export type AreaGridProps = {
  * the rows near the viewport are rendered; the area keeps its full height so the page scrolls to
  * every item (KITCH-16, EDGE-19-10).
  */
-export function AreaGrid({ items, filter, meMemberId, label, popIds, onOpen }: AreaGridProps) {
+export function AreaGrid({
+  items,
+  filter,
+  meMemberId,
+  label,
+  popIds,
+  onOpen,
+  gestures,
+}: AreaGridProps) {
   const ref = useRef<HTMLDivElement>(null);
   const columns = useColumns(ref);
   const virtual = items.length > VIRTUALIZE_AT;
@@ -79,6 +135,7 @@ export function AreaGrid({ items, filter, meMemberId, label, popIds, onOpen }: A
       dimmed={!matchesFilter(item, filter)}
       pop={popIds?.has(item.id)}
       onOpen={onOpen}
+      gestures={gestures}
     />
   );
 

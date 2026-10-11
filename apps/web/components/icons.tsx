@@ -147,6 +147,43 @@ export const UploadIcon = makeIcon(
   </>,
 );
 
+/** Kitchen gestures: the three places, ask, used up (docs/design/renders/gestures). */
+export const SnowflakeIcon = makeIcon(
+  "snowflake",
+  <path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5" />,
+  2.2,
+);
+
+export const FridgeIcon = makeIcon(
+  "fridge",
+  <>
+    <rect x="6" y="3" width="12" height="18" rx="2" />
+    <path d="M6 10h12M9 6v2M9 13v3" />
+  </>,
+  2.2,
+);
+
+export const PantryIcon = makeIcon(
+  "pantry",
+  <>
+    <rect x="5" y="3" width="14" height="18" rx="1.5" />
+    <path d="M5 9h14M5 15h14M9 6h3M12 12h3M9 18h3" />
+  </>,
+  2.2,
+);
+
+export const HandIcon = makeIcon(
+  "hand",
+  <path d="M8 12V6.5a1.5 1.5 0 013 0V11m0-5.5V5a1.5 1.5 0 013 0v6m0-4.5a1.5 1.5 0 013 0V14a6 6 0 01-6 6h-.5a6 6 0 01-4.8-2.4L4 14.5a1.6 1.6 0 012.5-2L8 14" />,
+  2,
+);
+
+export const EmptyIcon = makeIcon(
+  "empty",
+  <path d="M5 7h14M10 4h4M7 7l1 13h8l1-13M10 11v5M14 11v5" />,
+  2,
+);
+
 export const icons = {
   back: BackIcon,
   sun: SunIcon,

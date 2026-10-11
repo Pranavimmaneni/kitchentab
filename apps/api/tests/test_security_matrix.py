@@ -415,6 +415,22 @@ TABLE: list[Row] = [
     r("POST", "/requests/{request_id}/undo", frozenset({MEMBER}), request_id=ASK),
     r("POST", "/requests/{request_id}/cancel", frozenset({ADMIN}), request_id=ASK),
     r("GET", "/houses/{house_id}/kitchen/history", HOUSE, house_id=H),
+    # kitchen gestures: any member moves any item; everyone sets only their own order
+    r(
+        "POST",
+        "/houses/{house_id}/items/move",
+        HOUSE,
+        body=lambda w, _r: {"moves": [{"item_id": w.home.inv_item_id, "to": "pantry"}]},
+        house_id=H,
+    ),
+    r(
+        "PUT",
+        "/houses/{house_id}/me/item-order/{location}",
+        HOUSE,
+        body=const({"item_ids": []}),
+        house_id=H,
+        location=lambda _h: "fridge",
+    ),
     # email one-click unsubscribe: a signed link, no session
     r("GET", "/email/unsubscribe", EVERYONE, query="{unsubscribe}"),
     r("POST", "/email/unsubscribe", EVERYONE, query="{unsubscribe}"),

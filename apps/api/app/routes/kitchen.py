@@ -10,11 +10,12 @@ from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import or_, select
 
-from app.deps import Actor, client_mutation_id, ctx, idempotency, if_match, require_actor
+from app.deps import Actor, client_mutation_id, ctx, idempotency, if_match, rate_limit, require_actor
 from app.errors import ErrorCode, Problem
 from app.models import House, InventoryItem, InventoryOwner, Member, ShareRequest
 from app.policy import Action, require
 from app.services import inventory as svc
+from app.services import kitchen_moves as moves
 from app.services.house_write import house_write
 from app.services.houses import membership
 from app.services.kitchen import _share_defaults as share_defaults
@@ -65,11 +66,19 @@ async def inventory(
                         InventoryItem.status == "in_stock",
                         InventoryItem.place.in_(places),
                     )
-                    .order_by(InventoryItem.category, InventoryItem.stocked_on.desc(), InventoryItem.created_at.desc())
+                    # The id settles ties (items stocked together), so an unrelated write never
+                    # reshuffles the tiles.
+                    .order_by(
+                        InventoryItem.category,
+                        InventoryItem.stocked_on.desc(),
+                        InventoryItem.created_at.desc(),
+                        InventoryItem.id.desc(),
+                    )
                 )
             ).all()
         )
         views = await svc.item_views(db, house, me, items, c.clock.now())
+        orders = await moves.my_orders(db, house_id, me.member_id)
     key = {"all": None, "mine": "mine", "open": "open_for_me", "use_soon": "use_soon"}[filter]
     for v in views:
         v["matches"] = True if key is None else bool(v[key])
@@ -77,8 +86,65 @@ async def inventory(
         "place": place,
         "filter": filter,
         "counts": svc.filter_counts(views),
-        "areas": [{"area": area, "items": [v for v in views if v["place"] == area]} for area in places],
+        # Each area in my own order when I've set one (gestures SPEC §5.1).
+        "areas": [
+            {"area": area, "items": moves.apply_order([v for v in views if v["place"] == area], orders.get(area))}
+            for area in places
+        ],
     }
+
+
+Place = Literal["fridge", "freezer", "pantry"]
+
+
+class ItemOrder(BaseModel):
+    item_ids: list[uuid.UUID] = Field(max_length=moves.ORDER_MAX)
+
+
+@router.put("/houses/{house_id}/me/item-order/{location}")
+async def item_order(
+    house_id: uuid.UUID,
+    location: Place,
+    body: ItemOrder,
+    request: Request,
+    actor: Annotated[Actor, Depends(require_actor)],
+) -> dict[str, Any]:
+    """FR-G02: my own order of one section, the whole list each time (set-state, SYNC-G5)."""
+    c = ctx(request)
+    return await moves.set_item_order(
+        c.writes, house_id, actor.user.id, location, body.item_ids, c.clock.now(), client_mutation_id(request)
+    )
+
+
+class MoveIn(BaseModel):
+    item_id: uuid.UUID
+    to: Place
+    # Undo only: skip the item if it's no longer here (SYNC-G4).
+    expect_from: Place | None = None
+
+
+class Moves(BaseModel):
+    moves: list[MoveIn] = Field(min_length=1, max_length=moves.MOVE_MAX)
+
+
+@router.post("/houses/{house_id}/items/move")
+async def move_items(
+    house_id: uuid.UUID, body: Moves, request: Request, actor: Annotated[Actor, Depends(require_actor)]
+) -> Any:
+    """FR-G03..FR-G08: move up to 20 items between Freezer, Fridge and Pantry; a result per item."""
+    c = ctx(request)
+    limit = request.app.state.settings.rate_limit_moves_per_min
+    if limit:
+        await rate_limit(request, "item_moves", str(actor.user.id), limit=limit, window=timedelta(minutes=1))
+    return await moves.move_items(
+        c.writes,
+        house_id,
+        actor.user.id,
+        [moves.Move(m.item_id, m.to, m.expect_from) for m in body.moves],
+        c.clock.now(),
+        idempotency(request, actor, body.model_dump(mode="json")),
+        client_mutation_id(request),
+    )
 
 
 class Leftovers(BaseModel):

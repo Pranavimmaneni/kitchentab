@@ -50,15 +50,11 @@ export function angleTo(from: Point, to: Point): number {
 export function placeFan(origin: Point, viewport: Viewport): Fan {
   const below = origin.y < FLIP_BELOW_TOP_PX;
   let axis = below ? 90 : -90;
-  // Inward = towards the screen centre: rotating the axis away from the near edge.
-  const nearLeft = origin.x < SIDE_EDGE_PX;
-  const nearRight = origin.x > viewport.width - SIDE_EDGE_PX;
-  const inward = (deg: number) => {
-    if (nearLeft) return below ? -deg : deg; // axis −90 → −60 (towards the right)
-    if (nearRight) return below ? deg : -deg; // axis −90 → −120 (towards the left)
-    return 0;
-  };
-  axis += inward(SIDE_ROTATE_DEG);
+  // Inward = towards the screen centre: rotating the axis away from the nearer side.
+  const leftHalf = origin.x < viewport.width / 2;
+  const inward = (deg: number) => (leftHalf ? (below ? -deg : deg) : below ? deg : -deg);
+  const nearSide = origin.x < SIDE_EDGE_PX || origin.x > viewport.width - SIDE_EDGE_PX;
+  if (nearSide) axis += inward(SIDE_ROTATE_DEG);
   const make = (ax: number, radius = MENU_RADIUS_PX): Fan => {
     const half = MENU_FAN_DEG / 2;
     // Left-to-right reading order on screen.
@@ -77,12 +73,8 @@ export function placeFan(origin: Point, viewport: Viewport): Fan {
         c.y - BUBBLE_HOVER_PX / 2 >= 0 &&
         c.y + BUBBLE_HOVER_PX / 2 <= viewport.height,
     );
-  // Nudge further inward if the edge still clips a bubble (narrow phones, corner items).
-  for (let step = 1; step <= 4 && !fits(fan); step++) {
-    const extra = nearLeft || nearRight ? inward(15 * step) : 0;
-    if (extra === 0) break;
-    fan = make(axis + extra);
-  }
+  // Nudge further inward while a side still clips a bubble (first-column tiles on phones too).
+  for (let step = 1; step <= 4 && !fits(fan); step++) fan = make(axis + inward(15 * step));
   if (fits(fan)) return fan;
   // Corner items on narrow phones: no rotation fits a 120° fan. Point it where it overflows least,
   // then pull each bubble inside.
@@ -106,7 +98,10 @@ export function placeFan(origin: Point, viewport: Viewport): Fan {
     if (fits(fan)) return fan;
   }
   const clamp = (v: number, max: number) => Math.min(Math.max(v, r), max - r);
-  const centres = fan.centres.map((c) => ({ x: clamp(c.x, viewport.width), y: clamp(c.y, viewport.height) }));
+  const centres = fan.centres.map((c) => ({
+    x: clamp(c.x, viewport.width),
+    y: clamp(c.y, viewport.height),
+  }));
   return { ...fan, centres: centres as [Point, Point, Point] };
 }
 
