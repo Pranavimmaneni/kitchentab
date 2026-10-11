@@ -384,6 +384,8 @@ export const strings = {
   },
   settings: {
     title: "Settings",
+    haptics: "Haptics",
+    hapticsNote: "A small buzz when you pick up, move or drop food.",
     profile: "YOUR NAME",
     saveName: "Save",
     saved: "Saved",
@@ -659,6 +661,7 @@ export const strings = {
     noteOpen: "THIS TAB STAYS OPEN TILL YOU SETTLE IT.",
     noteHop: (house: string) => `ANYONE IN ${house.toUpperCase()} CAN HOP ON OR OFF AN ITEM.`,
     comingBack: "COMING BACK TO YOU",
+    stockingLabel: "Food going into the kitchen",
     cta: "Send it to the house ↗",
   },
   shareScreen: {

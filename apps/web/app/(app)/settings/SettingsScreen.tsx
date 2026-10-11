@@ -19,6 +19,7 @@ import { keys, useAuthMethods, useMe } from "@/lib/api/hooks";
 import { tabKeys, useIdentities, usePaymentHandles } from "@/lib/api/tabs-hooks";
 import type { Identity, PaymentHandles } from "@/lib/api/tabs-types";
 import type { User } from "@/lib/api/types";
+import { hapticSupport, hapticsEnabled, setHapticsEnabled } from "@/lib/haptics";
 import { forgetHouse, useCurrentHouse } from "@/lib/house";
 import { isIos, isStandalone } from "@/lib/pwa/device";
 import { promptInstall, usePrompts } from "@/lib/pwa/prompts";
@@ -457,8 +458,40 @@ function Preferences({ user, notify }: { user: User; notify: Notify }) {
             onChange={(v) => void set("share_by_default", v)}
           />
         </div>
+        <HapticsRow />
       </section>
     </>
+  );
+}
+
+/** Settings › Kitchen › Haptics (FR-G09): on by default, hidden where the device can't buzz. */
+function HapticsRow() {
+  const note = useId();
+  const [shown, setShown] = useState(false);
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    setShown(hapticSupport() !== null);
+    setOn(hapticsEnabled());
+  }, []);
+  if (!shown) return null;
+  return (
+    <div className="kt-share-row" data-testid="haptics-row">
+      <div className="kt-share-row__text">
+        <span className="kt-share-row__title">{strings.settings.haptics}</span>
+        <span id={note} className="kt-share-row__note">
+          {strings.settings.hapticsNote}
+        </span>
+      </div>
+      <Switch
+        checked={on}
+        label={strings.settings.haptics}
+        describedBy={note}
+        onChange={(v) => {
+          setHapticsEnabled(v);
+          setOn(v);
+        }}
+      />
+    </div>
   );
 }
 

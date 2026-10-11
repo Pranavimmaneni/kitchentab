@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { PersonShareCard } from "@/components/PersonShareCard";
 import { PillButton } from "@/components/PillButton";
@@ -10,6 +10,7 @@ import { ReceiptCard } from "@/components/ReceiptCard";
 import { ActionBar } from "@/components/screens/ActionBar";
 import { BillGate } from "@/components/screens/BillGate";
 import { ScreenToast } from "@/components/screens/ScreenToast";
+import { StockingCard, type StockingHandle } from "@/features/kitchen/stocking/StockingCard";
 import { useToast } from "@/components/screens/useToast";
 import { api, isApiError, newId } from "@/lib/api/client";
 import { keys, useHouse } from "@/lib/api/hooks";
@@ -45,6 +46,7 @@ function SendScreen({ view }: { view: BillView }) {
   const house = useHouse(view.bill.house_id);
   const { toast, show, dismiss } = useToast();
   const [sending, setSending] = useState(false);
+  const stocking = useRef<StockingHandle>(null);
   const currency = view.bill.currency;
 
   useEffect(() => {
@@ -65,12 +67,18 @@ function SendScreen({ view }: { view: BillView }) {
     setSending(true);
     // One key per bill: a double tap or a retry after a lost response returns the first result.
     const keyName = `send:${billId}`;
+    // The food flies into its bins while the request is in flight (FR-G10); the Share screen
+    // opens when both are done (ANIM-02).
+    const animation = stocking.current?.play() ?? Promise.resolve();
     try {
       await api.post<SendOut>(`/bills/${billId}/send`, undefined, { idempotencyKey: actionKey(keyName, newId) });
       clearActionKey(keyName);
+      await animation;
       await queryClient.invalidateQueries({ queryKey: keys.bill(billId) });
       router.push(`/bills/${billId}/share`);
     } catch (error) {
+      // Nothing was stocked: the icons go home.
+      await stocking.current?.flyBack();
       setSending(false);
       show({ message: isApiError(error) ? error.title : strings.error.couldntSave, variant: "error" });
     }
@@ -107,6 +115,7 @@ function SendScreen({ view }: { view: BillView }) {
             </li>
           ))}
         </ul>
+        <StockingCard ref={stocking} items={view.items} currency={currency} />
         {houseName ? (
           <p className="kt-mono-note">
             {strings.send.noteOpen}

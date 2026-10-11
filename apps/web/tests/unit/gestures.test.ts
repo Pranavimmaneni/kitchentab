@@ -141,6 +141,19 @@ describe("menu or drag (FR-G03)", () => {
     expect(chosen.effects).toEqual([{ type: "choose", itemId: "eggs", index: 2 }]);
   });
 
+  it("GEST-02 heading straight for a side bubble tracks the menu, never a drag [FR-G03] [FR-G05]", () => {
+    for (const side of [0, 2] as const) {
+      const { state } = lifted();
+      const c = state.fan!.centres[side];
+      const len = Math.hypot(c.x - CENTRE.x, c.y - CENTRE.y);
+      const step = {
+        x: CENTRE.x + ((c.x - CENTRE.x) / len) * 14,
+        y: CENTRE.y + ((c.y - CENTRE.y) / len) * 14,
+      };
+      expect(run([move(step.x, step.y, 400)], state).state.phase).toBe("MENU_TRACKING");
+    }
+  });
+
   it("GEST-02 releasing in the cone but off the bubbles chooses nothing [FR-G03] [FR-G05]", () => {
     const r = run(
       [move(CENTRE.x, CENTRE.y - 20, 400), up(CENTRE.x, CENTRE.y - 20, 420)],

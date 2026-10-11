@@ -304,6 +304,131 @@
     font-size: 12px;
     color: var(--muted);
   }
+
+  /* ---------- Stocking card on Review & send (FR-G10, renders sort-*) ---------- */
+  .kt-stocking {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .kt-stocking__rows {
+    list-style: none;
+    margin: 0;
+    padding: 4px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-card);
+    background: var(--paper);
+    box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow);
+  }
+  .kt-stock-row {
+    display: grid;
+    grid-template-columns: 36px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    border-bottom: 1px dashed var(--faint);
+  }
+  .kt-stock-row:last-child {
+    border-bottom: 0;
+  }
+  .kt-stock-row__fly {
+    position: relative;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    /* The empty slot left behind (sort-after). */
+    outline: 2px dashed var(--faint);
+    outline-offset: -2px;
+  }
+  .kt-stock-row__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--food-stroke);
+  }
+  .kt-stock-row__name {
+    font-size: 15px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .kt-stock-row__tag {
+    padding: 2px 6px;
+    border: 2px solid var(--ink);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 10px;
+    color: var(--on-accent);
+  }
+  .kt-stock-row__tag[data-place="freezer"] {
+    background: var(--tag-freezer);
+  }
+  .kt-stock-row__tag[data-place="fridge"] {
+    background: var(--accent);
+  }
+  .kt-stock-row__tag[data-place="pantry"] {
+    background: var(--tag-pantry);
+  }
+  .kt-stock-row__price {
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .kt-stocking[data-dim] .kt-stock-row > :not(.kt-stock-row__fly) {
+    opacity: 0.4;
+  }
+  .kt-stocking__bins {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .kt-stock-bin {
+    position: relative;
+    min-height: 96px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .kt-stock-bin[data-place="freezer"] {
+    background: var(--frost);
+  }
+  .kt-stock-bin[data-place="fridge"] {
+    background: var(--cold);
+  }
+  .kt-stock-bin[data-place="pantry"] {
+    background: var(--wall);
+  }
+  .kt-stock-bin__count {
+    position: absolute;
+    top: -12px;
+    right: -10px;
+    min-width: 32px;
+    height: 26px;
+    padding: 0 6px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    color: var(--on-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -323,6 +448,18 @@
   .kt-bin[data-here][data-over] {
     animation: kt-bin-refuse 240ms ease-in-out;
   }
+  .kt-stocking .kt-stock-row > :not(.kt-stock-row__fly) {
+    transition: opacity 120ms ease-out;
+  }
+  .kt-stock-bin__count {
+    animation: kt-badge-in var(--badge-ms, 90ms) ease-out both;
+  }
+  @keyframes kt-badge-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
   @keyframes kt-bubble-in {
     from {
       opacity: 0;
@@ -340,6 +477,21 @@
     }
     75% {
       transform: translateX(4px);
+    }
+  }
+}
+
+/* Reduced motion (SPEC §7): no flight; rows dim and the counts fade in, opacity only. */
+@media (prefers-reduced-motion: reduce) {
+  .kt-stocking .kt-stock-row > :not(.kt-stock-row__fly) {
+    transition: opacity 120ms linear;
+  }
+  .kt-stock-bin__count {
+    animation: kt-count-fade 120ms linear both;
+  }
+  @keyframes kt-count-fade {
+    from {
+      opacity: 0;
     }
   }
 }

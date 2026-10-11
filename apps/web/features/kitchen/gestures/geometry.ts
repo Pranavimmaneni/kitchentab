@@ -105,9 +105,13 @@ export function placeFan(origin: Point, viewport: Viewport): Fan {
   return { ...fan, centres: centres as [Point, Point, Point] };
 }
 
-/** Is the finger inside the fan's cone (MENU_FAN_DEG wide around the axis)? */
+/**
+ * Is the finger inside the fan's cone? MENU_FAN_DEG wide around the axis, plus the side bubbles'
+ * own angular half-width, so heading straight for a side bubble never turns into a drag (ADR-0033).
+ */
 export function inCone(fan: Fan, finger: Point): boolean {
-  return Math.abs(angleDiff(angleTo(fan.origin, finger), fan.axis)) <= MENU_FAN_DEG / 2;
+  const slack = (Math.atan(BUBBLE_HOVER_PX / 2 / MENU_RADIUS_PX) * 180) / Math.PI;
+  return Math.abs(angleDiff(angleTo(fan.origin, finger), fan.axis)) <= MENU_FAN_DEG / 2 + slack;
 }
 
 /** The bubble under the finger, if any (hit area = the hovered size). */
