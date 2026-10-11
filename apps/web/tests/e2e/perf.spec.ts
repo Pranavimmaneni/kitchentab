@@ -41,22 +41,58 @@ test("PERF-04 the bill link page ships under 150 KB of JavaScript, gzipped [FR-3
   await visitor.close();
 });
 
+const DATA_URL = /\/api\/v1\/houses\/[^/]+\/(inventory|kitchen)/;
+
+/**
+ * The page watches itself: every animation frame it checks whether the screen named in
+ * sessionStorage is on show and records the first frame where it is. Both ends come from the
+ * page's own clock (the data response's `responseEnd` from Resource Timing), so Playwright's
+ * polling steps (100, 250, 500, 1000 ms) and the hop to Node don't land in the number.
+ */
+const PROBE = `(() => {
+  const screens = {
+    fridge: () => document.querySelector('[role="group"][aria-label="refrigerated, 200 items" i]'),
+    kitchen: () => Array.from(document.querySelectorAll("a")).some((a) =>
+      /^Open the fridge: 200 items/.test(a.getAttribute("aria-label") || a.textContent || "")),
+  };
+  const shown = screens[sessionStorage.getItem("ktPerfProbe")];
+  if (!shown) return;
+  const tick = () => {
+    if (shown()) window.__ktShownAt = performance.now();
+    else requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+})()`;
+
 /** Milliseconds from the inventory response to `ready` on screen, with the CPU slowed 4x. */
 async function renderAfterData(
   page: Page,
   path: string,
+  screen: "fridge" | "kitchen",
   ready: () => Promise<void>,
 ): Promise<number> {
+  await page.evaluate((name) => sessionStorage.setItem("ktPerfProbe", name), screen);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 }); // Lighthouse's mid-tier mobile
-  const data = page
-    .waitForResponse((r) => /\/api\/v1\/houses\/[^/]+\/(inventory|kitchen)/.test(r.url()))
-    .then(() => Date.now());
+  const response = page.waitForResponse((r) => DATA_URL.test(r.url()));
   await page.goto(path);
+  await response;
   await ready();
-  const shown = Date.now();
+  await page.waitForFunction(() => "__ktShownAt" in window);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
-  return shown - (await data);
+  const { shownAt, dataAt } = await page.evaluate((source) => {
+    const re = new RegExp(source);
+    const data = performance
+      .getEntriesByType("resource")
+      .filter((e) => re.test(e.name)) as PerformanceResourceTiming[];
+    sessionStorage.removeItem("ktPerfProbe");
+    return {
+      shownAt: (window as unknown as { __ktShownAt: number }).__ktShownAt,
+      dataAt: data.length ? data[data.length - 1]!.responseEnd : NaN,
+    };
+  }, DATA_URL.source);
+  expect(dataAt, `Resource Timing saw the data request on ${path}`).not.toBeNaN();
+  return Math.round(shownAt - dataAt);
 }
 
 test("PERF-06 a kitchen of 200 items renders in under a second on a mid-range phone [FR-63] [FR-65]", async ({
@@ -77,14 +113,15 @@ test("PERF-06 a kitchen of 200 items renders in under a second on a mid-range ph
     }),
   );
   // Warm the app shell once, so the measurement is the screen, not the first download.
+  await page.addInitScript(PROBE);
   await page.goto("/kitchen/fridge");
   await hydrated(page);
 
-  const fridge = await renderAfterData(page, "/kitchen/fridge", async () => {
+  const fridge = await renderAfterData(page, "/kitchen/fridge", "fridge", async () => {
     await expect(page.getByRole("button", { name: "ALL 200" })).toBeVisible();
     await expect(page.getByRole("group", { name: "refrigerated, 200 items" })).toBeVisible();
   });
-  const kitchen = await renderAfterData(page, "/", async () => {
+  const kitchen = await renderAfterData(page, "/", "kitchen", async () => {
     await expect(page.getByRole("link", { name: /^Open the fridge: 200 items/ })).toBeVisible();
   });
   console.log(`PERF-06 render after data, CPU 4x: fridge ${fridge} ms, kitchen ${kitchen} ms`);

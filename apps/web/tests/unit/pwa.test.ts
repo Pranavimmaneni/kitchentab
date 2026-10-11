@@ -64,3 +64,19 @@ describe("theme color and manifest", () => {
     ]);
   });
 });
+
+describe("busy screens (PUSH-01)", () => {
+  it("PUSH-01 the send and share screens count as busy by URL, before they render [FR-42]", async () => {
+    const { MID_SEND, busyNow } = await import("../../lib/pwa/register");
+    for (const path of ["/bills/b1/send", "/bills/b1/share", "/bills/b1/share/"])
+      expect(MID_SEND.test(path), path).toBe(true);
+    for (const path of ["/bills/b1", "/bills/b1/split", "/bills/b1/review", "/share", "/"])
+      expect(MID_SEND.test(path), path).toBe(false);
+    const before = window.location.pathname;
+    window.history.pushState({}, "", "/bills/b1/share");
+    expect(busyNow()).toBe(true);
+    window.history.pushState({}, "", "/bills/b1");
+    expect(busyNow()).toBe(false);
+    window.history.pushState({}, "", before);
+  });
+});

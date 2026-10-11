@@ -1085,7 +1085,8 @@ async def _soon_for_house(db: AsyncSession, house: House, now: datetime, at: tim
 
     tz = ZoneInfo(house.timezone)
     local = now.astimezone(tz)
-    target_day = local.date() if local.time() < at else local.date() + timedelta(days=1)
+    # Sent now (test route): today's state, as the Kitchen shows it; scheduled: the day of the next 9:00.
+    target_day = local.date() if deliver_now or local.time() < at else local.date() + timedelta(days=1)
     when = now if deliver_now else datetime.combine(target_day, at, tzinfo=tz).astimezone(UTC)
     items = (
         await db.scalars(
