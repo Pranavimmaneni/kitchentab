@@ -37,6 +37,7 @@ import { haptic } from "@/lib/haptics";
 import { FILTERS, FILTER_STORAGE_KEY, isFilter, joinNames } from "@/lib/kitchen";
 import { useKitchenWrites } from "@/lib/kitchen-writes";
 import { strings } from "@/lib/strings";
+import { gestureStrings } from "@/features/kitchen/gestures/strings";
 
 const SEEN_KEY = "kt.kitchen.seen";
 
@@ -182,7 +183,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
         const it = byId.get(id);
         return it ? it.short_name || it.name : "";
       };
-      const toName = strings.gestures.places[to];
+      const toName = gestureStrings.places[to];
       let res;
       try {
         res = await writes.move(ids.map((id) => ({ item_id: id, to })));
@@ -199,21 +200,21 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
       const message =
         moved.length === 0
           ? gone
-            ? strings.gestures.gone(gone)
-            : strings.gestures.alreadyThere(strings.gestures.placeLower[to])
+            ? gestureStrings.gone(gone)
+            : gestureStrings.alreadyThere(gestureStrings.placeLower[to])
           : there
-            ? strings.gestures.movedMixed(moved.length, there)
+            ? gestureStrings.movedMixed(moved.length, there)
             : moved.length === 1
-              ? strings.gestures.movedOne(name(moved[0]!.item_id), toName)
-              : strings.gestures.movedMany(moved.length, toName);
-      const lower = strings.gestures.placeLower[to];
+              ? gestureStrings.movedOne(name(moved[0]!.item_id), toName)
+              : gestureStrings.movedMany(moved.length, toName);
+      const lower = gestureStrings.placeLower[to];
       show({
         message,
         spoken: moved.length
-          ? strings.gestures.announceMoved(
+          ? gestureStrings.announceMoved(
               moved.length === 1
                 ? name(moved[0]!.item_id)
-                : strings.gestures.itemsCount(moved.length),
+                : gestureStrings.itemsCount(moved.length),
               lower,
             )
           : undefined,
@@ -228,7 +229,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
                     const changed = back.results.filter(
                       (r) => r.result === "skipped_changed",
                     ).length;
-                    if (changed) show({ message: strings.gestures.changedSince(changed) });
+                    if (changed) show({ message: gestureStrings.changedSince(changed) });
                   })
                   .catch((error) => fail(error));
               },
@@ -333,7 +334,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
           void runMove([item.id], action.to);
           return;
         case "help":
-          show({ message: strings.gestures.helpYourself });
+          show({ message: gestureStrings.helpYourself });
           return;
         case "usedUp":
           writes
@@ -363,7 +364,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
             .then((req) => {
               haptic("success");
               show({
-                message: strings.gestures.askedToast(action.owner, item.short_name || item.name),
+                message: gestureStrings.askedToast(action.owner, item.short_name || item.name),
                 duration: UNDO_MS,
                 action: {
                   label: strings.toast.undo,
@@ -402,7 +403,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
           return;
         }
         case "blocked":
-          show({ message: strings.gestures.alreadyThere(strings.gestures.placeLower[effect.to]) });
+          show({ message: gestureStrings.alreadyThere(gestureStrings.placeLower[effect.to]) });
           return;
         default:
           // tap: the tile's own click handles it; home: CSS glides the tiles back.
@@ -424,7 +425,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
 
   const toggle = (item: InventoryItem) => {
     if (!livePicked.includes(item.id) && livePicked.length >= STACK_MAX) {
-      show({ message: strings.gestures.pickLimit(STACK_MAX) });
+      show({ message: gestureStrings.pickLimit(STACK_MAX) });
       return;
     }
     setPicked((now) =>
@@ -492,7 +493,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
       <AppHeader
         back={{
           href: "/",
-          label: selectMode ? strings.gestures.doneLabel : strings.place.back,
+          label: selectMode ? gestureStrings.doneLabel : strings.place.back,
           onClick: selectMode ? leaveSelect : undefined,
         }}
         stepLabel={strings.place.step(house.name, counts?.all ?? 0)}
@@ -503,10 +504,10 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
             className="kt-select-toggle"
             data-on={selectMode || undefined}
             aria-pressed={selectMode}
-            aria-label={selectMode ? strings.gestures.doneLabel : strings.gestures.selectLabel}
+            aria-label={selectMode ? gestureStrings.doneLabel : gestureStrings.selectLabel}
             onClick={() => (selectMode ? leaveSelect() : setSelectMode(true))}
           >
-            {selectMode ? strings.gestures.done : strings.gestures.select}
+            {selectMode ? gestureStrings.done : gestureStrings.select}
           </button>
         }
       />
@@ -547,7 +548,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
                   {place === "fridge" ? (
                     <span className="kt-area__label" aria-hidden="true">
                       {dropHere
-                        ? strings.gestures.dropToMove(strings.gestures.placeLower[area.area])
+                        ? gestureStrings.dropToMove(gestureStrings.placeLower[area.area])
                         : strings.place.areas[area.area]}
                     </span>
                   ) : null}
@@ -572,7 +573,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
           </section>
         )}
         {selectMode ? (
-          <p className="kt-select-hint">{strings.gestures.selectHint}</p>
+          <p className="kt-select-hint">{gestureStrings.selectHint}</p>
         ) : (
           <ul className="kt-legend" aria-hidden="true">
             <li>

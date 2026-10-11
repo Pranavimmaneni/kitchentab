@@ -17,7 +17,7 @@ import {
   CheckIcon,
 } from "@/components/icons";
 import type { InventoryItem, Place } from "@/lib/api/kitchen-types";
-import { strings } from "@/lib/strings";
+import { gestureStrings } from "@/features/kitchen/gestures/strings";
 import type { BubbleAction } from "./actions";
 import { RIDE_ABOVE_PX } from "./constants";
 import { isHere, type GestureState } from "./reducer";
@@ -51,30 +51,30 @@ function bubbleIcon(action: BubbleAction) {
 export function bubbleLabel(action: BubbleAction): string {
   switch (action.kind) {
     case "move":
-      return strings.gestures.places[action.to];
+      return gestureStrings.places[action.to];
     case "ask":
-      return strings.gestures.bubbleAsk(action.owner);
+      return gestureStrings.bubbleAsk(action.owner);
     case "usedUp":
-      return strings.gestures.bubbleUsedUp;
+      return gestureStrings.bubbleUsedUp;
     case "help":
-      return strings.gestures.bubbleHelp;
+      return gestureStrings.bubbleHelp;
     case "cancelAsk":
-      return strings.gestures.bubbleCancelAsk;
+      return gestureStrings.bubbleCancelAsk;
   }
 }
 
 function bubbleChip(action: BubbleAction): string {
   switch (action.kind) {
     case "move":
-      return strings.gestures.moveTo(strings.gestures.placeLower[action.to]);
+      return gestureStrings.moveTo(gestureStrings.placeLower[action.to]);
     case "ask":
-      return strings.gestures.chipAsk(action.owner);
+      return gestureStrings.chipAsk(action.owner);
     case "usedUp":
-      return strings.gestures.chipUsedUp;
+      return gestureStrings.chipUsedUp;
     case "help":
-      return strings.gestures.chipHelp;
+      return gestureStrings.chipHelp;
     case "cancelAsk":
-      return strings.gestures.chipCancelAsk;
+      return gestureStrings.chipCancelAsk;
   }
 }
 
@@ -185,7 +185,7 @@ export function GestureOverlay({
             role="status"
             style={{ transform: `translate3d(${x - 40}px, ${y - 34}px, 0)` }}
           >
-            {strings.gestures.goneNote(gone[gone.length - 1]!)}
+            {gestureStrings.goneNote(gone[gone.length - 1]!)}
           </p>
         ) : null}
       </div>
@@ -233,7 +233,7 @@ function Fan({
     <div
       className="kt-fan"
       role={interactive ? "menu" : undefined}
-      aria-label={interactive ? strings.gestures.menuLabel(name) : undefined}
+      aria-label={interactive ? gestureStrings.menuLabel(name) : undefined}
       aria-hidden={interactive ? undefined : true}
       onKeyDown={interactive ? onKey : undefined}
     >
@@ -275,10 +275,10 @@ function Fan({
 /** While anything is dragged: three bins replace the bottom bar (FR-G07). */
 export function DropBar({ state }: { state: GestureState }) {
   return (
-    <div className="kt-drop-bar" aria-label={strings.gestures.dropBar} role="group">
+    <div className="kt-drop-bar" aria-label={gestureStrings.dropBar} role="group">
       {(["freezer", "fridge", "pantry"] as const).map((p) => {
         const here = isHere(state, p);
-        const name = strings.gestures.places[p];
+        const name = gestureStrings.places[p];
         return (
           <div
             key={p}
@@ -286,12 +286,10 @@ export function DropBar({ state }: { state: GestureState }) {
             data-kt-bin={p}
             data-here={here || undefined}
             data-over={state.overBin === p || undefined}
-            aria-label={strings.gestures.binLabel(name, here)}
+            aria-label={gestureStrings.binLabel(name, here)}
           >
             <PlaceIcon place={p} size={24} />
-            <span className="kt-bin__name">
-              {here ? strings.gestures.here : name.toUpperCase()}
-            </span>
+            <span className="kt-bin__name">{here ? gestureStrings.here : name.toUpperCase()}</span>
           </div>
         );
       })}
@@ -317,11 +315,11 @@ export function SelectBar({
     <div
       className="kt-select-bar"
       role="toolbar"
-      aria-label={`${strings.gestures.selectBar}, ${strings.gestures.selectedLabel(count)}`}
+      aria-label={`${gestureStrings.selectBar}, ${gestureStrings.selectedLabel(count)}`}
     >
       <p className="kt-select-bar__count" aria-live="polite">
-        <span className="kt-select-bar__n">{strings.gestures.selectedCount(count)}</span>
-        <span className="kt-select-bar__word">{strings.gestures.selectedWord}</span>
+        <span className="kt-select-bar__n">{gestureStrings.selectedCount(count)}</span>
+        <span className="kt-select-bar__word">{gestureStrings.selectedWord}</span>
       </p>
       {destinations.map((p) => (
         <button
@@ -335,7 +333,7 @@ export function SelectBar({
           onClick={() => onMove(p)}
         >
           <PlaceIcon place={p} size={20} />
-          <span>{strings.gestures.places[p]}</span>
+          <span>{gestureStrings.places[p]}</span>
         </button>
       ))}
     </div>

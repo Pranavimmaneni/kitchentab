@@ -34,6 +34,7 @@ import {
 } from "@/lib/kitchen";
 import { useKitchenWrites, type KitchenWrites } from "@/lib/kitchen-writes";
 import { strings } from "@/lib/strings";
+import { requestsStrings } from "@/lib/requests-strings";
 import { useDebounced } from "@/lib/use-debounced";
 import { useServerNow } from "@/lib/use-server-time";
 
@@ -42,7 +43,7 @@ type Box = "in" | "out";
 /** K4 · Can I have some? (Requests.dc.html, FR-72..FR-76). */
 export function RequestsScreen() {
   return (
-    <HouseGate title={strings.requests.title} nav={false}>
+    <HouseGate title={requestsStrings.title} nav={false}>
       {(ctx) => <Requests {...ctx} />}
     </HouseGate>
   );
@@ -78,17 +79,17 @@ function Requests({ house }: HouseContext) {
     <div className="kt-screen kt-requests">
       <AppHeader
         back={{ href: "/", label: strings.place.back }}
-        stepLabel={strings.requests.step(house.name)}
-        title={strings.requests.title}
+        stepLabel={requestsStrings.step(house.name)}
+        title={requestsStrings.title}
       />
       <div className="kt-requests__tabs">
         <SegmentedControl<Box>
-          label={strings.requests.tabsLabel}
+          label={requestsStrings.tabsLabel}
           value={box}
           onChange={setBox}
           options={[
-            { value: "in", label: strings.requests.forYou(counts?.in ?? 0) },
-            { value: "out", label: strings.requests.youAsked(counts?.out ?? 0) },
+            { value: "in", label: requestsStrings.forYou(counts?.in ?? 0) },
+            { value: "out", label: requestsStrings.youAsked(counts?.out ?? 0) },
           ]}
         />
       </div>
@@ -97,8 +98,8 @@ function Requests({ house }: HouseContext) {
         role="tabpanel"
         aria-label={
           box === "in"
-            ? strings.requests.forYou(counts?.in ?? 0)
-            : strings.requests.youAsked(counts?.out ?? 0)
+            ? requestsStrings.forYou(counts?.in ?? 0)
+            : requestsStrings.youAsked(counts?.out ?? 0)
         }
       >
         {query.isError ? (
@@ -108,7 +109,7 @@ function Requests({ house }: HouseContext) {
         {query.data && query.data.box === box ? (
           query.data.requests.length === 0 ? (
             <p className="kt-footnote">
-              {box === "in" ? strings.requests.emptyIn : strings.requests.emptyOut}
+              {box === "in" ? requestsStrings.emptyIn : requestsStrings.emptyOut}
             </p>
           ) : (
             <ul className="kt-list kt-requests__list">
@@ -133,9 +134,9 @@ function Requests({ house }: HouseContext) {
           )
         ) : null}
         <p className="kt-mono-note">
-          {strings.requests.footnote1}
+          {requestsStrings.footnote1}
           <br />
-          {strings.requests.footnote2}
+          {requestsStrings.footnote2}
         </p>
       </main>
       <Toast
@@ -173,7 +174,7 @@ function ItemBubble({ req, size = 44 }: { req: ShareRequest; size?: number }) {
       <span
         className="kt-ask-item__price"
         data-testid="request-price"
-        aria-label={strings.requests.priceLabel(price)}
+        aria-label={requestsStrings.priceLabel(price)}
       >
         {price}
       </span>
@@ -198,13 +199,13 @@ function IncomingCard({
   writes: KitchenWrites;
   onError: (error: unknown) => void;
 }) {
-  const who = req.requester.display_name ?? strings.requests.someone;
+  const who = req.requester.display_name ?? requestsStrings.someone;
   const pending = req.status === "pending";
   return (
     <article
       className="kt-card kt-ask-card"
       data-status={req.status}
-      aria-label={`${who}${strings.requests.wants(req.amount_words)}${itemWords(req)}`}
+      aria-label={`${who}${requestsStrings.wants(req.amount_words)}${itemWords(req)}`}
     >
       <div className="kt-ask-card__top">
         <MemberAvatar
@@ -216,7 +217,7 @@ function IncomingCard({
         <div className="kt-ask-card__text">
           <p className="kt-ask-card__line">
             <b>{who}</b>
-            {strings.requests.wants(req.amount_words)}
+            {requestsStrings.wants(req.amount_words)}
             <b>{itemWords(req)}</b>
           </p>
           {req.note ? <q className="kt-ask-card__quote">{req.note}</q> : null}
@@ -265,7 +266,7 @@ function AnswerForm({
   const [busy, setBusy] = useState<"yes" | "no" | null>(null);
   const [key, setKey] = useState(newId);
   const lineTotal = req.line_total_cents ?? 0;
-  const who = req.requester.display_name ?? strings.requests.someone;
+  const who = req.requester.display_name ?? requestsStrings.someone;
   const store = req.source?.store_name ?? strings.bill.untitled;
   const paying = choice === "split" || choice === "chip_in";
   const decision = choice === "chip_in" ? "chip_in" : "split";
@@ -302,23 +303,23 @@ function AnswerForm({
   return (
     <>
       <span id={labelId} className="kt-field__label">
-        {strings.requests.howShould}
+        {requestsStrings.howShould}
       </span>
       <div className="kt-radio-cards" role="radiogroup" aria-labelledby={labelId}>
         <RadioCard
           checked={choice === "free"}
           onSelect={() => setChoice("free")}
-          title={strings.requests.free}
+          title={requestsStrings.free}
         >
-          {strings.requests.freeNote}
+          {requestsStrings.freeNote}
         </RadioCard>
         {options.includes("split") ? (
           <RadioCard
             checked={choice === "split"}
             onSelect={() => setChoice("split")}
-            title={strings.requests.split}
+            title={requestsStrings.split}
           >
-            <span>{strings.requests.splitWhy(who, store)}</span>
+            <span>{requestsStrings.splitWhy(who, store)}</span>
             <span className="kt-delta-chips" data-testid="split-deltas">
               {splitDeltaChips(deltas, names, meMemberId).map((d) => (
                 <span key={d} className="kt-delta-chip">
@@ -332,9 +333,9 @@ function AnswerForm({
           <RadioCard
             checked={choice === "chip_in"}
             onSelect={() => setChoice("chip_in")}
-            title={strings.requests.chipIn}
+            title={requestsStrings.chipIn}
           >
-            {strings.requests.chipInWhy(store)}
+            {requestsStrings.chipInWhy(store)}
           </RadioCard>
         ) : null}
       </div>
@@ -357,10 +358,10 @@ function AnswerForm({
       {paying && !invalid && (custom || askerCents !== null) ? (
         <p className="kt-ask-card__part" data-testid="part-summary" aria-live="polite">
           {!ready || askerCents === null
-            ? strings.requests.partWorking
+            ? requestsStrings.partWorking
             : choice === "chip_in"
-              ? strings.requests.partOwes(who, formatMoney(askerCents))
-              : strings.requests.partPays(who, formatMoney(askerCents), formatMoney(lineTotal))}
+              ? requestsStrings.partOwes(who, formatMoney(askerCents))
+              : requestsStrings.partPays(who, formatMoney(askerCents), formatMoney(lineTotal))}
         </p>
       ) : null}
       <div className="kt-two-up kt-ask-card__actions">
@@ -371,7 +372,7 @@ function AnswerForm({
           disabled={busy === "yes"}
           onClick={() => void answer("decline")}
         >
-          {strings.requests.decline}
+          {requestsStrings.decline}
         </PillButton>
         <PillButton
           size={52}
@@ -379,7 +380,7 @@ function AnswerForm({
           disabled={busy === "no" || (paying && (invalid || !ready))}
           onClick={() => void answer(choice)}
         >
-          {strings.requests.yes}
+          {requestsStrings.yes}
         </PillButton>
       </div>
     </>
@@ -414,21 +415,21 @@ function PartPicker({
   const choices: { value: PartChoice; label: string }[] = [
     {
       value: "base",
-      label: decision === "split" ? strings.requests.partEqual : strings.requests.partSuggested,
+      label: decision === "split" ? requestsStrings.partEqual : requestsStrings.partSuggested,
     },
-    ...PART_PRESETS.map((n) => ({ value: n, label: strings.requests.partPercent(n) })),
-    { value: "custom", label: strings.requests.partCustom },
+    ...PART_PRESETS.map((n) => ({ value: n, label: requestsStrings.partPercent(n) })),
+    { value: "custom", label: requestsStrings.partCustom },
   ];
   const inputLabel =
     unit === "percent"
-      ? strings.requests.partPercentLabel
+      ? requestsStrings.partPercentLabel
       : decision === "chip_in"
-        ? strings.requests.chipInLabel
-        : strings.requests.partDollarsLabel;
+        ? requestsStrings.chipInLabel
+        : requestsStrings.partDollarsLabel;
   return (
     <div className="kt-part">
       <span id={groupId} className="kt-field__label">
-        {strings.requests.partLabel}
+        {requestsStrings.partLabel}
       </span>
       <div className="kt-part__chips" role="radiogroup" aria-labelledby={groupId}>
         {choices.map((c) => (
@@ -447,12 +448,12 @@ function PartPicker({
       {part === "custom" ? (
         <div className="kt-part__custom">
           <SegmentedControl<PartUnit>
-            label={strings.requests.partUnitLabel}
+            label={requestsStrings.partUnitLabel}
             value={unit}
             onChange={onUnit}
             options={[
-              { value: "percent", label: strings.requests.partUnitPercent },
-              { value: "dollars", label: strings.requests.partUnitDollars },
+              { value: "percent", label: requestsStrings.partUnitPercent },
+              { value: "dollars", label: requestsStrings.partUnitDollars },
             ]}
           />
           <div className="kt-field">
@@ -471,8 +472,8 @@ function PartPicker({
             {invalid ? (
               <p id={errorId} className="kt-field-error">
                 {unit === "percent"
-                  ? strings.requests.partPercentError
-                  : strings.requests.chipInError(formatMoney(lineTotal))}
+                  ? requestsStrings.partPercentError
+                  : requestsStrings.chipInError(formatMoney(lineTotal))}
               </p>
             ) : null}
           </div>
@@ -541,7 +542,7 @@ function Answered({
               .finally(() => setBusy(false));
           }}
         >
-          {strings.requests.undo}
+          {requestsStrings.undo}
         </button>
       ) : null}
     </div>
@@ -580,7 +581,7 @@ function OutgoingCard({
               .finally(() => setBusy(false));
           }}
         >
-          {strings.requests.cancel}
+          {requestsStrings.cancel}
         </PillButton>
       ) : null}
     </article>

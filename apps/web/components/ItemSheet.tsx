@@ -17,6 +17,7 @@ import {
 import type { ItemEditBody } from "@/lib/kitchen-writes";
 import { colorIndexOf } from "@/lib/bills";
 import { strings } from "@/lib/strings";
+import { gestureStrings } from "@/features/kitchen/gestures/strings";
 import { BottomSheet } from "./BottomSheet";
 import { FoodIcon, foodPastel } from "./FoodIcon";
 import { MemberAvatar } from "./MemberAvatar";
@@ -178,12 +179,12 @@ function MoveControls({ item, actions }: { item: InventoryItem; actions: ItemShe
     <>
       {item.moved ? (
         <p className="kt-item-sheet__moved">
-          {strings.gestures.movedBy(strings.gestures.placeLower[item.place], item.moved.by)}
+          {gestureStrings.movedBy(gestureStrings.placeLower[item.place], item.moved.by)}
         </p>
       ) : null}
       {actions.move ? (
         <div className="kt-field">
-          <span className="kt-field__label">{strings.gestures.moveToLabel}</span>
+          <span className="kt-field__label">{gestureStrings.moveToLabel}</span>
           <div className="kt-two-up">
             {others.map((p) => (
               <PillButton
@@ -193,7 +194,7 @@ function MoveControls({ item, actions }: { item: InventoryItem; actions: ItemShe
                 loading={busy === p}
                 onClick={() => void run(p, () => actions.move!(item, p))}
               >
-                {strings.gestures.places[p]}
+                {gestureStrings.places[p]}
               </PillButton>
             ))}
           </div>
@@ -201,7 +202,7 @@ function MoveControls({ item, actions }: { item: InventoryItem; actions: ItemShe
       ) : null}
       {actions.reorder ? (
         <div className="kt-field">
-          <span className="kt-field__label">{strings.gestures.yourOrder}</span>
+          <span className="kt-field__label">{gestureStrings.yourOrder}</span>
           <div className="kt-two-up">
             <PillButton
               variant="secondary"
@@ -210,7 +211,7 @@ function MoveControls({ item, actions }: { item: InventoryItem; actions: ItemShe
               loading={busy === "earlier"}
               onClick={() => void run("earlier", () => actions.reorder!(item, -1))}
             >
-              {strings.gestures.moveEarlier}
+              {gestureStrings.moveEarlier}
             </PillButton>
             <PillButton
               variant="secondary"
@@ -219,7 +220,7 @@ function MoveControls({ item, actions }: { item: InventoryItem; actions: ItemShe
               loading={busy === "later"}
               onClick={() => void run("later", () => actions.reorder!(item, 1))}
             >
-              {strings.gestures.moveLater}
+              {gestureStrings.moveLater}
             </PillButton>
           </div>
         </div>

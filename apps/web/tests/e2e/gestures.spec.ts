@@ -334,8 +334,14 @@ test.describe("gestures on a phone", () => {
     await f.move({ x: start.x, y: start.y - 160 }, 6);
     await f.up();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(40);
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    // A flick keeps gliding for a moment: put the page back at the top once it has settled.
+    await expect
+      .poll(async () => {
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+        await page.waitForTimeout(150);
+        return page.evaluate(() => window.scrollY);
+      })
+      .toBe(0);
 
     await startDrag(page, f, "Whole milk 1 gal");
     const at = await centreOf(page.locator(".kt-lifted"));
@@ -427,6 +433,8 @@ test.describe("stocking animation on Send", () => {
     baseURL,
   }) => {
     test.setTimeout(120_000);
+    // The full animation (a CI runner's headless browser may report reduced motion; ANIM-03 covers it).
+    await page.emulateMedia({ reducedMotion: "no-preference" });
     const apt = await aptWith(browser, baseURL, page);
     const billId = await stockingDraft(page, apt);
 

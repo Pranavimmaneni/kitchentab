@@ -5,6 +5,7 @@ import type { InventoryItem, KitchenFilter } from "@/lib/api/kitchen-types";
 import { ROW_H, VIRTUALIZE_AT, chunk, useColumns, useWindowRows } from "@/lib/area-grid";
 import { matchesFilter, showsOpenBadge, tileLabel } from "@/lib/kitchen";
 import { strings } from "@/lib/strings";
+import { gestureStrings } from "@/features/kitchen/gestures/strings";
 import { FoodIcon, foodPastel } from "./FoodIcon";
 import { OwnerDots } from "./OwnerDots";
 import { CheckIcon, LockIcon } from "./icons";
@@ -64,7 +65,7 @@ export function ItemTile({
   const picked = gestures?.picked.has(item.id) ?? false;
   // On the gesture screens items also say where they are (SPEC §8): moves change it.
   const label = gestures
-    ? `${tileLabel(item, meMemberId)}, ${strings.gestures.inPlace(strings.gestures.placeLower[item.place])}`
+    ? `${tileLabel(item, meMemberId)}, ${gestureStrings.inPlace(gestureStrings.placeLower[item.place])}`
     : tileLabel(item, meMemberId);
   return (
     <button
@@ -72,7 +73,7 @@ export function ItemTile({
       className="kt-tile"
       aria-label={
         selectMode
-          ? `${label}, ${picked ? strings.gestures.tileSelected : strings.gestures.tileNotSelected}`
+          ? `${label}, ${picked ? gestureStrings.tileSelected : gestureStrings.tileNotSelected}`
           : label
       }
       aria-pressed={selectMode ? picked : undefined}

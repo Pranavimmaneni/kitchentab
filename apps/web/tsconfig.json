@@ -37,7 +37,8 @@
     ".next/types/**/*.ts",
     "next-env.d.ts",
     "test-results/next-3010/types/**/*.ts",
-    "test-results/next-house/types/**/*.ts"
+    "test-results/next-house/types/**/*.ts",
+    ".next-size/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

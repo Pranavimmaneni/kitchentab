@@ -25,6 +25,7 @@ import {
   tileLabel,
 } from "../../lib/kitchen";
 import { withMyConsent } from "../../lib/kitchen-writes";
+import { requestsStrings } from "../../lib/requests-strings";
 import { strings } from "../../lib/strings";
 import { ME, item, owner, request } from "./fixtures/kitchen";
 
@@ -249,7 +250,7 @@ describe("custom split on asks (FR-81, FR-82)", () => {
 
   it("ASK-18 request cards show the line total, or NO PRICE for leftovers [FR-82]", () => {
     expect(requestPrice({ line_total_cents: 1137 })).toBe("$11.37");
-    expect(requestPrice({ line_total_cents: null })).toBe(strings.requests.noPrice);
-    expect(requestPrice({})).toBe(strings.requests.noPrice);
+    expect(requestPrice({ line_total_cents: null })).toBe(requestsStrings.noPrice);
+    expect(requestPrice({})).toBe(requestsStrings.noPrice);
   });
 });
