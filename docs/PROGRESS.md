@@ -390,9 +390,10 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 
 ## Waivers
 
-- A11Y-08, EMAIL-04: manual by definition (TEST_PLAN: a VoiceOver/TalkBack pass on real phones; a
-  DNS check at release). The owner runs DEVICE_QA.md §7 and §9 before a release and records the
-  result under "Device QA" in TEST_REPORT.md; nothing automated stands in for them.
+- A11Y-08: manual by definition (TEST_PLAN: a VoiceOver/TalkBack pass on real phones). The owner
+  runs DEVICE_QA.md §7 before a release and records it under "Device QA" in TEST_REPORT.md.
+- EMAIL-04: manual by definition (TEST_PLAN: a DNS check at release). The owner runs DEVICE_QA.md §9
+  (Show original: SPF, DKIM, DMARC PASS) and records it under "Device QA" in TEST_REPORT.md.
 - GHSA-vfj7-8cjw-p6xm (CVE-2026-93687; `braces@3.0.3`, high; dependency audit, ADR-0025): no patched
   release exists (the advisory lists no fixed version). Reached only through lint tooling
   (`eslint-config-next > @next/eslint-plugin-next > fast-glob > micromatch > braces`), which expands
