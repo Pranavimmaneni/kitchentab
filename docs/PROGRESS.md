@@ -15,8 +15,9 @@ traceability (`check_traceability.py --all`): OK (A11Y-08, EMAIL-04 waived to DE
 
 Previous status (2026-10-10, end of session 2): LIVE at https://kitchentab.vercel.app (Vercel team `ed-i-th`,
 project `kitchentab`, Neon Postgres, private Blob store, sign-in codes from a dedicated KitchenTab Gmail via
-SMTP). The household is using it. Code: https://github.com/Pranavimmaneni/kitchentab (private; the owner
-invites collaborators). The Vercel project is connected to it: every push to `main` deploys production;
+SMTP). The household is using it. Code: https://github.com/Pranavimmaneni/kitchentab (public since
+2026-10-11, so Actions minutes are free; commits use the GitHub noreply address; never commit secrets
+or personal data). The Vercel project is connected to it: every push to `main` deploys production;
 migrations are not run by Git deploys (`make migrate-prod`, see CONTRIBUTING.md). Vercel Hobby only deploys
 private-repo commits authored by the owner: collaborators need a public repo, Vercel Pro, or owner merges. Everything is committed on `build/all` (working tree clean); see
 docs/LAUNCH.md "Launch log" for what differed at launch (Vercel CLI 54 quirks, all fixed in scripts).
@@ -329,10 +330,17 @@ before it merges.
       with Undo, item sheet Move to / Move earlier / later (FR-G01..G08, FR-G11)
 - [x] Haptics `apps/web/lib/haptics.ts` + Settings › Kitchen › Haptics (HAPT-01..03)
 - [x] Stocking animation on Review & send (ANIM-01 timing; Share waits for both; failure flies home)
-- [ ] Playwright GEST-06..13, ANIM-02, ANIM-03, A11Y-G1 green on WebKit iPhone and Chromium Pixel
-- [ ] VIS-G1 screenshots compared with `docs/design/renders/gestures/` (token-level colors excepted)
-- [ ] SYNC-G1..G6 at 200 iterations in both PROFILEs (`make test-sync`)
-- [ ] `make lint test test-sync e2e e2e-multi` twice in a row; fresh-eyes review findings fixed
+- [x] Playwright GEST-06..13, ANIM-02, ANIM-03, A11Y-G1 green on WebKit iPhone and Chromium Pixel
+      (locally; a Chromium run under load once collected an extra tile from a crawling finger, so
+      GEST-11 now moves in long steps)
+- [x] VIS-G1 screenshots of r2, m2, s2, c3, sort-before/after compared with the renders in both
+      themes; fixed: lifted name chip, gap ring, white bubbles in dark, empty slots after stocking
+- [x] SYNC-G1..G5 at 200 iterations in both PROFILEs (local 2.4 min, vercel 9 min); SYNC-G6 and
+      the reducer-level SYNC-G2/G6 are deterministic
+- [x] Fresh-eyes review: 15 findings (virtualized hit tests, live changes mid-drag, auto-scroll
+      into the bar, select picks, announcements, focus, drop glitch, charge ring/fold, Undo source,
+      repeat asks, haptics on failure, location in labels, Back, mouse click) all fixed (ADR-0033)
+- [ ] `make lint test test-sync e2e e2e-multi` twice in a row (CI on the PR counts as one)
 - [ ] Real phones: long-press feel and haptics on an iPhone and an Android (DEVICE_QA.md)
 
 ## P11: Deploy-ready (BUILD_ALL §6)
