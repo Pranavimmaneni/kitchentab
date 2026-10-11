@@ -50,9 +50,12 @@ function SendScreen({ view }: { view: BillView }) {
   const currency = view.bill.currency;
 
   useEffect(() => {
+    // While this screen is sending, the live update that the bill is open arrives before the
+    // stocking animation ends; our own send moves on to Share when both are done (ANIM-02).
+    if (sending) return;
     if (view.bill.state === "open") router.replace(`/bills/${billId}/share`);
     else if (view.bill.state !== "draft") router.replace(`/bills/${billId}`);
-  }, [view.bill.state, billId, router]);
+  }, [view.bill.state, billId, router, sending]);
 
   const people = peopleOf(view);
   const payer = view.participants.find((p) => p.id === view.bill.payer_member_id);
