@@ -213,3 +213,22 @@ def test_preview_deployments_take_their_origin_from_vercel_url() -> None:
     assert s.google_redirect_uri == "https://kitchentab-git-x.vercel.app/api/v1/auth/google/callback"
     prod = Settings(_env_file=None, **{**REAL_PROD, "vercel_url": "kitchentab-abc123.vercel.app"})
     assert prod.web_origin == "https://kitchentab.vercel.app", "an explicit origin always wins"
+
+
+@tid("SEC-11")
+async def test_SEC_11_test_route_clears_one_rate_limit_bucket(client: httpx.AsyncClient) -> None:
+    """Every e2e browser shares one IP and the local e2e database outlives a day's runs; the
+    test-only reset lifts one bucket (here the 5-per-hour email codes) and nothing else."""
+    token = (await client.get("/api/v1/auth/csrf")).json()["token"]
+    body = {"channel": "email", "destination": "reset-check@example.com"}
+
+    async def send() -> int:
+        r = await client.post("/api/v1/auth/otp/send", json=body, headers={"X-CSRF-Token": token})
+        return r.status_code
+
+    statuses = [await send() for _ in range(6)]
+    assert statuses == [200] * 5 + [429], statuses
+    assert (await client.delete("/__test/rate-limits", params={"bucket": "otp_phone"})).status_code == 204
+    assert await send() == 429, "another bucket stays"
+    assert (await client.delete("/__test/rate-limits", params={"bucket": "otp_email"})).status_code == 204
+    assert await send() == 200

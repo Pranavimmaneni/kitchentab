@@ -100,6 +100,17 @@ test("SYNC-13 two owners mark the same item used up at once: it leaves both frid
     who
       .getByRole("dialog", { name: "Chicken thighs 3 lb" })
       .getByRole("button", { name: "Used up" });
+  // Both sheets finish sliding up first: otherwise one click lands while the other button is still
+  // moving, the first write's event closes that sheet (the item left the fridge), and the second
+  // tap never happens. Then both taps go out together.
+  for (const who of [page, arjun]) {
+    await expect(usedUp(who)).toBeVisible();
+    await who
+      .getByRole("dialog", { name: "Chicken thighs 3 lb" })
+      .evaluate((el) =>
+        Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => a))),
+      );
+  }
   await Promise.all([usedUp(page).click(), usedUp(arjun).click()]);
 
   // Both writes are answered (the second is a no-op: same state, no second event) …

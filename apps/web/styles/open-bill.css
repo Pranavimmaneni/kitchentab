@@ -128,6 +128,9 @@
   /* Footer: outline + primary side by side (1 : 1.3, Bill.dc.html) */
   .kt-bill__actions {
     display: flex;
+    /* On the narrowest phones (320 px) both one-line pills don't fit side by side: the second
+       takes its own full-width row instead of pushing the page sideways (VIS-02). */
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 10px;
   }

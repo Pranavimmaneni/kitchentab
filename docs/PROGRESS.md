@@ -41,15 +41,52 @@ B. Settings: DONE on branch feat/settings-hub (PR open; no migration).
 Ship both behind the usual gate; ask the user before redeploying production.
 
 Open, in order (overnight queue):
-1. Full browser suite not green: last run 245 passed / 27 failed / 83 skipped, partly machine load.
+1. GitHub CI (first runs 2026-10-10) was red on main. Fixed on branch fix/ci-baseline: ruff EXE001 (four
+   scripts not executable in git), the test job had no MinIO (receipt tests, VERCEL-09 backup), A11Y-01
+   target-size flagged a review row only where it sat under the sticky action bar (the audit now puts
+   sticky bars in flow), EMAIL-05 depended on the hour (quiet hours hold email overnight; the test turns
+   them off), E2E-01 on WebKit: the N1 sheet covered the Share button (product fix, assumption 55).
+   CI e2e on main otherwise: 254 passed, 3 failed (those), 2 flaky (KITCH-13 WebKit, SYNC-13), 83 skipped.
+   SYNC-24: decided (item 2); the Vercel-profile sync job needs the serverless pool PR.
+   Old note: full local browser suite was 245 passed / 27 failed / 83 skipped, partly machine load.
    Possibly real: SYNC-32 tick flicker (WebKit), SYNC-31 leader hand-over > 3 s, SYNC-12 (WebKit/Firefox),
    SYNC-07 flaky, KITCH-07/08, ASK-06, BILL-03, E2E-01; VIS-02 and A11Y-07 need one confirmed run.
-2. API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
+2. SYNC-24 p95 < 300 ms with 20 clients ticking flat out is not reachable with ticks serialized on the
+   house lock (~15 ms each locally, slower on CI's 2-CPU runners): by Little's law the mean wait alone is
+   about 20 x 15 ms = 300 ms. CI measured p95 1.0 s (local profile) and 4.0 s (vercel profile); this
+   laptop 0.63 s. Owner decision pending: change the load model to the real client's (ticks batched
+   every 250 ms per person) and keep the flat-out run for correctness + a throughput floor, or invest in
+   a different lock design. Not changed without the owner (PRD §21, CLAUDE.md).
+   DECIDED 2026-10-10 (owner: "Realistic load", ADR-0031): flat-out run keeps correctness + >= 20
+   ticks/s; human-pace run (tap every 0.5-1.5 s, 250 ms coalescing) asserts p95 < 300 ms. Local profile
+   passes both here. Vercel profile failed both (7 ticks/s, p95 4 s): every request opened a new DB
+   connection and paid per-connection type lookups, some inside the house lock. Fix in a stacked PR
+   (connection reuse in the serverless profile, ADR-0032).
+   Branch perf/serverless-pool (stacked on fix/ci-baseline): DB_SERVERLESS_POOL_SIZE (default 10, 0 = old
+   behaviour), VERCEL-11. Needs a real-deployment check before merging (ADR-0032).
+   Earlier note: API timing tests on a busy machine: SYNC-24 p95 0.6 s vs 300 ms (design limit? ADR-0023 amendment),
    VERCEL-02, SYNC-25, write-helper load test. Re-measure on a quiet machine before deciding.
-3. Not yet run: `make test-load` (PERF-01/02), three 30-minute `make simulate` seeds plus browser
-   devices, PERF-03..06 (Lighthouse / bundle / extraction / 200 items; mobile perf 84-89 vs 90),
-   E2E-01/02/04-08/10, A11Y-08, EMAIL-04; `make test-all` three times; docs/TEST_REPORT.md via
-   scripts/test_report.py; finalize DEVICE_QA.md; fresh-eyes reviews per milestone; mark milestones [done].
+3. Verification (2026-10-11, branch test/e2e-journeys, stacked on perf/serverless-pool):
+   - Journeys written and green on WebKit, Chromium and Firefox: E2E-01 (full, scanned Trader Joe's
+     photo, flagged line fixed), E2E-02 (phone-code claim), E2E-04 (ask, push to the owner's device
+     through the fake push service, Add to split), E2E-05 (use soon, round-up push, Used up, Undo),
+     E2E-06 (settle with money owed, carry, reopen, settle again), E2E-10 (two payer devices, merge
+     prompt). E2E-07 (install + push for every roommate action) on Chromium. E2E-08 is the screen-5
+     offline test. Found and fixed on the way: a fixed CHECK? line kept its stamp (assumption 56).
+   - PERF-04 green (link page JS 148.9 KB gz of 150: almost no headroom). PERF-06 green (200 items:
+     fridge 445 ms, Kitchen 71 ms after data, CPU 4x).
+   - NOT MET, owner's call: PERF-03 link page LCP 2.9 s (< 2.5), TBT 249 ms (< 200), CLS 0; PWA-12
+     /start performance 0.89 (>= 0.90). The page is server-rendered; the late LCP looks like the web
+     fonts repainting the heading over slow 4G (fix = font-display optional / fewer weights: a visible
+     design trade-off). Lighthouse tests now run on Windows (path-with-space bug fixed).
+   - NOT MET on this laptop (generator, DB and 4 API workers on one machine): PERF-01 p95 1.26 s at
+     114 req/s (< 300 ms), PERF-02 delivery p95 10.6 s (< 2 s); 0 errors, 0 missed deliveries,
+     invariants clean. Re-measure on Linux (a workflow_dispatch CI job would do).
+   - PERF-05 green: 10 receipts read on the device in 2.5-3.8 s, p90 3.6 s (< 15 s).
+   - `make simulate` seed 1 (30 min): PASS, 32 checkpoints, 0 errors, 0 violations, 5 restarts,
+     75 stream reconnects.
+   - Left: A11Y-08 and EMAIL-04 are manual (waived to DEVICE_QA.md §7 and §9); seeds 2 and 3; `make test-all` three times; docs/TEST_REPORT.md; DEVICE_QA.md;
+     milestone reviews and [done] marks.
 4. EMAIL_POSTAL_ADDRESS (email footer) still empty: `make deploy-setup ARGS='--postal-address "..."'`
    then `make redeploy`. Push and install need checking on real phones (DEVICE_QA.md).
 5. `make deploy` still runs its own lint+test gate; the last deploy ran the gate by hand
@@ -230,7 +267,7 @@ IDs: PWA-01..12, OFFLINE-01..04, PUSH-01..19, EMAIL-01..05, VERCEL-04, VERCEL-09
 - [ ] Gate (+ test-push)
 
 ## Milestone 10: Hardening and full verification
-IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08, DATA-01..06, E2E-01..10, VERCEL-06, VERCEL-07, VERCEL-08, VERCEL-10
+IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08, DATA-01..06, E2E-01..10, VERCEL-06, VERCEL-07, VERCEL-08, VERCEL-10, VERCEL-11
 
 - [x] Rate limits: 60 writes/min per user (across devices), 300 reads/min per IP, 429 + Retry-After
       (SEC-05); production refuses to boot with them off; the shared test app turns them off for SYNC x200
@@ -349,9 +386,15 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 52. A "visit" is a new browser session (tab or app launch); the 2nd visit is an install moment. The "first ask" moment is an ask sent from this app or any ask/answer in the inbox.
 53. Playwright blocks service workers by default; PWA/push/offline specs opt in, and push specs use the full Chromium build (`channel: "chromium"`) because the headless shell always reports notification permission as denied. ADR-0027.
 54. `X-Client-Version` is the integer API compatibility level (`1`), compared numerically with MIN_CLIENT_VERSION. ADR-0026.
+55. The first-bill notifications pre-prompt (N1) waits until the payer leaves E · Share: a write moment is decided on the next idle check and Share is marked busy (`data-kt-busy`), so the sheet never lands on the Share button (PUSH-01, E2E-01; PRD §20.2 rule 1 clarified).
+56. A CHECK? (flagged) line is cleared once the payer edits its name, quantity or price: they checked it. Tapping its storage tag leaves the stamp (EXTRACT-05, FR-12).
 
 ## Waivers
 
+- A11Y-08: manual by definition (TEST_PLAN: a VoiceOver/TalkBack pass on real phones). The owner
+  runs DEVICE_QA.md §7 before a release and records it under "Device QA" in TEST_REPORT.md.
+- EMAIL-04: manual by definition (TEST_PLAN: a DNS check at release). The owner runs DEVICE_QA.md §9
+  (Show original: SPF, DKIM, DMARC PASS) and records it under "Device QA" in TEST_REPORT.md.
 - GHSA-vfj7-8cjw-p6xm (CVE-2026-93687; `braces@3.0.3`, high; dependency audit, ADR-0025): no patched
   release exists (the advisory lists no fixed version). Reached only through lint tooling
   (`eslint-config-next > @next/eslint-plugin-next > fast-glob > micromatch > braces`), which expands

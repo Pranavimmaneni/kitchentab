@@ -100,7 +100,19 @@ async def drain(request: Request) -> dict[str, int]:
 
 
 @router.post("/use-soon")
-async def use_soon(request: Request) -> dict[str, int]:
+async def use_soon(request: Request, now: bool = False) -> dict[str, int]:
+    """The daily use-soon round-up; `?now=true` sends it at once instead of at 9:00 house time."""
     from app.services.notify import use_soon_roundup
 
-    return {"created": await use_soon_roundup(request.app.state.notify)}
+    return {"created": await use_soon_roundup(request.app.state.notify, deliver_now=now)}
+
+
+@router.delete("/rate-limits", status_code=204)
+async def clear_rate_limits(request: Request, bucket: str) -> Response:
+    """Forget one bucket's counts (e.g. `otp_phone_ip`): every e2e browser shares one IP, and the
+    local e2e database outlives a day's runs, so per-IP daily limits would block the suite."""
+    from sqlalchemy import text
+
+    async with request.app.state.sessions() as db, db.begin():
+        await db.execute(text("DELETE FROM rate_limit_hits WHERE bucket = :b"), {"b": bucket})
+    return Response(status_code=204)

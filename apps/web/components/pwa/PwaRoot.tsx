@@ -146,7 +146,9 @@ export function PwaRoot() {
     const onWrite = (event: Event) => {
       const { method, path } = (event as CustomEvent<WriteDetail>).detail;
       const moment = momentForWrite(method, path);
-      if (moment) void offer(moment);
+      // Decided on the next idle check, not now: a send navigates to E · Share right after its
+      // write, and the prompt must wait for the screen the payer lands on (PUSH-01).
+      if (moment) pending.current = moment;
     };
     window.addEventListener("kt:stale-client", onStale);
     window.addEventListener("kt:write", onWrite);

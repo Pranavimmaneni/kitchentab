@@ -51,8 +51,11 @@ test("EMAIL-05 the new-tab email renders legibly in light and dark mail clients 
   test.setTimeout(120_000);
   const apt = await aptWith(browser, baseURL, page, ["arjun"]);
   try {
-    await seedShopRite(page, apt, { split: "all", send: true });
     const arjun = apt.pages.arjun!;
+    // Quiet hours (default on, 22:00-08:00 in the house's time zone) hold email overnight, and
+    // this suite runs at any hour (CI at 2 AM New York time). The holding itself is PUSH-09.
+    await call(arjun, "PUT", "/me/notification-prefs", { quiet_hours: false });
+    await seedShopRite(page, apt, { split: "all", send: true });
     const email = (await call<{ user: { email: string } }>(arjun, "GET", "/me")).user.email;
     let mail: Mail | undefined;
     await expect(async () => {

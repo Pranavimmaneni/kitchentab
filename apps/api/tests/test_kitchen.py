@@ -103,7 +103,8 @@ async def test_KITCH_07_filter_counts_and_dimmed_matches(api: ApiFactory) -> Non
 async def test_KITCH_08_open_only_when_every_owner_says_yes(api: ApiFactory) -> None:
     w, _, _, p = await kitchen_world(api)
     milk = find(await fridge(w.admin, w), "Whole milk")
-    assert milk["is_open"] is False and set(milk["holdouts"]) == {"Pranav", "Arjun", "Meera"}
+    assert milk["is_open"] is False and milk["holdouts"] == ["Pranav", "Arjun", "Meera"], "in house order"
+    assert [o["display_name"] for o in milk["owners"]] == ["Pranav", "Arjun", "Meera"]
     for who in (w.admin, p["arjun"]):
         assert (await who.call("PUT", f"/api/v1/inventory/{milk['id']}/sharing", {"open": True})).status_code == 200
     milk = find(await fridge(p["kabir"], w), "Whole milk")
