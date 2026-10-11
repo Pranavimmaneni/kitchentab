@@ -13,6 +13,7 @@ from sqlalchemy import select
 from app.deps import Actor, ctx, require_actor
 from app.errors import ErrorCode, Problem
 from app.models import House, Member, User
+from app.services.houses import rename_self_everywhere
 
 router = APIRouter(tags=["me"])
 
@@ -77,4 +78,10 @@ async def update_me(body: Profile, request: Request, actor: Annotated[Actor, Dep
             raise Problem(404, ErrorCode.NOT_FOUND, "Account not found")
         for field, value in body.model_dump(exclude_none=True).items():
             setattr(user, field, " ".join(value.split()) if field == "display_name" else value)
-        return user_view(user)
+        out = user_view(user)
+    if body.display_name is None:
+        return out
+    # FR-83: the name follows you into every house you live in, one house write each, after the
+    # account row has committed. Houses that already show it are skipped (nothing written).
+    synced = await rename_self_everywhere(ctx(request).writes, user, out["display_name"])
+    return out | {"name_updated_in": synced["renamed"], "name_taken_in": synced["taken"]}

@@ -164,3 +164,14 @@ def test_SEC_01_unknown_actions_are_denied_and_require_maps_status() -> None:
 def test_SEC_01_require_returns_quietly_when_allowed() -> None:
     require(Action.HOUSE_READ, actor=MEMBER)  # no exception
     require_own(MEMBER_U, MEMBER_U)
+
+
+@tid("SET-01")
+def test_SET_01_members_rename_only_themselves() -> None:
+    """FR-83: your new name follows you into each house; nobody renames someone else this way."""
+    assert decide(Action.MEMBER_RENAME_SELF, actor=MEMBER, target=target(MEMBER)).allowed
+    assert decide(Action.MEMBER_RENAME_SELF, actor=ADMIN, target=target(ADMIN)).allowed
+    other = decide(Action.MEMBER_RENAME_SELF, actor=MEMBER, target=target(PAYER))
+    assert not other.allowed and other.code == ErrorCode.FORBIDDEN
+    assert not decide(Action.MEMBER_RENAME_SELF, actor=MEMBER).allowed, "a target is required"
+    assert decide(Action.MEMBER_RENAME_SELF, actor=LEFT, target=target(LEFT)).code == ErrorCode.NOT_A_MEMBER

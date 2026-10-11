@@ -377,3 +377,69 @@ test("AUTH-14 EDGE-15-22 deleting an account needs DELETE typed, signs out, and 
   await expect(page.locator(".kt-member-row", { hasText: "Kabir" })).toHaveCount(0);
   await closeApt(apt);
 });
+
+test("SET-01 SET-02 SET-03 Settings: a new name reaches the house, notifications sit in one group, home screen steps lead with this phone, and Leave house works from here [FR-83] [FR-84]", async ({
+  page,
+  browser,
+  baseURL,
+  browserName,
+}) => {
+  test.setTimeout(150_000);
+  const apt = await aptWith(browser, baseURL, page, ["kabir"]);
+  const { kabir } = apt.pages as Required<typeof apt.pages>;
+  await open(kabir, "/settings");
+
+  // FR-83: Save name renames Kabir in the house too.
+  await kabir.getByLabel("YOUR NAME").fill("Kabir S");
+  await kabir.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(kabir.getByRole("status").getByText("Saved")).toBeVisible();
+  await open(page, "/house");
+  await expect(page.locator(".kt-member-row", { hasText: "Kabir S" })).toBeVisible();
+
+  // FR-84: notifications in one group with the N2 link and the email switch.
+  const group = kabir.getByRole("region", { name: "NOTIFICATIONS" });
+  await expect(group.getByRole("link", { name: /Notifications/ })).toHaveAttribute(
+    "href",
+    "/settings/notifications",
+  );
+  await expect(
+    group.getByRole("switch", { name: "Email me about new tabs and changes" }),
+  ).toBeVisible();
+
+  // Home screen steps: this phone's first. The payer's page is the project's device (WebKit runs as
+  // an iPhone 14, Chromium as a Pixel 7); roommates get other profiles from the fixture.
+  await open(page, "/settings");
+  const home = page.getByTestId("home-screen");
+  await expect(
+    home.getByRole("heading", { name: "ADD KITCHENTAB TO YOUR HOME SCREEN" }),
+  ).toBeVisible();
+  const first = home.locator("[data-testid^=install-]").first();
+  await expect(first).toHaveAttribute(
+    "data-testid",
+    browserName === "webkit" ? "install-iphone" : "install-android",
+  );
+  await expect(home.getByText("Tap Share, the square with the arrow pointing up.")).toBeVisible();
+
+  // Leave house from Settings.
+  await kabir.getByRole("button", { name: "Leave Apt 4B" }).click();
+  await kabir
+    .getByRole("dialog", { name: "Leave Apt 4B?" })
+    .getByRole("button", { name: "Leave" })
+    .click();
+  await kabir.waitForURL((url) => !url.pathname.startsWith("/settings"), { timeout: 20_000 });
+  await open(page, "/house");
+  await expect(page.locator(".kt-member-row", { hasText: "Kabir S" })).toContainText("LEFT");
+
+  // Opened from the home screen, the install section is gone.
+  await page.addInitScript(() => {
+    const real = window.matchMedia.bind(window);
+    window.matchMedia = (query: string) =>
+      query.includes("display-mode: standalone")
+        ? ({ ...real(query), matches: true, media: query } as MediaQueryList)
+        : real(query);
+  });
+  await open(page, "/settings");
+  await expect(page.getByRole("heading", { name: "NOTIFICATIONS" })).toBeVisible();
+  await expect(page.getByTestId("home-screen")).toHaveCount(0);
+  await closeApt(apt);
+});

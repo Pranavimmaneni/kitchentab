@@ -108,6 +108,9 @@ is filled in.
 | LINK-04 | M | Link pages send `noindex` and `no-referrer` | Headers present |
 | LINK-05 | M | OG image shows store, date, total, "split N ways"; never per-person amounts or names | Image check |
 | LINK-06 | M | 20 invalid tokens/h per IP → lockout | 429 |
+| SET-01 | M | Save name in Settings renames your member in each house (one event per house); a taken name keeps the old one there and the answer lists the house; same name again writes nothing; only yourself (policy) | As stated |
+| SET-02 | M | Settings › Add to home screen: this device's steps first (iPhone on WebKit, Android on Chromium), Install button only when `beforeinstallprompt` was captured, section hidden in standalone | As stated |
+| SET-03 | M | Settings has a NOTIFICATIONS group (N2 link + email switch) and Leave house for the current house | Leave works from Settings |
 
 ### 3.4 Bills, receipts, splitting (BILL, EXTRACT, SPLIT)
 

@@ -18,7 +18,7 @@ in-app notifications; local production-like run `make house` (http://localhost:3
 Gate before the last deploy: make lint green, web unit 229/229, API 538 passed (slow groups excluded).
 
 NEW FEATURES REQUESTED BY THE USER (2026-10-10), do these FIRST, before the queue below:
-A. Requests screen: DONE on branch feat/ask-custom-split (PR open; needs `make migrate-prod`, migration 0007).
+A. Requests screen: LIVE 2026-10-11 (PR #1; production migrated to 0007 first).
    - FR-82: every request card (FOR YOU and YOU ASKED) shows the item's line total under its icon,
      "NO PRICE" for leftovers (ASK-18).
    - FR-81: answering with Add to split or Chip in offers Equal share (or Suggested) / 25% / 50% / 100% /
@@ -30,14 +30,15 @@ A. Requests screen: DONE on branch feat/ask-custom-split (PR open; needs `make m
      (GET /requests/{id}/answer-preview) shows the asker's part and every share delta before Say yes;
      Undo removes it. Tests: MONEY-11 (fixtures + Python==reference property + TS), ASK-15..ASK-18
      (API, unit, Playwright on WebKit and Chromium).
-B. Settings (SettingsScreen.tsx): one place for
-   - your name (exists: Profile → Save name; check it also renames you in every house you're in),
-   - notification preferences (exists at /settings/notifications: make it a clear row on Settings),
-   - "Add KitchenTab to your home screen": iPhone (Safari → Share → Add to Home Screen, then sign in
-     again there, then allow notifications) and Android (Chrome → Install) steps, with an Install button
-     when the browser offers one (lib/pwa prompts), hidden when already installed,
-   - plus the obvious extras: theme, sign out / sign out everywhere, leave house, delete account.
-   Copy goes in lib/strings.ts; 44 px targets, both themes, axe clean.
+B. Settings: DONE (PR #2; no migration).
+   - FR-83: Save name used to change only the account; roommates kept seeing the old name. Now PATCH /me
+     renames your member in every house (policy member.rename_self, one house write + member_renamed
+     event per house, cut to 24 characters); a house where the name is taken keeps the old one and
+     Settings says so (SET-01).
+   - FR-84: order is name, NOTIFICATIONS (N2 link + email switch), Add KitchenTab to your home screen
+     (iPhone/Android/computer steps, this device's first, Install button when offered, hidden in the
+     home screen app), appearance, kitchen default, sign-in methods, payment handles, YOUR HOUSE
+     (House settings link + Leave house), data and account (SET-02, SET-03).
 Ship both behind the usual gate; ask the user before redeploying production.
 
 Open, in order (overnight queue):
@@ -217,7 +218,7 @@ IDs: SYNC-01..35, FR-32..FR-43, PAY-01..08, BILL-08..11, SPLIT-08, VERCEL-01, VE
 - [ ] Gate (both profiles)
 
 ## Milestone 7: Tabs and balances
-IDs: FR-50..FR-54, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14 · Screens 1, Settings, House, Balances
+IDs: FR-50..FR-54, FR-83, FR-84, BAL-01..04, BILL-12, MONEY-07, MONEY-08, AUTH-12, AUTH-14, SET-01..03 · Screens 1, Settings, House, Balances
 
 - [x] API: balances (per-pair netting, carried), tabs lists with 20-per-page history, search, CSV export,
       sign-in methods, payment handles, data export, account deletion (anonymize, keep amounts)

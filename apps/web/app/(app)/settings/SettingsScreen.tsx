@@ -14,12 +14,14 @@ import { Switch } from "@/components/Switch";
 import { Toast } from "@/components/Toast";
 import { XIcon } from "@/components/icons";
 import { ErrorCard } from "@/components/screens/ErrorCard";
-import { api, isApiError } from "@/lib/api/client";
+import { api, isApiError, newId } from "@/lib/api/client";
 import { keys, useAuthMethods, useMe } from "@/lib/api/hooks";
 import { tabKeys, useIdentities, usePaymentHandles } from "@/lib/api/tabs-hooks";
 import type { Identity, PaymentHandles } from "@/lib/api/tabs-types";
 import type { User } from "@/lib/api/types";
-import { forgetHouse } from "@/lib/house";
+import { forgetHouse, useCurrentHouse } from "@/lib/house";
+import { isIos, isStandalone } from "@/lib/pwa/device";
+import { promptInstall, usePrompts } from "@/lib/pwa/prompts";
 import { strings } from "@/lib/strings";
 import { announceSignedOut } from "@/lib/sync/session";
 import { setPreference, useTheme, type ThemePreference } from "@/lib/theme";
@@ -30,7 +32,10 @@ function errorText(error: unknown): string {
   return isApiError(error) ? error.title : strings.error.title;
 }
 
-/** Settings (PRD §14A): profile, sign-in methods, payment handles, sharing default, theme, data. */
+/**
+ * Settings (PRD §14A, FR-83, FR-84): your name (in every house), notifications, the home screen app,
+ * theme, kitchen default, sign-in methods, payment handles, your house, data and account.
+ */
 export function SettingsScreen() {
   const me = useMe();
   const [toast, setToast] = useState<{ message: string; variant?: "info" | "error" } | null>(null);
@@ -45,20 +50,13 @@ export function SettingsScreen() {
         {user ? (
           <>
             <Profile user={user} notify={notify} />
+            <Notifications user={user} notify={notify} />
+            <HomeScreen notify={notify} />
+            <Appearance />
+            <Preferences user={user} notify={notify} />
             <SignInMethods notify={notify} />
             <Handles notify={notify} />
-            <Preferences user={user} notify={notify} />
-            {/* N2 · Settings › Notifications (PRD §20.2) */}
-            <Link href="/settings/notifications" className="kt-link-row">
-              <span className="kt-link-row__text">
-                <span className="kt-link-row__title">{strings.notify.settingsLink}</span>
-                <span className="kt-link-row__hint">{strings.notify.settingsLinkHint}</span>
-              </span>
-              <span className="kt-link-row__chevron" aria-hidden="true">
-                ›
-              </span>
-            </Link>
-            <Appearance />
+            <YourHouse notify={notify} />
             <DataAndAccount notify={notify} />
           </>
         ) : null}
@@ -76,7 +74,12 @@ export function SettingsScreen() {
 async function patchMe(
   body: Partial<Pick<User, "display_name" | "theme" | "share_by_default" | "notify_email">>,
 ) {
-  return api.request<User>("PATCH", "/me", { body });
+  // A name change also reports the houses it reached and any where the name was taken (FR-83).
+  return api.request<User & { name_updated_in?: string[]; name_taken_in?: string[] }>(
+    "PATCH",
+    "/me",
+    { body },
+  );
 }
 
 function Profile({ user, notify }: { user: User; notify: Notify }) {
@@ -90,9 +93,17 @@ function Profile({ user, notify }: { user: User; notify: Notify }) {
     if (!changed) return;
     setSaving(true);
     try {
-      await patchMe({ display_name: name.trim() });
-      await client.invalidateQueries({ queryKey: keys.me });
-      notify(strings.settings.saved);
+      const out = await patchMe({ display_name: name.trim() });
+      await Promise.all([
+        client.invalidateQueries({ queryKey: keys.me }),
+        client.invalidateQueries({ queryKey: ["house"] }),
+      ]);
+      const taken = out.name_taken_in ?? [];
+      notify(
+        taken.length > 0
+          ? strings.settings.nameSavedTaken(taken.join(", "), out.display_name)
+          : strings.settings.saved,
+      );
     } catch (error) {
       notify(errorText(error), "error");
     } finally {
@@ -447,20 +458,186 @@ function Preferences({ user, notify }: { user: User; notify: Notify }) {
           />
         </div>
       </section>
-      <section className="kt-field" aria-labelledby="email-pref">
-        <h2 id="email-pref" className="kt-field__label">
-          {strings.settings.email}
-        </h2>
-        <div className="kt-share-row">
-          <span className="kt-share-row__title">{strings.settings.notifyEmail}</span>
-          <Switch
-            checked={user.notify_email}
-            label={strings.settings.notifyEmail}
-            onChange={(v) => void set("notify_email", v)}
-          />
-        </div>
-      </section>
     </>
+  );
+}
+
+/** FR-84: notifications in one group: push, email and quiet hours (N2), plus the email switch. */
+function Notifications({ user, notify }: { user: User; notify: Notify }) {
+  const client = useQueryClient();
+  async function setEmail(value: boolean) {
+    client.setQueryData(keys.me, (old: unknown) =>
+      old && typeof old === "object" && "user" in old
+        ? {
+            ...(old as { user: User }),
+            user: { ...(old as { user: User }).user, notify_email: value },
+          }
+        : old,
+    );
+    try {
+      await patchMe({ notify_email: value });
+    } catch (error) {
+      notify(errorText(error), "error");
+    } finally {
+      await client.invalidateQueries({ queryKey: keys.me, exact: true });
+    }
+  }
+  return (
+    <section className="kt-field" aria-labelledby="notify-heading">
+      <h2 id="notify-heading" className="kt-field__label">
+        {strings.settings.notifications}
+      </h2>
+      {/* N2 · Settings › Notifications (PRD §20.2) */}
+      <Link href="/settings/notifications" className="kt-link-row">
+        <span className="kt-link-row__text">
+          <span className="kt-link-row__title">{strings.notify.settingsLink}</span>
+          <span className="kt-link-row__hint">{strings.notify.settingsLinkHint}</span>
+        </span>
+        <span className="kt-link-row__chevron" aria-hidden="true">
+          ›
+        </span>
+      </Link>
+      <div className="kt-share-row">
+        <span className="kt-share-row__title">{strings.settings.notifyEmail}</span>
+        <Switch
+          checked={user.notify_email}
+          label={strings.settings.notifyEmail}
+          onChange={(v) => void setEmail(v)}
+        />
+      </div>
+    </section>
+  );
+}
+
+function InstallSteps({
+  title,
+  steps,
+  testId,
+}: {
+  title: string;
+  steps: readonly string[];
+  testId: string;
+}) {
+  return (
+    <div className="kt-install-steps" data-testid={testId}>
+      <h3 className="kt-install-steps__title">{title}</h3>
+      <ol className="kt-install-steps__list">
+        {steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/**
+ * FR-84: "Add KitchenTab to your home screen". Steps for iPhone (Safari), Android (Chrome) and
+ * computers, this device's first; an Install button when the browser offers one (PWA-05). Hidden
+ * once KitchenTab runs from the home screen (and while rendering on the server).
+ */
+function HomeScreen({ notify }: { notify: Notify }) {
+  const prompts = usePrompts();
+  const headingId = useId();
+  const [device, setDevice] = useState<{ standalone: boolean; ios: boolean } | null>(null);
+  useEffect(() => setDevice({ standalone: isStandalone(), ios: isIos() }), []);
+  if (!device || device.standalone) return null;
+  const iphone = (
+    <InstallSteps
+      key="ios"
+      title={strings.settings.iphone}
+      steps={strings.settings.iphoneSteps}
+      testId="install-iphone"
+    />
+  );
+  const android = (
+    <InstallSteps
+      key="android"
+      title={strings.settings.android}
+      steps={strings.settings.androidSteps}
+      testId="install-android"
+    />
+  );
+  return (
+    <section className="kt-field" aria-labelledby={headingId} data-testid="home-screen">
+      <h2 id={headingId} className="kt-field__label">
+        {strings.settings.homeScreen}
+      </h2>
+      <p className="kt-hint">{strings.settings.homeScreenBody}</p>
+      {prompts.canInstall ? (
+        <PillButton
+          size={52}
+          fullWidth
+          onClick={() =>
+            void promptInstall().then((outcome) => {
+              if (outcome === "accepted") notify(strings.settings.installed);
+            })
+          }
+        >
+          {strings.settings.install}
+        </PillButton>
+      ) : null}
+      {device.ios ? [iphone, android] : [android, iphone]}
+      <div className="kt-install-steps">
+        <h3 className="kt-install-steps__title">{strings.settings.computer}</h3>
+        <p className="kt-install-steps__line">{strings.settings.computerStep}</p>
+      </div>
+    </section>
+  );
+}
+
+/** FR-84: the current house's settings and Leave house, without hunting for the House tab. */
+function YourHouse({ notify }: { notify: Notify }) {
+  const client = useQueryClient();
+  const router = useRouter();
+  const { house } = useCurrentHouse();
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  if (!house) return null;
+  const current = house;
+
+  async function leave() {
+    setBusy(true);
+    try {
+      await api.post(`/houses/${current.id}/leave`, undefined, { idempotencyKey: newId() });
+      forgetHouse();
+      await client.invalidateQueries({ queryKey: keys.me });
+      router.replace("/");
+    } catch (error) {
+      notify(errorText(error), "error");
+      setBusy(false);
+      setConfirming(false);
+    }
+  }
+
+  return (
+    <section className="kt-field" aria-labelledby="house-heading">
+      <h2 id="house-heading" className="kt-field__label">
+        {strings.settings.yourHouse}
+      </h2>
+      <Link href="/house" className="kt-link-row">
+        <span className="kt-link-row__text">
+          <span className="kt-link-row__title">{strings.settings.houseLink}</span>
+          <span className="kt-link-row__hint">{strings.settings.houseLinkHint(current.name)}</span>
+        </span>
+        <span className="kt-link-row__chevron" aria-hidden="true">
+          ›
+        </span>
+      </Link>
+      <PillButton variant="secondary" size={52} fullWidth onClick={() => setConfirming(true)}>
+        {strings.settings.leaveHouse(current.name)}
+      </PillButton>
+      <Dialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title={strings.houseScreen.leaveTitle(current.name)}
+        variant="danger"
+        confirmLabel={strings.houseScreen.leaveConfirm}
+        confirmLoading={busy}
+        onConfirm={() => void leave()}
+      >
+        <p>{strings.houseScreen.leaveBody}</p>
+      </Dialog>
+    </section>
   );
 }
 

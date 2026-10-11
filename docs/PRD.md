@@ -164,6 +164,8 @@ Each requirement is testable; "Must" ships in MVP, "Should" ships in MVP if time
 | FR-07 | Must | Admin can transfer admin to another claimed member | Exactly one admin per house at all times |
 | FR-08 | Should | User can belong to multiple houses with a switcher | Last-used house opens by default |
 | FR-09 | Must | Admin can undo a wrong claim (unlink user from member) | Member returns to placeholder; audit entry written |
+| FR-83 | Must | Changing your name in Settings renames you in every house you live in (cut to the 24-character house limit) | One house write and `member_renamed` event per house; a house where someone else already has that name keeps your old one there and Settings says which |
+| FR-84 | Must | Settings is one place for your name, notifications (push/email/quiet hours link plus the email switch), "Add KitchenTab to your home screen" (iPhone Safari, Android Chrome and computer steps, this device's first, with an Install button when the browser offers one), theme, sign out / sign out everywhere, leave house and delete account | The install section is hidden when KitchenTab runs from the home screen; 44 px targets, both themes, axe clean |
 
 ### 5.2 Receipt capture and review
 
@@ -758,7 +760,7 @@ Every screen below must match its mockup in `docs/design/` (file named in bracke
 | Balances | `/balances` | Pairwise list for the signed-in user across open bills and carryovers; each row: avatar, "{name} owes you" / "You owe {name}", amount, "Remind" or "Pay"; tap → list of contributing bills |
 | House | `/house` | House name (editable by admin); members list with avatar, name, status chip (PLACEHOLDER / JOINED / LEFT), role chip (ADMIN); per-member ⋯ (rename, unclaim, make admin, remove); invite link card with Copy, Share and "Rotate link" (confirm: old link stops working); "Leave house" (blocked while payer on open bills, with reason) |
 | House switcher | Tap house name on Home | Sheet listing houses + "Start another house" |
-| Settings | `/settings` (avatar on Home) | Profile name · Sign-in methods (Google, email, phone: add, verify, remove; cannot remove the last one) · Payment handles (Venmo @, Cash App $, PayPal.me, Zelle email/phone) · Notifications (email on new tab, share changed, payments, reminders) · Appearance segmented System / Light / Dark · Export my data · Sign out · Sign out everywhere · Delete account (type DELETE to confirm; explains name becomes "Former roommate") |
+| Settings | `/settings` (avatar on Home) | Profile name (follows you into every house, FR-83) · Notifications group · Add to home screen steps + Install (FR-84) · Your house: House settings link, Leave house · Sign-in methods (Google, email, phone: add, verify, remove; cannot remove the last one) · Payment handles (Venmo @, Cash App $, PayPal.me, Zelle email/phone) · Notifications (email on new tab, share changed, payments, reminders) · Appearance segmented System / Light / Dark · Export my data · Sign out · Sign out everywhere · Delete account (type DELETE to confirm; explains name becomes "Former roommate") |
 | Not found / expired | Bad or rotated link | Receipt card: "\*\*\* NO SUCH TAB \*\*\*", "This link doesn't work anymore. Ask your house for a new one.", button "Go home" |
 | Offline | Network lost | Ink top banner, mono 11 "YOU'RE OFFLINE · SHOWING SAVED TABS"; write controls disabled with tooltip "Needs a connection" |
 | Generic error | 5xx or unexpected | Inline card "Something jammed. Try again." + Retry; error id in mono 10 for support |

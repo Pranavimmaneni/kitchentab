@@ -344,6 +344,61 @@ async def rename_member(
     return body
 
 
+class _NameTaken(Exception):
+    """Rolls back one house's rename when someone there already has the name."""
+
+
+async def rename_self_everywhere(writes: WriteContext, user: User, name: str) -> dict[str, list[str]]:
+    """FR-83: a new name in Settings follows you into every house you live in. One house write per
+    house (its own transaction and `member_renamed` event, §21.2). A house where someone else already
+    has the name keeps your old one there, and the caller says so."""
+    short = " ".join(name.split())[:24].strip()
+    async with writes.sessions() as db:
+        homes = (
+            await db.execute(
+                select(Member.house_id, House.name)
+                .join(House, House.id == Member.house_id)
+                .where(Member.user_id == user.id, Member.status == "active")
+                .order_by(House.name)
+            )
+        ).all()
+    renamed: list[str] = []
+    taken: list[str] = []
+    for house_id, house_name in homes:
+        try:
+            async with house_write(writes, house_id) as w:
+                target = (
+                    await w.session.scalars(
+                        select(Member)
+                        .where(Member.house_id == house_id, Member.user_id == user.id)
+                        .with_for_update(key_share=True)
+                    )
+                ).first()
+                if target is None or target.display_name == short:
+                    continue
+                me = await membership(w.session, house_id, user.id)
+                require(Action.MEMBER_RENAME_SELF, actor=me, target=target_of(target))
+                assert me is not None
+                w.actor_member_id = me.member_id
+                try:
+                    await _ensure_name_free(w.session, house_id, short, except_id=target.id)
+                except Problem as exc:
+                    raise _NameTaken from exc
+                old = target.display_name
+                target.display_name = short
+                target.version += 1
+                w.emit(
+                    "member_renamed",
+                    aggregate=("member", target.id, target.version),
+                    data=member_view(target),
+                    activity=Activity("member_renamed", payload={"from": old, "to": short}, actor_user_id=user.id),
+                )
+            renamed.append(house_name)
+        except _NameTaken:
+            taken.append(house_name)
+    return {"renamed": renamed, "taken": taken}
+
+
 async def _blocked_as_payer(db: AsyncSession, member_id: uuid.UUID) -> bool:
     return (
         await db.scalars(
