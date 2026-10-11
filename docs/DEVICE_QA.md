@@ -95,6 +95,13 @@ Time needed: about 60 minutes for everything; the starred lines (★) are the 15
 
 - [ ] Each screen on each device in light and dark; nothing unreadable, no white flashes on load.
 
+## 9. Sign-in email authentication (EMAIL-04)
+
+- [ ] ★ In Gmail, open a KitchenTab sign-in code email → ⋮ → **Show original**: SPF, DKIM and DMARC
+      all say **PASS**. Codes go out through the KitchenTab Gmail account, so the From domain is
+      gmail.com and Google publishes those records; if KitchenTab ever sends from its own domain,
+      that domain needs SPF, DKIM and DMARC set up first.
+
 ## What to look at first if something is off
 
 1. **Push on iPhone**: only works from the Home Screen app on iOS 16.4+, and only after a tap on

@@ -81,9 +81,10 @@ Open, in order (overnight queue):
    - NOT MET on this laptop (generator, DB and 4 API workers on one machine): PERF-01 p95 1.26 s at
      114 req/s (< 300 ms), PERF-02 delivery p95 10.6 s (< 2 s); 0 errors, 0 missed deliveries,
      invariants clean. Re-measure on Linux (a workflow_dispatch CI job would do).
-   - Left: PERF-05 (extraction p90 timing report), A11Y-08 (VoiceOver/TalkBack by hand) and EMAIL-04
-     (SPF/DKIM/DMARC of the sending domain) are manual release checks; three 30-minute
-     `make simulate` seeds; `make test-all` three times; docs/TEST_REPORT.md; DEVICE_QA.md;
+   - PERF-05 green: 10 receipts read on the device in 2.5-3.8 s, p90 3.6 s (< 15 s).
+   - `make simulate` seed 1 (30 min): PASS, 32 checkpoints, 0 errors, 0 violations, 5 restarts,
+     75 stream reconnects.
+   - Left: A11Y-08 and EMAIL-04 are manual (waived to DEVICE_QA.md §7 and §9); seeds 2 and 3; `make test-all` three times; docs/TEST_REPORT.md; DEVICE_QA.md;
      milestone reviews and [done] marks.
 4. EMAIL_POSTAL_ADDRESS (email footer) still empty: `make deploy-setup ARGS='--postal-address "..."'`
    then `make redeploy`. Push and install need checking on real phones (DEVICE_QA.md).
@@ -389,6 +390,9 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 
 ## Waivers
 
+- A11Y-08, EMAIL-04: manual by definition (TEST_PLAN: a VoiceOver/TalkBack pass on real phones; a
+  DNS check at release). The owner runs DEVICE_QA.md §7 and §9 before a release and records the
+  result under "Device QA" in TEST_REPORT.md; nothing automated stands in for them.
 - GHSA-vfj7-8cjw-p6xm (CVE-2026-93687; `braces@3.0.3`, high; dependency audit, ADR-0025): no patched
   release exists (the advisory lists no fixed version). Reached only through lint tooling
   (`eslint-config-next > @next/eslint-plugin-next > fast-glob > micromatch > braces`), which expands

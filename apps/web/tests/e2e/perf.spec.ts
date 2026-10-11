@@ -1,9 +1,11 @@
+import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { createHouse, hydrated, seedShopRite, uniqueEmail } from "./fixtures/app";
 import { addLeftovers, apiSignIn, aptWith, closeApt } from "./fixtures/household";
+import { receiptFile, waitForReading } from "./fixtures/receipts";
 
 /**
- * PERF-04 and PERF-06 (TEST_PLAN 3.12). Chromium only: request sizes and CPU throttling come from
+ * PERF-04, PERF-05 and PERF-06 (TEST_PLAN 3.12). Chromium only: request sizes and CPU throttling come from
  * the DevTools protocol. Lighthouse budgets (PERF-03, PWA-12) need a quiet machine and stay behind
  * KT_LIGHTHOUSE.
  */
@@ -90,3 +92,38 @@ test("PERF-06 a kitchen of 200 items renders in under a second on a mid-range ph
   expect(kitchen, "kitchen with 200 items").toBeLessThan(1000);
   await closeApt(apt);
 });
+
+test("PERF-05 reading a receipt on the phone: p90 under 15 s from picking the photo to the review screen [FR-10] [FR-11]", async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  await apiSignIn(page, uniqueEmail("pranav"));
+  const house = await createHouse(page);
+  // Ten photo receipts (the C1 set's photos), each read on the device like E2E-01.
+  const ids = ["i01", "i02", "i03", "i04", "i07", "i08", "i09", "i11", "i13", "i14"];
+  const seconds: number[] = [];
+  for (const id of ids) {
+    await page.goto(`/bills/new?house=${house.id}`);
+    await hydrated(page);
+    await page.locator("[data-kt-capture-ready]").waitFor({ state: "attached" });
+    const started = Date.now();
+    await page
+      .locator('input[data-kt-input="library"]')
+      .setInputFiles(receiptFile(fixtureFile(id)));
+    expect(await waitForReading(page, 120_000), id).toBe("review");
+    seconds.push((Date.now() - started) / 1000);
+  }
+  const sorted = [...seconds].sort((a, b) => a - b);
+  const p90 = sorted[Math.ceil(sorted.length * 0.9) - 1]!;
+  console.log(
+    `PERF-05 reading times (s): ${seconds.map((s) => s.toFixed(1)).join(", ")}; p90 ${p90.toFixed(1)}`,
+  );
+  expect(p90).toBeLessThan(15);
+});
+
+function fixtureFile(id: string): string {
+  for (const ext of [".jpg", ".png", ".pdf"]) {
+    if (existsSync(receiptFile(`${id}${ext}`))) return `${id}${ext}`;
+  }
+  throw new Error(`no fixture file for ${id}`);
+}
