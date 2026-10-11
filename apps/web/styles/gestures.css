@@ -21,8 +21,20 @@
   .kt-place[data-gesture="menu_tracking"] {
     touch-action: none;
   }
-  .kt-tile[data-gap] {
+  /* The lifted item's own cell: a dashed violet ring where it was (render r2). */
+  .kt-tile[data-gap] > * {
     opacity: 0;
+  }
+  .kt-tile[data-gap]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    translate: -50% 0;
+    border-radius: 50%;
+    border: 3px dashed var(--accent-2);
   }
   .kt-tile[data-ghost] .kt-tile__icon {
     background: transparent !important;
@@ -149,6 +161,23 @@
     transform: scale(1.15) rotate(-4deg);
     box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow);
   }
+  .kt-lifted__name {
+    position: absolute;
+    top: 46px;
+    left: 50%;
+    translate: -50% 0;
+    rotate: -4deg;
+    padding: 2px 8px;
+    border: 2px solid var(--till);
+    background: var(--ill-white);
+    color: var(--till);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 2px 2px 0 var(--shadow);
+  }
   .kt-lifted__count {
     position: absolute;
     top: -12px;
@@ -200,9 +229,9 @@
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    border: 2px solid var(--ink);
-    background: var(--paper);
-    color: var(--ink);
+    border: 2px solid var(--till);
+    background: var(--ill-white);
+    color: var(--till);
     box-shadow: 3px 3px 0 var(--shadow);
     display: flex;
     align-items: center;
@@ -220,15 +249,23 @@
     background: var(--accent);
     color: var(--on-accent);
   }
+  .kt-bubble[data-hot] .kt-bubble__button::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--on-accent) 30%, transparent);
+    pointer-events: none;
+  }
   .kt-bubble__label {
     position: absolute;
     top: calc(100% + 6px);
     left: 50%;
     translate: -50% 0;
     padding: 2px 6px;
-    border: 2px solid var(--ink);
-    background: var(--paper);
-    color: var(--ink);
+    border: 2px solid var(--till);
+    background: var(--ill-white);
+    color: var(--till);
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 11px;

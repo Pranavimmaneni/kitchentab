@@ -1164,6 +1164,35 @@ The Kitchen becomes the default tab at `/`; the old Home (balance card and tabs 
 
 **Build slot:** the storage tag ships with Milestone 4 (review screen), the extractor fields with Milestone 5, and the rest of section 19 is Milestone 8. Install and notifications is Milestone 9 and Hardening is Milestone 10 (section 17 is the numbering of record).
 
+### 19.10 Kitchen gestures, haptics and the stocking animation
+
+The full spec is `docs/features/kitchen-gestures/SPEC.md` (designs in `docs/design/gestures/` and
+`docs/design/renders/gestures/`); where it and this PRD disagree, the spec wins for these features
+only. Decisions: ADR-0033. Tests: TEST_PLAN 3.13 (GEST, SYNC-G, HAPT, ANIM, A11Y-G1, VIS-G1).
+Milestone 11.
+
+| ID | Priority | Requirement | Acceptance criteria |
+| --- | --- | --- | --- |
+| FR-G01 | Must | Long-press (350 ms) on an item in Fridge or Pantry lifts it: scale 1.15, rotate −4°, hard offset shadow | Moving 8 px first scrolls instead; no text selection, callout or context menu |
+| FR-G02 | Must | Dragging a lifted item within its own section reorders it; neighbours animate aside; the order is saved per member | `PUT /houses/{id}/me/item-order/{location}` (set-state); only that member's devices change; stale ids are skipped on read |
+| FR-G03 | Must | Lifting opens the quick-action fan (3 bubbles); one continuous gesture: slide onto a bubble and release to choose, release elsewhere cancels | Fan flips below near the top, turns inward near the sides, stays on screen at 320 px |
+| FR-G04 | Must | Quick actions: the two places the item isn't in, plus Ask [owner] (not mine, not open), Used up (mine) or Help yourself (open, toast only) | Ask creates an `a_bit` request with Undo; Help yourself creates nothing |
+| FR-G05 | Must | Select mode: SELECT button; tap toggles items; the bottom bar shows the count and one button per destination; moving applies to every picked item | One request; a destination is hidden only when every picked item is already there; mixed picks skip and say so |
+| FR-G06 | Must | Drag to collect: resting 250 ms on another item adds it to a stack under the finger (at most 20); dropping the stack on a bin moves them all | Collecting freezes the layout; items used up mid-drag leave the stack with a note |
+| FR-G07 | Must | While anything is dragged a drop bar shows Freezer, Fridge and Pantry bins; the bin for where every dragged item already is shows HERE and refuses the drop | Refused drops give a toast and a blocked haptic |
+| FR-G08 | Must | Every move shows a toast with Undo for 5 s | Undo sends the inverse moves guarded by `expect_from`; changed items are skipped and counted |
+| FR-G09 | Should | Haptics through one `haptic(event)` helper (Android vibrate patterns, iPhone switch-tick workaround) with a Settings › Kitchen › Haptics switch | Default on; hidden where the device can't; 60 ms apart; never for other people's changes or cancels |
+| FR-G10 | Should | Stocking animation on Send: items fly into Freezer / Fridge / Pantry bins while the request is in flight | ≤ 520 ms for 8 items; Share opens when both are done; a failed send flies them home; reduced motion fades counts |
+| FR-G11 | Must | Every gesture has a no-gesture path | Item sheet Move to and Move earlier / later; select mode; right-click / Shift+F10 menu; keyboard only works |
+
+**API:** `POST /houses/{house_id}/items/move` (state transition with `Idempotency-Key`; 1–20 moves; a
+result per item: `moved`, `skipped_already_there`, `skipped_gone`, `skipped_changed`; one
+`items.moved` event; no push; 60 requests a minute per member) and `PUT
+/houses/{house_id}/me/item-order/{location}` (set-state; event `member.item_order.set` with aggregate
+`item_order`, acted on only by that member's devices). Any current member may move any item (where
+food sits is physical, not ownership). Data: `member_item_order` (PK house, member, location;
+`item_ids uuid[]`) and `inventory_items.moved_at`, `moved_by_member_id` ("Moved to pantry by Arjun").
+
 ## 20. Install as an app and push notifications
 
 KitchenTab must install to the home screen from any modern browser and deliver push notifications, with email and the in-app inbox as fallbacks. This is MVP and replaces every earlier "v1.1 push" note. Mockups: N1 Turn on notifications and N2 Settings › Notifications on the canvas.
@@ -1248,6 +1277,9 @@ KitchenTab must install to the home screen from any modern browser and deliver p
 - **Payload:** encrypted Web Push (RFC 8291, VAPID RFC 8292) via `pywebpush`; JSON `{title, body, url, tag, badge, event_id}` under 2 KB; TTL 24 h (asks 48 h); urgency `high` for asks and payments, `normal` otherwise.
 
 **Delivery pipeline:** domain event committed with its `house_events` row → `outbox` row in the same transaction → worker fans out to recipients using preferences, quiet hours and rate limits → one `notifications` row per recipient × channel with a unique `dedupe_key = event_id:user_id:channel` → send with retries (1 m, 5 m, 30 m, 2 h, then give up). Exactly-once to the user is impossible over push; dedupe keys and collapse tags make duplicates replace each other instead of stacking.
+
+**Haptics:** the kitchen gestures' haptics (section 19.10, FR-G09) are per device: a Settings ›
+Kitchen › Haptics switch stored on the device, hidden where the browser can't vibrate or tick.
 
 **Data and API:** `push_subscriptions` (id, user\_id, endpoint unique, p256dh, auth, user\_agent, device\_label, created\_at, last\_success\_at, failure\_count, stale\_at); `notification_prefs` (user\_id, type, channel, enabled); `users` + `quiet_start`, `quiet_end`, `private_lock_screen`, `prompt_snoozed_until`. Endpoints: `POST /push/subscriptions`, `DELETE /push/subscriptions/{id}`, `GET /push/subscriptions` (device list), `POST /push/test` (sends "It works!" to the caller's devices), `GET`/`PUT /me/notification-prefs`, `GET /me/inbox`, `POST /me/inbox/read`. Env: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
 
@@ -1360,6 +1392,7 @@ Ticks don't bump the bill header or item version, so a roommate ticking never ca
 | `house_events` (house\_id, seq, type, aggregate\_type, aggregate\_id, version, actor\_member\_id, client\_mutation\_id, data jsonb, created\_at) | PK (house\_id, seq); replay log, kept 7 days (nightly purge) |
 | `outbox` (id, house\_id, seq, kind, status, attempts, next\_attempt\_at, last\_error, created\_at) | Reliable hand-off to notification and email workers |
 | `idempotency_keys` (user\_id, key, request\_hash, status\_code, response\_body jsonb, created\_at) | PK (user\_id, key); same key with a different body → 422 `IDEMPOTENCY_MISMATCH`; kept 24 h |
+| `member_item_order` (house\_id, member\_id, location, item\_ids uuid[], updated\_at) | Kitchen gestures (19.10): each member's own order per section; set-state, last write wins (SYNC-G5). Moves are a state transition locking item rows in id order (SYNC-G1..G4, G6; TEST_PLAN 3.13) |
 | `version` int on houses, members, bills, items, inventory\_items, share\_requests, payments | Optimistic concurrency and event ordering |
 | `updated_by_member_id`, `updated_at` on allocations and inventory\_owners | Last-writer stamps for set-state cells |
 

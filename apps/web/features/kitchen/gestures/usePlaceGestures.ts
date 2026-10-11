@@ -148,7 +148,11 @@ export function usePlaceGestures(
         lifted.current = true;
         measure();
       }
-      if (ev.type === "down" && prev.phase === "IDLE") lifted.current = false;
+      if (ev.type === "down" && prev.phase === "IDLE") {
+        // A new press: only the click that ends a hold or a drag is ignored, never a later tap's.
+        lifted.current = false;
+        swallowUntil.current = 0;
+      }
       if (lifted.current && (next.phase === "IDLE" || next.phase === "MENU_STATIC")) {
         lifted.current = false;
         swallowUntil.current = now() + 400;
@@ -253,6 +257,8 @@ export function usePlaceGestures(
       }
     };
     const onKey = (e: globalThis.KeyboardEvent) => {
+      // A key press means the next click is the keyboard's (Enter, Space), never a hold's.
+      swallowUntil.current = 0;
       if (e.key === "Escape" && stateRef.current.phase !== "IDLE") dispatch({ type: "cancel" });
     };
     const onHidden = () => {

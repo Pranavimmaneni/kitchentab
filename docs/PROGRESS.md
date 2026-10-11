@@ -300,6 +300,29 @@ IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08
       1,000 streams / 200 houses, then the invariant checker. Written; needs a quiet machine to measure
 - [ ] P10 full verification (BUILD_ALL §4), P11 deploy-ready (§6), P12 final (§9)
 
+## Milestone 11: Kitchen gestures
+IDs: FR-G01..FR-G11, GEST-01..15, SYNC-G1..G6, HAPT-01..03, ANIM-01..03, A11Y-G1, VIS-G1
+
+Spec: `docs/features/kitchen-gestures/SPEC.md` (PRD §19.10, TEST_PLAN 3.13, ADR-0033). Branch
+`feat/kitchen-gestures`, not deployed. **Needs migration 0008** (`member_item_order`,
+`inventory_items.moved_at` / `moved_by_member_id`): the owner runs `make migrate-prod` from this branch
+before it merges.
+
+- [x] Gesture engine: pure reducer + geometry + constants in `apps/web/features/kitchen/gestures/`
+      (GEST-01..05, SYNC-G2, SYNC-G6 at reducer level); hit zones, select cap and corner fans (ADR-0033)
+- [x] API: `POST /houses/{id}/items/move` and `PUT /houses/{id}/me/item-order/{location}`, policy
+      (any current member moves; your order is yours), one house event each, 60 move requests a minute,
+      ties in the inventory order settled by id (GEST-14, GEST-15, SYNC-G1..G6 at 3 iterations locally)
+- [x] UI: pointer hook, quick-action fan, drop bar, select mode, drag to reorder and to collect, toasts
+      with Undo, item sheet Move to / Move earlier / later (FR-G01..G08, FR-G11)
+- [x] Haptics `apps/web/lib/haptics.ts` + Settings › Kitchen › Haptics (HAPT-01..03)
+- [x] Stocking animation on Review & send (ANIM-01 timing; Share waits for both; failure flies home)
+- [ ] Playwright GEST-06..13, ANIM-02, ANIM-03, A11Y-G1 green on WebKit iPhone and Chromium Pixel
+- [ ] VIS-G1 screenshots compared with `docs/design/renders/gestures/` (token-level colors excepted)
+- [ ] SYNC-G1..G6 at 200 iterations in both PROFILEs (`make test-sync`)
+- [ ] `make lint test test-sync e2e e2e-multi` twice in a row; fresh-eyes review findings fixed
+- [ ] Real phones: long-press feel and haptics on an iPhone and an Android (DEVICE_QA.md)
+
 ## P11: Deploy-ready (BUILD_ALL §6)
 
 - [x] `vercel.json` (services web + api, `/api/blob-upload` → web, `/api/(.*)` → api, daily cron),
@@ -389,6 +412,7 @@ Decisions taken where the PRD was silent or contradictory. Each has an ADR in `d
 54. `X-Client-Version` is the integer API compatibility level (`1`), compared numerically with MIN_CLIENT_VERSION. ADR-0026.
 55. The first-bill notifications pre-prompt (N1) waits until the payer leaves E · Share: a write moment is decided on the next idle check and Share is marked busy (`data-kt-busy`), so the sheet never lands on the Share button (PUSH-01, E2E-01; PRD §20.2 rule 1 clarified).
 56. A CHECK? (flagged) line is cleared once the payer edits its name, quantity or price: they checked it. Tapping its storage tag leaves the stamp (EXTRACT-05, FR-12).
+57. Kitchen gestures, where the spec is silent (ADR-0033): `expect_from` guards Undo only; a first move leaves it out so two people moving one item at once both succeed and the later wins (SYNC-G1). The order event goes to the whole house (the sequence stays gapless) but carries only the member and section; other members' clients ignore it. Select mode picks at most 20 (one request, one event). Review & send keeps the people cards and adds the food-and-bins card the animation flies across. "Icons fade out 60 ms after landing" is read as a 60 ms fade from landing, so eight items finish at 480 ms.
 
 ## Waivers
 

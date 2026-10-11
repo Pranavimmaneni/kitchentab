@@ -89,7 +89,11 @@ function Lifted({
       >
         <FoodIcon iconKey={item.icon_key} place={item.place} />
       </span>
-      {count && count > 1 ? <span className="kt-lifted__count">{count}</span> : null}
+      {count && count > 1 ? (
+        <span className="kt-lifted__count">{count}</span>
+      ) : (
+        <span className="kt-lifted__name">{item.short_name || item.name}</span>
+      )}
     </div>
   );
 }

@@ -32,6 +32,22 @@ select-mode limit open.
   that bubbles never overlap over every position a tile can occupy.
 - **Personal order with a filter on.** Only the visible items can be reordered; the hidden ones keep
   their positions in the saved list (`mergeOrder`).
+- **The cone includes the side bubbles.** The cone test is 120° plus each bubble's own angular
+  half-width (~21° at 84 px), so a finger heading straight for a side bubble, which sits exactly on
+  the cone's edge, never turns into a drag.
+- **First-column tiles turn the fan inward too.** The 30° inward turn applies within 60 px of a side,
+  as specified; beyond that, the fan keeps turning inward in 15° steps while any bubble clips.
+- **`expect_from` guards Undo only.** SYNC-G1 says two people moving one item at once both succeed
+  and the later wins, so a first move sends no `expect_from`; Undo sends the inverse with
+  `expect_from` = where the first move put it, and a mismatch is `skipped_changed` (SYNC-G4).
+- **Who sees the order event.** `house_events` must stay gapless for every device, so
+  `member.item_order.set` goes to the whole house with aggregate `item_order` and only the member and
+  section in its data. Other members' clients ignore it; the member's own devices refetch.
+- **Stable tiles.** The inventory read settles ties (items stocked together) by id, so a move or any
+  unrelated write never reshuffles the rest of the fridge.
+- **The click after a hold.** A tile's native click that ends a hold or a drag is ignored for 400 ms
+  (browsers send it right after pointerup, or not at all); any key press cancels that, so keyboard
+  Enter and Space always work.
 
 ## Consequences
 
