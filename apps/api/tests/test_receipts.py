@@ -222,7 +222,10 @@ async def test_EXTRACT_01_storage_contract(storage: Storage, storage_settings: S
     data = b"\xff\xd8\xff\xe0" + bytes(range(256)) * 4
     ticket = await storage.upload_ticket(key, "image/jpeg", len(data))
     assert ticket.upload_url
-    async with httpx.AsyncClient() as c:
+    # A fresh connection per request: storage may answer a refused request before reading its body
+    # and close, and a keep-alive connection reused after that drops the next request ("Server
+    # disconnected without sending a response", seen in CI). Browsers make these calls in the app.
+    async with httpx.AsyncClient(limits=httpx.Limits(max_keepalive_connections=0)) as c:
         # a different size than authorized is refused by storage itself
         assert (await c.put(ticket.upload_url, content=data + b"x", headers=ticket.headers)).status_code >= 400
         assert (await c.put(ticket.upload_url, content=data, headers=ticket.headers)).status_code == 200
