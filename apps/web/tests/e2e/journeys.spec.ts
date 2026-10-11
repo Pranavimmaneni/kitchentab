@@ -175,3 +175,105 @@ test("E2E-04 Kabir filters MINE, asks for the locked chicken, Pranav's phone get
   await expect(kabir.getByRole("switch", { name: "I'm open to sharing" })).toBeVisible();
   await closeApt(apt);
 });
+
+test("E2E-05 food ages into USE SOON on the Kitchen, the round-up reaches the owner's phone, Used up takes it out and Undo brings it back [FR-64] [FR-77] [FR-78]", async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(150_000);
+  const apt = await aptWith(browser, baseURL, page);
+  // Bought 4 days ago: spinach (5-day shelf life) is at 80%, the chicken (2 days) past 100%. The
+  // shared server clock stays put; KITCH-15 covers the 9:00 schedule with a controlled clock.
+  await seedOpenShopRite(page, apt, { daysAgo: 4 });
+  const device = `pranav-soon-${Date.now().toString(36)}`;
+  await pushDevice(page, device);
+  await call(page, "PUT", "/me/notification-prefs", { quiet_hours: false });
+
+  await open(page, "/");
+  const fridge = page.getByRole("link", { name: /^Open the fridge: \d+ items, 2 to use soon$/ });
+  await expect(fridge.getByText("USE SOON · 2")).toBeVisible();
+  await expect(fridge.getByText("Baby spinach")).toBeVisible();
+
+  // The daily round-up goes out (now instead of 9:00) and lands on Pranav's phone.
+  await page.request.post(`${API_ORIGIN}/__test/use-soon?now=true`);
+  await expect(async () => {
+    await page.request.post(`${API_ORIGIN}/__test/drain`);
+    const titles = (await pushesFor(page, device)).map((r) => r.payload.title);
+    expect(titles).toContain("2 things need eating soon");
+  }).toPass({ timeout: 30_000, intervals: [500, 1000, 2000] });
+
+  // Used up takes the spinach out (the Kitchen counts follow); Undo brings it back.
+  await fridge.click();
+  await page.waitForURL("**/kitchen/fridge");
+  await tile(page, "Baby spinach").click();
+  await page
+    .getByRole("dialog", { name: "Baby spinach" })
+    .getByRole("button", { name: "Used up" })
+    .click();
+  await expect(tile(page, "Baby spinach")).toHaveCount(0);
+  await expect(page.getByRole("status").getByText("Baby spinach marked used up")).toBeVisible();
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(tile(page, "Baby spinach")).toBeVisible();
+  await open(page, "/");
+  await expect(
+    page.getByRole("link", { name: /^Open the fridge: \d+ items, 2 to use soon$/ }),
+  ).toBeVisible();
+  await closeApt(apt);
+});
+
+type Pair = { display_name: string; net_cents: number; carried_cents: number };
+
+async function pairs(page: Page, houseId: string): Promise<Record<string, Pair>> {
+  const view = await call<{ pairs: Pair[] }>(page, "GET", `/houses/${houseId}/balances`);
+  return Object.fromEntries(view.pairs.map((p) => [p.display_name, p]));
+}
+
+test("E2E-06 the payer settles with money still owed, it carries into house balances, reopens within 30 days and settles again without counting anything twice [FR-39] [FR-40] [FR-51]", async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(150_000);
+  const apt = await aptWith(browser, baseURL, page, ["arjun"]);
+  const { billId } = await seedOpenShopRite(page, apt);
+  const open_ = await pairs(page, apt.id);
+  expect(open_.Arjun!.net_cents).toBe(3391);
+  expect(open_.Arjun!.carried_cents).toBe(0);
+
+  async function stampSettled(): Promise<void> {
+    await page.getByRole("button", { name: "Stamp it settled" }).click();
+    const dialog = page.getByRole("dialog", { name: "Stamp it settled?" });
+    await expect(dialog.getByText("Arjun still owes $33.91")).toBeVisible();
+    await expect(dialog.getByText("This moves to house balances.")).toBeVisible();
+    await dialog.getByRole("button", { name: "Stamp it" }).click();
+    await expect(page.getByText(/^SETTLED \d\d\/\d\d$/)).toBeVisible();
+  }
+
+  await open(page, `/bills/${billId}`);
+  await stampSettled();
+  // The $33.91 is now a carried house balance, not an open-tab amount.
+  const settled = await pairs(page, apt.id);
+  expect(settled.Arjun!.net_cents).toBe(3391);
+  expect(settled.Arjun!.carried_cents).toBe(3391);
+  await open(page, "/balances");
+  await page.getByRole("button", { name: "Arjun owes you $33.91" }).click();
+  const carried = page.locator("[data-carried]");
+  await expect(carried).toContainText("Carried from settled tabs and chip-ins");
+  await expect(carried).toContainText("$33.91");
+
+  // Reopen (within 30 days): back to an open tab, the carryover is undone.
+  await open(page, `/bills/${billId}`);
+  await page.getByRole("button", { name: "Reopen" }).click();
+  await expect(page.getByText("STILL OPEN · DAY 1")).toBeVisible();
+  const reopened = await pairs(page, apt.id);
+  expect(reopened.Arjun!.net_cents).toBe(3391);
+  expect(reopened.Arjun!.carried_cents).toBe(0);
+
+  // Settle again: carried once, not twice.
+  await stampSettled();
+  const again = await pairs(page, apt.id);
+  expect(again.Arjun!.net_cents).toBe(3391);
+  expect(again.Arjun!.carried_cents).toBe(3391);
+  await closeApt(apt);
+});

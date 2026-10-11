@@ -100,10 +100,11 @@ async def drain(request: Request) -> dict[str, int]:
 
 
 @router.post("/use-soon")
-async def use_soon(request: Request) -> dict[str, int]:
+async def use_soon(request: Request, now: bool = False) -> dict[str, int]:
+    """The daily use-soon round-up; `?now=true` sends it at once instead of at 9:00 house time."""
     from app.services.notify import use_soon_roundup
 
-    return {"created": await use_soon_roundup(request.app.state.notify)}
+    return {"created": await use_soon_roundup(request.app.state.notify, deliver_now=now)}
 
 
 @router.delete("/rate-limits", status_code=204)

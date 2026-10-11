@@ -1058,18 +1058,19 @@ async def push_test(deps: NotifyDeps, user_id: uuid.UUID) -> uuid.UUID | None:
     return ids[0] if ids else None
 
 
-async def use_soon_roundup(deps: NotifyDeps, *, at: time = time(9, 0)) -> int:
+async def use_soon_roundup(deps: NotifyDeps, *, at: time = time(9, 0), deliver_now: bool = False) -> int:
     """KITCH-15: one round-up per owner at 9:00 house time, once per item state change (a "Still
     good" snooze starts a new state). Scheduled by the daily cron for the next 9:00 in each house's
     time zone; every row (in-app too) waits until then and is re-checked when it goes out. Each house
-    runs in its own savepoint so one bad house can't stop the others."""
+    runs in its own savepoint so one bad house can't stop the others. `deliver_now` (test route
+    only) sends at once instead of at 9:00, so browser journeys needn't move the shared clock."""
     now = deps.clock.now()
     count = 0
     async with deps.sessions() as db, db.begin():
         for house in (await db.scalars(select(House))).all():
             try:
                 async with db.begin_nested():
-                    count += await _soon_for_house(db, house, now, at)
+                    count += await _soon_for_house(db, house, now, at, deliver_now=deliver_now)
             except Exception:
                 log.exception("use-soon round-up failed for one house", extra={"house": str(house.id)})
     return count
@@ -1079,13 +1080,13 @@ def soon_key(item: InventoryItem, state: str) -> str:
     return f"{item.id}:{state}:{item.snoozed_until.isoformat() if item.snoozed_until else ''}"
 
 
-async def _soon_for_house(db: AsyncSession, house: House, now: datetime, at: time) -> int:
+async def _soon_for_house(db: AsyncSession, house: House, now: datetime, at: time, *, deliver_now: bool = False) -> int:
     from app.services.inventory import freshness
 
     tz = ZoneInfo(house.timezone)
     local = now.astimezone(tz)
     target_day = local.date() if local.time() < at else local.date() + timedelta(days=1)
-    when = datetime.combine(target_day, at, tzinfo=tz).astimezone(UTC)
+    when = now if deliver_now else datetime.combine(target_day, at, tzinfo=tz).astimezone(UTC)
     items = (
         await db.scalars(
             select(InventoryItem).where(InventoryItem.house_id == house.id, InventoryItem.status == "in_stock")
