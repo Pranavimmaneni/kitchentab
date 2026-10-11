@@ -544,6 +544,10 @@ async def delete_draft(
 # ---- items ----------------------------------------------------------------------------------------
 
 
+# What the reader could have got wrong: editing any of these is the payer checking a CHECK? row (FR-12).
+CHECKED_FIELDS = frozenset({"name", "quantity", "unit_price_cents", "line_total_cents", "discount_cents"})
+
+
 def _item_fields(body: dict[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     if "name" in body:
@@ -654,6 +658,8 @@ async def update_item(
         _version_check(item, expected, item_view(item, allocations))
         for key, value in fields.items():
             setattr(item, key, value)
+        if CHECKED_FIELDS & set(fields):
+            item.flagged = False  # the payer looked at what was read and fixed it: no more CHECK?
         item.version += 1
         item.updated_at = now
         await w.session.flush()

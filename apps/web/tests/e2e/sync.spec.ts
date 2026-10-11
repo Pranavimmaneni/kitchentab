@@ -258,7 +258,7 @@ test.describe("screen 5 live sync", () => {
     });
   });
 
-  test("OFFLINE-01 offline: banner, every write on screen 5 disabled with 'Needs a connection', nothing queued; back online it catches up [OFFLINE-02] [OFFLINE-04] [FR-36]", async ({
+  test("OFFLINE-01 E2E-08 offline mid-session: banner, every write on screen 5 disabled with 'Needs a connection', nothing queued; back online it catches up [OFFLINE-02] [OFFLINE-04] [FR-36]", async ({
     roommates,
   }) => {
     test.setTimeout(120_000);

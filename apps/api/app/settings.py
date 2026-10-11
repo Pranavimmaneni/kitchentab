@@ -67,6 +67,8 @@ class Settings(BaseSettings):
     database_url: str
     database_direct_url: str | None = None  # Neon direct URL, migrations only
     db_pool_size: int = Field(default=10, ge=1)  # per instance, plus 2x overflow (PROFILE=local only)
+    # PROFILE=vercel: connections kept per API instance (ADR-0032); 0 = a new one per session.
+    db_serverless_pool_size: int = Field(default=10, ge=0, le=50)
     vercel_url: str | None = None  # set by Vercel on every deployment (preview origin fallback)
     redis_url: str | None = None
 

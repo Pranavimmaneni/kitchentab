@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { BalanceTicker } from "@/components/BalanceTicker";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
@@ -41,6 +41,15 @@ function Tabs({ house, houses, me, select }: HouseContext) {
   const tabs = useTabs(house.id);
   const balances = useBalances(house.id);
   const [allHistory, setAllHistory] = useState(false);
+  // Pages of history asked for. A live update's refetch cancels an in-flight "Show 20 more" and
+  // reloads only the pages already there, so keep fetching until the asked-for pages are in (VIS-03).
+  const [wantPages, setWantPages] = useState(1);
+  const pagesLoaded = tabs.data?.pages.length ?? 0;
+  const { hasNextPage, isFetching, fetchNextPage } = tabs;
+  useEffect(() => {
+    if (pagesLoaded > 0 && pagesLoaded < wantPages && hasNextPage && !isFetching)
+      void fetchNextPage();
+  }, [pagesLoaded, wantPages, hasNextPage, isFetching, fetchNextPage]);
   const [query, setQuery] = useState("");
   const serverNow = useServerNow(60_000);
   const now = new Date(serverNow);
@@ -141,8 +150,8 @@ function Tabs({ house, houses, me, select }: HouseContext) {
                 <PillButton
                   variant="dashed"
                   fullWidth
-                  loading={tabs.isFetchingNextPage}
-                  onClick={() => void tabs.fetchNextPage()}
+                  loading={tabs.isFetchingNextPage || pagesLoaded < wantPages}
+                  onClick={() => setWantPages(pagesLoaded + 1)}
                 >
                   {strings.tabs.showMore}
                 </PillButton>

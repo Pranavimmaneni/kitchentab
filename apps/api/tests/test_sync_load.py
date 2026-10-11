@@ -1,10 +1,15 @@
-"""SYNC-24 (PRD §21.7): 20 people tick across one bill as fast as possible for 30 s.
+"""SYNC-24 (PRD §21.7, ADR-0031): 20 people tick across one bill for 30 s, twice.
+
+Flat out (no pause between taps): no lost updates, Σ shares = total after every commit, every
+device converges, and the house absorbs at least FLOOR_TICKS_PER_S. At human pace (each person taps
+about once a second and the client holds a tap 250 ms before sending, lib/split/coalesce.ts): the
+same checks and p95 write < 300 ms. Ticks are serialized on the house lock (ADR-0023), so with 20
+clients that never pause the mean wait alone is 20 x the lock time; p95 is a latency promise for
+how people actually tap, the flat-out run is the correctness and capacity check.
 
 The API runs as 4 worker processes (tests/harness/multiserver.py), like production, so client
 latency reflects the server rather than a test process shared with 20 clients.
-
-No lost updates, Σ shares = total after every commit, p95 write < 300 ms, every device converges.
-`SYNC_24_SECONDS` sets the duration (3 s in `make test`, 30 s in `make test-sync`).
+`SYNC_24_SECONDS` sets each run's duration (3 s in `make test`, 30 s in `make test-sync`).
 """
 
 from __future__ import annotations
@@ -32,6 +37,10 @@ from tests.test_sync_api import tick
 
 ApiFactory = Callable[[], Api]
 NAMES = [f"Mate{n:02d}" for n in range(1, 20)]  # with the admin: 20 people, the house maximum
+# 20 people at human pace ask for about 15-20 ticks a second; flat out, the house must absorb that.
+FLOOR_TICKS_PER_S = 20
+HUMAN_THINK_S = (0.5, 1.5)  # between one person's taps
+COALESCE_S = 0.25  # the client sends a tap 250 ms after it (COALESCE_MS)
 
 
 @pytest.mark.sync
@@ -40,11 +49,30 @@ NAMES = [f"Mate{n:02d}" for n in range(1, 20)]  # with the admin: 20 people, the
 async def test_SYNC_24_twenty_people_tick_one_bill_for_thirty_seconds(
     sessions: async_sessionmaker[AsyncSession],
 ) -> None:
+    """Flat out: correctness under maximum contention, and a capacity floor."""
     async with multi_process_server(workers=int(os.environ.get("SYNC_24_WORKERS", "4"))) as server:
-        await _twenty_people(server.api, sessions)
+        latencies, duration = await _twenty_people(server.api, sessions, human=False)
+    rate = len(latencies) / duration
+    assert rate >= FLOOR_TICKS_PER_S, f"{rate:.1f} ticks/s flat out, floor {FLOOR_TICKS_PER_S}"
 
 
-async def _twenty_people(api: ApiFactory, sessions: async_sessionmaker[AsyncSession]) -> None:
+@pytest.mark.sync
+@tid("SYNC-24")
+@fr("FR-32", "FR-62")
+async def test_SYNC_24_twenty_people_at_human_pace_p95_under_300_ms(
+    sessions: async_sessionmaker[AsyncSession],
+) -> None:
+    """Human pace: the same correctness checks, and p95 write < 300 ms."""
+    async with multi_process_server(workers=int(os.environ.get("SYNC_24_WORKERS", "4"))) as server:
+        latencies, _ = await _twenty_people(server.api, sessions, human=True)
+    latencies.sort()
+    p95 = latencies[int(len(latencies) * 0.95) - 1]
+    assert p95 < 0.300, f"p95 write {p95 * 1000:.0f} ms over {len(latencies)} writes"
+
+
+async def _twenty_people(
+    api: ApiFactory, sessions: async_sessionmaker[AsyncSession], *, human: bool
+) -> tuple[list[float], float]:
     admin = api()
     await admin.sign_in(f"pranav+{uuid7()}@example.com")
     w = World(admin, await admin.create_house(roommates=["Arjun", "Meera", "Kabir", *NAMES[3:]]))
@@ -71,6 +99,10 @@ async def _twenty_people(api: ApiFactory, sessions: async_sessionmaker[AsyncSess
         rng = random.Random(seed)
         who = people[name]
         while time.monotonic() < deadline:
+            if human:
+                await asyncio.sleep(rng.uniform(*HUMAN_THINK_S) + COALESCE_S)
+                if time.monotonic() >= deadline:
+                    break
             item = rng.choice(ids)
             on = rng.random() < 0.6
             started = time.perf_counter()
@@ -122,6 +154,4 @@ async def _twenty_people(api: ApiFactory, sessions: async_sessionmaker[AsyncSess
     }
     assert len(shapes) == 1
 
-    latencies.sort()
-    p95 = latencies[int(len(latencies) * 0.95) - 1]
-    assert p95 < 0.300, f"p95 write {p95 * 1000:.0f} ms over {len(latencies)} writes"
+    return latencies, duration

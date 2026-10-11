@@ -80,11 +80,14 @@ export function registerServiceWorker(): Promise<ServiceWorkerRegistration | nul
 const EDITABLE =
   'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]), textarea, select, [contenteditable="true"]';
 
-/** A sheet, dialog or form field is open, or a write is on its way: don't interrupt (PWA-08). */
+/**
+ * A sheet, dialog or form field is open, a write is on its way, or the screen is mid-task
+ * (`data-kt-busy`, e.g. E · Share right after sending): don't interrupt (PWA-08, PUSH-01).
+ */
 export function busyNow(): boolean {
   if (writesInFlight() > 0) return true;
   if (typeof document === "undefined") return false;
-  if (document.querySelector('[aria-modal="true"], .kt-sheet')) return true;
+  if (document.querySelector('[aria-modal="true"], .kt-sheet, [data-kt-busy]')) return true;
   const active = document.activeElement;
   return Boolean(active && active !== document.body && active.matches(EDITABLE));
 }

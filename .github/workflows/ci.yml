@@ -29,7 +29,8 @@ jobs:
       - run: make lint
 
   test:
-    # Postgres and Redis come from Testcontainers (Docker is available on the runner).
+    # Postgres and Redis come from Testcontainers (Docker is available on the runner). Receipt
+    # storage is the compose MinIO, as on a laptop (tests/test_receipts.py, the daily backup).
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +41,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "${{ env.NODE_VERSION }}", cache: pnpm }
       - run: make install
+      - run: cp .env.example .env && docker compose -f infra/docker-compose.yml up -d --wait minio
       - run: make test
 
   sync:
