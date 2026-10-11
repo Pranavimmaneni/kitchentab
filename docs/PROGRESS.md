@@ -4,7 +4,14 @@ Checkpoint for every session. Read `CLAUDE.md`, this file and `docs/BUILD_ALL.md
 continue from the first unchecked item. A box is checked only when its tests pass, not when code
 is written. Branch: `build/all`. No git remote is configured (nothing is pushed).
 
-**Status (2026-10-10, end of session 2): LIVE at https://kitchentab.vercel.app** (Vercel team `ed-i-th`,
+**Status (2026-10-11): LIVE at https://kitchentab.vercel.app, main = production, CI green.** Deployed
+2026-10-11 with the owner's go-ahead: PR #3 (CI baseline + bug fixes), #4 (serverless connection pool,
+ADR-0032), #5 (E2E-01..E2E-10 journeys, perf checks, CHECK? fix), #1 (custom split + item price; production
+migrated to 0007 first with `make migrate-prod`), #2 (Settings). After each deploy: /api/v1/health/ready ok
+(~0.12-0.2 s), no errors in the production logs. Simulations seeds 1-3 (30 min each): PASS. Release
+traceability (`check_traceability.py --all`): OK (A11Y-08, EMAIL-04 waived to DEVICE_QA).
+
+Previous status (2026-10-10, end of session 2): LIVE at https://kitchentab.vercel.app (Vercel team `ed-i-th`,
 project `kitchentab`, Neon Postgres, private Blob store, sign-in codes from a dedicated KitchenTab Gmail via
 SMTP). The household is using it. Code: https://github.com/Pranavimmaneni/kitchentab (private; the owner
 invites collaborators). The Vercel project is connected to it: every push to `main` deploys production;
@@ -30,7 +37,7 @@ A. Requests screen: LIVE 2026-10-11 (PR #1; production migrated to 0007 first).
      (GET /requests/{id}/answer-preview) shows the asker's part and every share delta before Say yes;
      Undo removes it. Tests: MONEY-11 (fixtures + Python==reference property + TS), ASK-15..ASK-18
      (API, unit, Playwright on WebKit and Chromium).
-B. Settings: DONE (PR #2; no migration).
+B. Settings: LIVE 2026-10-11 (PR #2; no migration).
    - FR-83: Save name used to change only the account; roommates kept seeing the old name. Now PATCH /me
      renames your member in every house (policy member.rename_self, one house write + member_renamed
      event per house, cut to 24 characters); a house where the name is taken keeps the old one and
@@ -39,7 +46,7 @@ B. Settings: DONE (PR #2; no migration).
      (iPhone/Android/computer steps, this device's first, Install button when offered, hidden in the
      home screen app), appearance, kitchen default, sign-in methods, payment handles, YOUR HOUSE
      (House settings link + Leave house), data and account (SET-02, SET-03).
-Ship both behind the usual gate; ask the user before redeploying production.
+Both shipped. Still ask the user before every production change.
 
 Open, in order (overnight queue):
 1. GitHub CI (first runs 2026-10-10) was red on main. Fixed on branch fix/ci-baseline: ruff EXE001 (four
@@ -84,9 +91,9 @@ Open, in order (overnight queue):
      114 req/s (< 300 ms), PERF-02 delivery p95 10.6 s (< 2 s); 0 errors, 0 missed deliveries,
      invariants clean. Re-measure on Linux (a workflow_dispatch CI job would do).
    - PERF-05 green: 10 receipts read on the device in 2.5-3.8 s, p90 3.6 s (< 15 s).
-   - `make simulate` seed 1 (30 min): PASS, 32 checkpoints, 0 errors, 0 violations, 5 restarts,
-     75 stream reconnects.
-   - Left: A11Y-08 and EMAIL-04 are manual (waived to DEVICE_QA.md §7 and §9); seeds 2 and 3; `make test-all` three times; docs/TEST_REPORT.md; DEVICE_QA.md;
+   - `make simulate` seeds 1, 2, 3 (30 min each): all PASS, 32 checkpoints each, 0 errors, 0 violations,
+     5 restarts each, 75 / 92 / 87 stream reconnects.
+   - Left: A11Y-08 and EMAIL-04 are manual (waived to DEVICE_QA.md §7 and §9); `make test-all` three times; docs/TEST_REPORT.md; DEVICE_QA.md;
      milestone reviews and [done] marks.
 4. EMAIL_POSTAL_ADDRESS (email footer) still empty: `make deploy-setup ARGS='--postal-address "..."'`
    then `make redeploy`. Push and install need checking on real phones (DEVICE_QA.md).
