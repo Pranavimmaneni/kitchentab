@@ -200,13 +200,16 @@ export function StockingCard({
       <ul className="kt-stocking__rows" aria-label={strings.send.stockingLabel}>
         {food.map((item) => (
           <li key={item.id} className="kt-stock-row" data-stock-row={item.storage}>
-            <span className="kt-stock-row__fly" data-fly-x="">
-              <span
-                className="kt-stock-row__icon"
-                data-fly-y=""
-                style={{ background: foodPastel(item.icon_key, item.storage as Place) }}
-              >
-                <FoodIcon iconKey={item.icon_key} place={item.storage as Place} />
+            {/* The dashed slot stays behind when the icon flies off (sort-after). */}
+            <span className="kt-stock-row__slot">
+              <span className="kt-stock-row__fly" data-fly-x="">
+                <span
+                  className="kt-stock-row__icon"
+                  data-fly-y=""
+                  style={{ background: foodPastel(item.icon_key, item.storage as Place) }}
+                >
+                  <FoodIcon iconKey={item.icon_key} place={item.storage as Place} />
+                </span>
               </span>
             </span>
             <span className="kt-stock-row__name">{item.name}</span>

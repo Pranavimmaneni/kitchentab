@@ -11,7 +11,8 @@ export type AppHeaderProps = {
   stepLabel?: string;
   /** Line under the title, e.g. "10/02 · YOU PAID · $95.18". */
   subtitle?: string;
-  back?: { href: string; label?: string };
+  /** `onClick` replaces the navigation (e.g. Back leaves select mode first). */
+  back?: { href: string; label?: string; onClick?: () => void };
   /** Shows a 44 px ⋯ button. */
   onMore?: () => void;
   moreLabel?: string;
@@ -51,6 +52,14 @@ export function AppHeader({
         {back ? (
           <Link
             href={back.href}
+            onClick={
+              back.onClick
+                ? (event) => {
+                    event.preventDefault();
+                    back.onClick!();
+                  }
+                : undefined
+            }
             aria-label={back.label ?? strings.header.back}
             className="kt-app-header__back"
           >

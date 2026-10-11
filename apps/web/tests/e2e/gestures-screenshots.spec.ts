@@ -12,12 +12,12 @@ import { bin, bubble, centreOf, finger, hold, iconOf, phase } from "./fixtures/g
  */
 const OUT = fileURLToPath(new URL("../../test-results/screens/", import.meta.url));
 
-async function shoot(page: Page, state: string): Promise<void> {
+async function shoot(page: Page, state: string, fullPage = false): Promise<void> {
   for (const theme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme: theme });
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(250);
-    await page.screenshot({ path: `${OUT}gestures-${state}-${theme}.png` });
+    await page.screenshot({ path: `${OUT}gestures-${state}-${theme}.png`, fullPage });
   }
   await page.emulateMedia({ colorScheme: "light" });
 }
@@ -82,7 +82,7 @@ test("VIS-G1 reorder, quick actions, select mode, collecting and stocked at 390 
   await page.waitForTimeout(400);
   await expect(page.locator(".kt-lifted__count")).toHaveText("2");
   await f.move(await centreOf(bin(page, "pantry")), 10);
-  await expect(bin(page, "pantry")).toHaveAttribute("data-over", "");
+  await expect(bin(page, "pantry")).toHaveAttribute("data-over");
   await shoot(page, "c3");
   await page.keyboard.press("Escape");
   await f.up();
@@ -120,11 +120,11 @@ test("VIS-G1 reorder, quick actions, select mode, collecting and stocked at 390 
   });
   await open(page, `/bills/${bill.id}/send`);
   await page.locator(".kt-stocking").scrollIntoViewIfNeeded();
-  await shoot(page, "sort-before");
+  await shoot(page, "sort-before", true);
   await page.getByRole("button", { name: /Send it/ }).click();
   await expect(page.locator(".kt-stock-bin__count")).toHaveCount(3);
   await page.waitForTimeout(300);
-  await shoot(page, "sort-after");
+  await shoot(page, "sort-after", true);
   release();
   await page.waitForURL(`**/bills/${bill.id}/share`);
 

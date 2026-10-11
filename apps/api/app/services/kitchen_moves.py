@@ -96,6 +96,8 @@ async def move_items(
                 {
                     "item_id": str(m.item_id),
                     "result": result,
+                    # Undo sends a moved item back here (the client's copy may be stale).
+                    "from": moved[-1]["from"] if result == "moved" else None,
                     "place": item.place if item is not None else None,
                     "version": item.version if item is not None else None,
                 }

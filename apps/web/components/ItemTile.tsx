@@ -25,6 +25,10 @@ export type TileGestures = {
   gapId: string | null;
   /** Collected items' cells show dashed ghosts. */
   ghostIds: ReadonlySet<string>;
+  /** Items in hand: their rows stay rendered in a virtualized area until the gesture ends. */
+  pinned: ReadonlySet<string>;
+  /** The item being pressed (the charge ring shows on it). */
+  pressedId: string | null;
 };
 
 export type ItemTileProps = {
@@ -36,6 +40,8 @@ export type ItemTileProps = {
   pop?: boolean;
   onOpen: (item: InventoryItem) => void;
   gestures?: TileGestures;
+  /** Position in the area's full list: the gesture engine's slot (data-index). */
+  index?: number;
 };
 
 /**
@@ -50,12 +56,16 @@ export function ItemTile({
   pop = false,
   onOpen,
   gestures,
+  index,
 }: ItemTileProps) {
   const open = showsOpenBadge(item);
   const shift = gestures?.shiftOf(item.id) ?? null;
   const selectMode = gestures?.selectMode ?? false;
   const picked = gestures?.picked.has(item.id) ?? false;
-  const label = tileLabel(item, meMemberId);
+  // On the gesture screens items also say where they are (SPEC §8): moves change it.
+  const label = gestures
+    ? `${tileLabel(item, meMemberId)}, ${strings.gestures.inPlace(strings.gestures.placeLower[item.place])}`
+    : tileLabel(item, meMemberId);
   return (
     <button
       type="button"
@@ -76,6 +86,8 @@ export function ItemTile({
       data-shifted={shift ? "" : undefined}
       style={shift ? { transform: `translate3d(${shift.x}px, ${shift.y}px, 0)` } : undefined}
       data-item-id={item.id}
+      data-index={index}
+      data-pressed={gestures?.pressedId === item.id || undefined}
       onClick={() => onOpen(item)}
       {...gestures?.handlers(item.id)}
     >
@@ -126,10 +138,24 @@ export function AreaGrid({
   const virtual = items.length > VIRTUALIZE_AT;
   const rows = chunk(items, columns);
   const { start, end } = useWindowRows(ref, rows.length, virtual);
+  // The rows near the viewport, plus any row holding an item in hand: a finger keeps pressing a
+  // tile that must not unmount mid-drag.
+  const shownRows: number[] = [];
+  if (virtual) {
+    const keep = new Set<number>();
+    for (let r = start; r < end; r++) keep.add(r);
+    if (gestures?.pinned.size) {
+      items.forEach((item, i) => {
+        if (gestures.pinned.has(item.id)) keep.add(Math.floor(i / columns));
+      });
+    }
+    shownRows.push(...[...keep].sort((a, b) => a - b));
+  }
 
-  const tile = (item: InventoryItem) => (
+  const tile = (item: InventoryItem, index: number) => (
     <ItemTile
       key={item.id}
+      index={index}
       item={item}
       meMemberId={meMemberId}
       dimmed={!matchesFilter(item, filter)}
@@ -149,9 +175,9 @@ export function AreaGrid({
       style={virtual ? { height: rows.length * ROW_H } : undefined}
     >
       {virtual
-        ? rows.slice(start, end).map((row, i) => (
-            <div key={start + i} className="kt-area__row" style={{ top: (start + i) * ROW_H }}>
-              {row.map(tile)}
+        ? shownRows.map((r) => (
+            <div key={r} className="kt-area__row" style={{ top: r * ROW_H }}>
+              {rows[r]!.map((item, c) => tile(item, r * columns + c))}
             </div>
           ))
         : items.map(tile)}

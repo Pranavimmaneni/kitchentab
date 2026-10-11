@@ -134,6 +134,10 @@
   .kt-gesture-layer[data-phase="menu_static"] {
     pointer-events: auto;
   }
+  /* Folded bubbles end hidden (with reduced motion they're simply gone). */
+  .kt-fan[data-fold] .kt-bubble__button {
+    opacity: 0;
+  }
   .kt-gesture-scrim {
     position: absolute;
     inset: 0;
@@ -368,15 +372,20 @@
   .kt-stock-row:last-child {
     border-bottom: 0;
   }
-  .kt-stock-row__fly {
-    position: relative;
-    z-index: 2;
+  .kt-stock-row__slot {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     /* The empty slot left behind (sort-after). */
     outline: 2px dashed var(--faint);
     outline-offset: -2px;
+  }
+  .kt-stock-row__fly {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 32px;
+    height: 32px;
   }
   .kt-stock-row__icon {
     width: 32px;
@@ -417,7 +426,7 @@
     font-size: 13px;
     font-weight: 700;
   }
-  .kt-stocking[data-dim] .kt-stock-row > :not(.kt-stock-row__fly) {
+  .kt-stocking[data-dim] .kt-stock-row > :not(.kt-stock-row__slot) {
     opacity: 0.4;
   }
   .kt-stocking__bins {
@@ -469,8 +478,45 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  /* The charge ring: from 120 ms of the hold until the lift at 350 ms (SPEC §2, render r1). */
+  .kt-place[data-gesture="pressing"] .kt-tile[data-pressed] .kt-tile__icon::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 3px solid var(--accent-2);
+    clip-path: inset(0 0 0 0 round 50%);
+    animation: kt-charge 230ms linear 120ms both;
+  }
+  @keyframes kt-charge {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .kt-fan[data-fold] .kt-bubble__button {
+    animation: kt-fold 120ms ease-in both;
+  }
+  @keyframes kt-fold {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+  }
   .kt-place .kt-tile {
     transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  /* The frame a dropped reorder lands in: tiles take their new places without sliding back. */
+  .kt-place[data-settling] .kt-tile {
+    transition: none;
   }
   .kt-tile[data-gap] {
     transition: none;
@@ -485,7 +531,7 @@
   .kt-bin[data-here][data-over] {
     animation: kt-bin-refuse 240ms ease-in-out;
   }
-  .kt-stocking .kt-stock-row > :not(.kt-stock-row__fly) {
+  .kt-stocking .kt-stock-row > :not(.kt-stock-row__slot) {
     transition: opacity 120ms ease-out;
   }
   .kt-stock-bin__count {
@@ -520,7 +566,7 @@
 
 /* Reduced motion (SPEC §7): no flight; rows dim and the counts fade in, opacity only. */
 @media (prefers-reduced-motion: reduce) {
-  .kt-stocking .kt-stock-row > :not(.kt-stock-row__fly) {
+  .kt-stocking .kt-stock-row > :not(.kt-stock-row__slot) {
     transition: opacity 120ms linear;
   }
   .kt-stock-bin__count {

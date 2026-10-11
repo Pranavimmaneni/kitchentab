@@ -32,10 +32,16 @@ import {
 type Rect = { left: number; top: number; width: number; height: number };
 type Grid = {
   scrollY: number;
-  /** Cell rects of each section in the order the tiles were on screen at lift. */
-  cells: Map<Loc, { ids: string[]; rects: Rect[] }>;
+  /**
+   * Each section's cell rects keyed by slot: the tile's position in the section's full list
+   * (data-index). Virtualized areas only render the rows near the viewport, so only those slots
+   * are known; the grid is measured again after auto-scroll and live changes.
+   */
+  cells: Map<Loc, Map<number, Rect>>;
   areas: Array<{ section: Loc; rect: Rect }>;
   bins: Array<{ to: Loc; rect: Rect }> | null;
+  /** Top of the bottom bar: the bottom auto-scroll band ends here and tiles under it can't be hit. */
+  barTop: number | null;
 };
 
 export type GestureOptions = {
@@ -53,6 +59,13 @@ const now = () => performance.now();
 function rectOf(el: Element): Rect {
   const r = el.getBoundingClientRect();
   return { left: r.left, top: r.top, width: r.width, height: r.height };
+}
+
+/** The tile's own place in the grid: its rect without the reorder shift it may be wearing. */
+function slotRectOf(el: HTMLElement): Rect {
+  const r = rectOf(el);
+  const m = /translate3d\(([-\d.]+)px, ([-\d.]+)px/.exec(el.style.transform);
+  return m ? { ...r, left: r.left - Number(m[1]), top: r.top - Number(m[2]) } : r;
 }
 
 function inside(r: Rect, x: number, y: number): boolean {
@@ -77,20 +90,21 @@ export function usePlaceGestures(
    */
   const lifted = useRef(false);
   const swallowUntil = useRef(0);
+  /** The tile that opened the static menu from the keyboard or a right-click: focus goes back. */
+  const menuInvoker = useRef<HTMLElement | null>(null);
 
   const measure = useCallback(() => {
     const root = rootRef.current;
     if (!root) return;
-    const cells = new Map<Loc, { ids: string[]; rects: Rect[] }>();
+    const cells = new Map<Loc, Map<number, Rect>>();
     for (const area of root.querySelectorAll<HTMLElement>("[data-kt-area]")) {
-      const section = area.dataset.ktArea as Loc;
-      const tiles = [...area.querySelectorAll<HTMLElement>("[data-item-id]")];
-      cells.set(section, {
-        ids: tiles.map((t) => t.dataset.itemId as string),
-        // Untransformed positions: the shift transforms are cleared at lift.
-        rects: tiles.map(rectOf),
-      });
+      const slots = new Map<number, Rect>();
+      for (const tile of area.querySelectorAll<HTMLElement>("[data-item-id][data-index]")) {
+        slots.set(Number(tile.dataset.index), slotRectOf(tile));
+      }
+      cells.set(area.dataset.ktArea as Loc, slots);
     }
+    const bar = document.querySelector<HTMLElement>(".kt-action-bar");
     grid.current = {
       scrollY: window.scrollY,
       cells,
@@ -98,9 +112,23 @@ export function usePlaceGestures(
         section: el.dataset.ktArea as Loc,
         rect: rectOf(el),
       })),
-      bins: null,
+      bins: grid.current?.bins ?? null,
+      barTop: bar ? bar.getBoundingClientRect().top : null,
     };
   }, [rootRef]);
+
+  /**
+   * What each slot shows: while reordering, the lifted item's section shows the reducer's order;
+   * otherwise its order at lift (the screen keeps that section in this order until IDLE). Other
+   * sections show the screen's order.
+   */
+  const shownOrder = (section: Loc): readonly string[] => {
+    const s = stateRef.current;
+    if (section === s.section && s.phase !== "IDLE") {
+      return s.phase === "DRAGGING" ? s.order : s.original;
+    }
+    return optsRef.current.orders[section] ?? [];
+  };
 
   const hitAt = useCallback((x: number, y: number): Hit => {
     const g = grid.current;
@@ -112,14 +140,14 @@ export function usePlaceGestures(
         g.bins = bins.map((el) => ({ to: el.dataset.ktBin as Loc, rect: rectOf(el) }));
     }
     for (const b of g.bins ?? []) if (inside(b.rect, x, y)) return { kind: "bin", to: b.to };
-    // Cached rects are page-relative to the scroll at lift.
+    // The bottom bar covers the tiles scrolled under it.
+    if (g.barTop !== null && y >= g.barTop) return { kind: "none" };
+    // Cached rects are page-relative to the scroll at the last measure.
     const dy = window.scrollY - g.scrollY;
     const py = y + dy;
-    for (const [section, { ids, rects }] of g.cells) {
-      // While reordering, the section shows `s.order`; otherwise the order at lift.
-      const shown = section === s.section && s.phase === "DRAGGING" ? s.order : ids;
-      for (let k = 0; k < rects.length; k++) {
-        const r = rects[k]!;
+    for (const [section, slots] of g.cells) {
+      const shown = shownOrder(section);
+      for (const [k, r] of slots) {
         if (!inside(r, x, py)) continue;
         const id = shown[k];
         if (!id || id === s.itemId) return { kind: "section", section };
@@ -147,6 +175,19 @@ export function usePlaceGestures(
         // Lifted: take the grid now (SPEC §2 plumbing 6).
         lifted.current = true;
         measure();
+      }
+      if (prev.phase === "PRESSING" && next.phase === "IDLE" && ev.type === "move") {
+        // A mouse that moved off before the lift still clicks the tile on release: not a tap.
+        swallowUntil.current = now() + 400;
+      }
+      if (prev.phase === "MENU_STATIC" && next.phase === "IDLE" && menuInvoker.current) {
+        // Back to the item the menu came from, or to Undo if it just left this screen.
+        const back = menuInvoker.current;
+        menuInvoker.current = null;
+        window.setTimeout(() => {
+          if (back.isConnected) back.focus();
+          else document.querySelector<HTMLElement>(".kt-toast__undo")?.focus();
+        }, 60);
       }
       if (ev.type === "down" && prev.phase === "IDLE") {
         // A new press: only the click that ends a hold or a drag is ignored, never a later tap's.
@@ -186,8 +227,22 @@ export function usePlaceGestures(
     .map(([k, v]) => `${k}:${v}`)
     .join(",");
   useEffect(() => {
-    if (stateRef.current.phase !== "IDLE") dispatch({ type: "sync", items: optsRef.current.items });
-  }, [itemsKey, dispatch]);
+    if (stateRef.current.phase === "IDLE") return;
+    dispatch({ type: "sync", items: optsRef.current.items });
+    // Measure again once the screen has drawn the change (SYNC-G6).
+    requestAnimationFrame(() => {
+      if (stateRef.current.phase !== "IDLE" && grid.current) measure();
+    });
+  }, [itemsKey, dispatch, measure]);
+
+  /** Auto-scroll speed for a finger at y: the top edge, or the band just above the bottom bar. */
+  const scrollSpeed = (y: number): number => {
+    const edge = AUTOSCROLL_EDGE_PX;
+    const barTop = grid.current?.barTop ?? window.innerHeight;
+    if (y < edge) return -Math.min(14, (edge - y) / 4);
+    if (y >= barTop - edge && y < barTop) return Math.min(14, (y - (barTop - edge)) / 4);
+    return 0;
+  };
 
   const autoScroll = useCallback(() => {
     stopAutoScroll();
@@ -195,22 +250,23 @@ export function usePlaceGestures(
       const s = stateRef.current;
       const f = finger.current;
       if (!f || (s.phase !== "DRAGGING" && s.phase !== "COLLECTING")) return stopAutoScroll();
-      const edge = AUTOSCROLL_EDGE_PX;
-      const bottom = window.innerHeight - edge - 96; // above the drop bar
-      const speed = f.y < edge ? -(edge - f.y) / 4 : f.y > bottom ? (f.y - bottom) / 4 : 0;
+      const speed = scrollSpeed(f.y);
       if (speed === 0) return stopAutoScroll();
-      window.scrollBy(0, Math.max(-14, Math.min(14, speed)));
+      window.scrollBy(0, speed);
+      // Rows a virtualized area just rendered join the grid.
+      measure();
       dispatch({
         type: "move",
         pointerId: s.pointerId ?? 0,
         point: f,
         time: now(),
         hit: hitAt(f.x, f.y),
+        scrolling: true,
       });
       scrollLoop.current = requestAnimationFrame(step);
     };
     scrollLoop.current = requestAnimationFrame(step);
-  }, [dispatch, hitAt]);
+  }, [dispatch, hitAt, measure]);
 
   // Window listeners while a pointer is down; page-level cancels at any time.
   useEffect(() => {
@@ -231,8 +287,7 @@ export function usePlaceGestures(
         (after.phase === "DRAGGING" || after.phase === "COLLECTING") &&
         scrollLoop.current === null
       ) {
-        const edge = AUTOSCROLL_EDGE_PX;
-        if (point.y < edge || point.y > window.innerHeight - edge - 96) autoScroll();
+        if (scrollSpeed(point.y) !== 0) autoScroll();
       }
     };
     const onUp = (e: globalThis.PointerEvent) => {
@@ -353,6 +408,7 @@ export function usePlaceGestures(
   const openMenu = useCallback(
     (itemId: string, el: HTMLElement) => {
       const r = (el.querySelector(".kt-tile__icon") ?? el).getBoundingClientRect();
+      menuInvoker.current = el;
       dispatch({
         type: "menu",
         itemId,
@@ -379,14 +435,13 @@ export function usePlaceGestures(
       const s = state;
       const g = grid.current;
       if (s.phase !== "DRAGGING" || !g || !s.section) return null;
-      const cells = g.cells.get(s.section);
-      if (!cells) return null;
-      const from = cells.ids.indexOf(id);
+      const slots = g.cells.get(s.section);
+      const from = s.original.indexOf(id);
       const to = s.order.indexOf(id);
-      if (from < 0 || to < 0 || from === to) return null;
-      const a = cells.rects[from]!;
-      const b = cells.rects[to]!;
-      if (!b) return null;
+      if (!slots || from < 0 || to < 0 || from === to) return null;
+      const a = slots.get(from);
+      const b = slots.get(to);
+      if (!a || !b) return null;
       return { x: b.left - a.left, y: b.top - a.top };
     },
     [state],
@@ -397,10 +452,8 @@ export function usePlaceGestures(
     const g = grid.current;
     const s = state;
     if (!g || !s.itemId || !s.section) return null;
-    const cells = g.cells.get(s.section);
-    const at = cells?.ids.indexOf(s.itemId) ?? -1;
-    if (!cells || at < 0) return null;
-    const r = cells.rects[at]!;
+    const r = g.cells.get(s.section)?.get(s.original.indexOf(s.itemId));
+    if (!r) return null;
     return { ...r, top: r.top - (window.scrollY - g.scrollY) };
   }, [state]);
 

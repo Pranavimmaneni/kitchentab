@@ -10,7 +10,9 @@ export type BubbleAction =
   | { kind: "move"; to: Place }
   | { kind: "ask"; owner: string }
   | { kind: "usedUp" }
-  | { kind: "help" };
+  | { kind: "help" }
+  /** Already asked: the third bubble takes the ask back instead of asking twice. */
+  | { kind: "cancelAsk"; requestId: string };
 
 export function bubblesFor(item: InventoryItem): [BubbleAction, BubbleAction, BubbleAction] {
   const [a, b] = PLACES.filter((p) => p !== item.place) as [Place, Place];
@@ -18,7 +20,9 @@ export function bubblesFor(item: InventoryItem): [BubbleAction, BubbleAction, Bu
     ? { kind: "usedUp" }
     : item.open_for_me || item.owners.length === 0
       ? { kind: "help" }
-      : { kind: "ask", owner: item.owners[0]!.display_name };
+      : item.my_request
+        ? { kind: "cancelAsk", requestId: item.my_request.id }
+        : { kind: "ask", owner: item.owners[0]!.display_name };
   return [{ kind: "move", to: a }, { kind: "move", to: b }, third];
 }
 

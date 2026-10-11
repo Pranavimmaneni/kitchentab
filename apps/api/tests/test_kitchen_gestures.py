@@ -84,6 +84,7 @@ async def test_GEST_14_move_results_idempotency_limits_and_ex_members(
     results = [x["result"] for x in r.json()["results"]]
     assert results == ["moved", "skipped_already_there", "skipped_gone", "skipped_gone"]
     assert r.json()["moved"] == 1
+    assert [x["from"] for x in r.json()["results"]] == ["fridge", None, None, None], "Undo goes back here"
     assert await place_of(w, milk) == "pantry"
     moved_milk = find(await fridge(w.admin, w, "pantry"), "Whole milk")
     assert moved_milk["moved"]["by"] == "Kabir", "the sheet's 'Moved to pantry by Kabir' line"

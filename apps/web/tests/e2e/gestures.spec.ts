@@ -243,6 +243,13 @@ test.describe("gestures on a phone", () => {
       where["Baby spinach"],
     ]).toEqual(["pantry", "pantry", "pantry"]);
     expect(where["Eggs 18 ct"]).toBe("freezer");
+
+    // Back leaves select mode first (SPEC §4); it doesn't leave the screen.
+    await page.getByRole("button", { name: "Select items to move" }).click();
+    await tile(page, "Greek yogurt 32 oz").click();
+    await page.getByRole("link", { name: "Done selecting" }).click();
+    await expect(page.getByRole("button", { name: "Select items to move" })).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe("/kitchen/fridge");
     await closeApt(apt);
   });
 
@@ -279,7 +286,8 @@ test.describe("gestures on a phone", () => {
     // Collect three, drop them on the Pantry bin.
     await startDrag(page, f, "Whole milk 1 gal");
     for (const name of ["Chicken thighs 3 lb", "Baby spinach"]) {
-      await f.move(await centreOf(iconOf(tile(page, name))), 8);
+      // Two long steps: a finger crawling across other tiles' centres would (rightly) collect them.
+      await f.move(await centreOf(iconOf(tile(page, name))), 2);
       await page.waitForTimeout(400);
     }
     await expect(page.locator(".kt-lifted__count")).toHaveText("3");
@@ -294,6 +302,16 @@ test.describe("gestures on a phone", () => {
       where["Chicken thighs 3 lb"],
       where["Baby spinach"],
     ]).toEqual(["pantry", "pantry", "pantry"]);
+
+    // Select mode: dragging an item that isn't picked moves just it and keeps the picks.
+    await page.getByRole("button", { name: "Select items to move" }).click();
+    await tile(page, "Greek yogurt 32 oz").click();
+    await expect(page.getByRole("toolbar", { name: /1 selected/ })).toBeVisible();
+    await startDrag(page, f, "Eggs 18 ct");
+    await f.move(await centreOf(bin(page, "freezer")), 10);
+    await f.up();
+    await expect(page.getByText(/→ Freezer/)).toBeVisible();
+    await expect(page.getByRole("toolbar", { name: /1 selected/ })).toBeVisible();
     await closeApt(apt);
   });
 
@@ -522,6 +540,11 @@ test("A11Y-G1 select mode, the quick-action menu and the drop bar are axe-clean 
   await expect(menu).toBeVisible();
   await expect(menu.getByRole("menuitem").first()).toBeFocused();
   await axe("menu");
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await expect(tile(page, "Whole milk 1 gal")).toBeFocused();
+  await page.keyboard.press("Shift+F10");
+  await expect(menu).toBeVisible();
   await page.keyboard.press("ArrowRight");
   await expect(menu.getByRole("menuitem", { name: /Pantry/ })).toBeFocused();
   await page.keyboard.press("Enter");

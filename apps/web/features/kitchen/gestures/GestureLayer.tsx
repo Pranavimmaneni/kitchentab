@@ -8,6 +8,7 @@
 import { useEffect, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { FoodIcon, foodPastel } from "@/components/FoodIcon";
 import {
+  XIcon,
   EmptyIcon,
   FridgeIcon,
   HandIcon,
@@ -42,6 +43,8 @@ function bubbleIcon(action: BubbleAction) {
       return <EmptyIcon size={24} />;
     case "help":
       return <CheckIcon size={24} />;
+    case "cancelAsk":
+      return <XIcon size={24} />;
   }
 }
 
@@ -55,6 +58,8 @@ export function bubbleLabel(action: BubbleAction): string {
       return strings.gestures.bubbleUsedUp;
     case "help":
       return strings.gestures.bubbleHelp;
+    case "cancelAsk":
+      return strings.gestures.bubbleCancelAsk;
   }
 }
 
@@ -68,6 +73,8 @@ function bubbleChip(action: BubbleAction): string {
       return strings.gestures.chipUsedUp;
     case "help":
       return strings.gestures.chipHelp;
+    case "cancelAsk":
+      return strings.gestures.chipCancelAsk;
   }
 }
 
@@ -150,6 +157,23 @@ export function GestureOverlay({
     const gone = state.dropped.map((id) => items.get(id)?.short_name).filter(Boolean) as string[];
     return (
       <div className="kt-gesture-layer" data-phase={state.phase}>
+        {state.phase === "DRAGGING" && state.fan && bubbles ? (
+          // Drag won: the bubbles fold away (MENU_FOLD_MS) instead of vanishing.
+          <div className="kt-fan" data-fold="" aria-hidden="true">
+            {bubbles.map((action, i) => {
+              const c = state.fan!.centres[i]!;
+              return (
+                <div
+                  key={i}
+                  className="kt-bubble"
+                  style={{ transform: `translate3d(${c.x}px, ${c.y}px, 0)` }}
+                >
+                  <span className="kt-bubble__button">{bubbleIcon(action)}</span>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
         <Lifted
           item={item}
           count={state.stack.length}

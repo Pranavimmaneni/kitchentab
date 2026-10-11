@@ -64,7 +64,15 @@ export type GestureEvent =
       /** The pressed item's section, in its displayed order. */
       order: readonly string[];
     }
-  | { type: "move"; pointerId: number; point: Point; time: number; hit: Hit }
+  | {
+      type: "move";
+      pointerId: number;
+      point: Point;
+      time: number;
+      hit: Hit;
+      /** The page is auto-scrolling under a still finger: tiles slide past, so no dwell. */
+      scrolling?: boolean;
+    }
   | { type: "up"; pointerId: number; point: Point; time: number; hit: Hit }
   | { type: "timer"; time: number }
   /** Second pointer, pointercancel, Escape, page hidden, scroll while a static menu is open. */
@@ -225,7 +233,10 @@ function placeGap(s: GestureState, target: string, zone: "before" | "after"): re
 const sameOrder = (a: readonly string[], b: readonly string[]) =>
   a.length === b.length && a.every((x, i) => x === b[i]);
 
-function track(s: GestureState, ev: { point: Point; time: number; hit: Hit }): Step {
+function track(
+  s: GestureState,
+  ev: { point: Point; time: number; hit: Hit; scrolling?: boolean },
+): Step {
   const effects: Effect[] = [];
   let next: GestureState = { ...s, finger: ev.point };
   const { hit } = ev;
@@ -254,7 +265,7 @@ function track(s: GestureState, ev: { point: Point; time: number; hit: Hit }): S
       }
     }
   }
-  next = withDwell(next, hit, ev.time);
+  next = ev.scrolling ? { ...next, dwell: null } : withDwell(next, hit, ev.time);
   const due = collectIfDue(next, ev.time);
   return { state: due.state, effects: [...effects, ...due.effects] };
 }

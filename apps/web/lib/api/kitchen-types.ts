@@ -63,6 +63,8 @@ export type MoveResultKind = "moved" | "skipped_already_there" | "skipped_gone" 
 export type MoveResult = {
   item_id: string;
   result: MoveResultKind;
+  /** Where a moved item was: Undo sends it back here. */
+  from?: Place | null;
   place: Place | null;
   version: number | null;
 };

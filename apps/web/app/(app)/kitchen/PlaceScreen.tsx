@@ -51,6 +51,8 @@ export function PlaceScreen({ place }: { place: KitchenPlace }) {
 
 type ToastState = {
   message: string;
+  /** What screen readers hear instead, e.g. "Yogurt moved to pantry. Undo available." */
+  spoken?: string;
   variant?: "info" | "error";
   action?: { label: string; run: () => void };
   duration?: number;
@@ -108,6 +110,8 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
   const [selectMode, setSelectMode] = useState(false);
   const [picked, setPicked] = useState<string[]>([]);
   const [moving, setMoving] = useState<Place | null>(null);
+  // A reorder just dropped: drawn at once, before the cache catches up, with no slide.
+  const [localOrder, setLocalOrder] = useState<{ area: Place; ids: string[] } | null>(null);
 
   useEffect(() => setFilterState(readFilter()), []);
   const setFilter = (next: KitchenFilter) => {
@@ -134,7 +138,14 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
   );
 
   const view = inventory.data;
-  const areas = useMemo(() => orderAreas(view?.areas ?? [], place), [view, place]);
+  const areas = useMemo(() => {
+    const base = orderAreas(view?.areas ?? [], place);
+    return localOrder
+      ? base.map((a) =>
+          a.area === localOrder.area ? { ...a, items: inOrder(a.items, localOrder.ids) } : a,
+        )
+      : base;
+  }, [view, place, localOrder]);
   const allItems = useMemo(() => areas.flatMap((a) => a.items), [areas]);
   const selected = allItems.find((i) => i.id === selectedId) ?? null;
   const popIds = useNewIds(view ? allItems.map((i) => i.id) : undefined);
@@ -154,6 +165,8 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
   );
   // Picked items that are gone (used up elsewhere) drop out of the pick.
   const livePicked = useMemo(() => picked.filter((id) => byId.has(id)), [picked, byId]);
+  const pickedRef = useRef(livePicked);
+  pickedRef.current = livePicked;
 
   const leaveSelect = useCallback(() => {
     setSelectMode(false);
@@ -179,7 +192,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
       }
       const moved = res.results
         .filter((r) => r.result === "moved")
-        .map((r) => ({ item_id: r.item_id, from: from.get(r.item_id) as Place, to }));
+        .map((r) => ({ item_id: r.item_id, from: (r.from ?? from.get(r.item_id)) as Place, to }));
       const there = res.results.filter((r) => r.result === "skipped_already_there").length;
       const gone = res.results.length - moved.length - there;
       if (moved.length) haptic("success");
@@ -193,8 +206,17 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
             : moved.length === 1
               ? strings.gestures.movedOne(name(moved[0]!.item_id), toName)
               : strings.gestures.movedMany(moved.length, toName);
+      const lower = strings.gestures.placeLower[to];
       show({
         message,
+        spoken: moved.length
+          ? strings.gestures.announceMoved(
+              moved.length === 1
+                ? name(moved[0]!.item_id)
+                : strings.gestures.itemsCount(moved.length),
+              lower,
+            )
+          : undefined,
         duration: moved.length ? UNDO_MS : undefined,
         action: moved.length
           ? {
@@ -314,7 +336,26 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
           show({ message: strings.gestures.helpYourself });
           return;
         case "usedUp":
-          void actionsRef.current.usedUp(item).then(() => haptic("success"));
+          writes
+            .usedUp(item)
+            .then(() => {
+              haptic("success");
+              show({
+                message: strings.item.usedUpToast(item.short_name || item.name),
+                duration: UNDO_MS,
+                action: {
+                  label: strings.toast.undo,
+                  run: () => void writes.restore(item).catch((error) => fail(error)),
+                },
+              });
+            })
+            .catch((error) => fail(error));
+          return;
+        case "cancelAsk":
+          writes
+            .cancel(action.requestId)
+            .then(() => show({ message: strings.item.cancelledToast }))
+            .catch((error) => fail(error));
           return;
         case "ask":
           writes
@@ -345,13 +386,21 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
           return;
         }
         case "reorder":
-          writes.setOrder(place, effect.section, effect.order).catch((error) => fail(error));
+          setLocalOrder({ area: effect.section, ids: effect.order });
+          writes
+            .setOrder(place, effect.section, effect.order)
+            .catch((error) => fail(error))
+            .finally(() => setLocalOrder(null));
           return;
-        case "move":
+        case "move": {
+          const fromPicks = effect.itemIds.every((id) => pickedRef.current.includes(id));
           void runMove(effect.itemIds, effect.to).then((ok) => {
-            if (ok) leaveSelect();
+            if (!ok) return;
+            if (fromPicks) leaveSelect();
+            else setPicked((now) => now.filter((id) => !effect.itemIds.includes(id)));
           });
           return;
+        }
         case "blocked":
           show({ message: strings.gestures.alreadyThere(strings.gestures.placeLower[effect.to]) });
           return;
@@ -404,6 +453,19 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
     () => (g.phase === "COLLECTING" ? new Set(g.stack) : new Set<string>()),
     [g.phase, g.stack],
   );
+  const gestureOn = g.phase !== "IDLE";
+  const shownAreas =
+    gestureOn && g.section
+      ? areas.map((a) => (a.area === g.section ? { ...a, items: inOrder(a.items, g.original) } : a))
+      : areas;
+  const pinned = useMemo(
+    () => (gestureOn ? new Set([...g.stack, ...(g.itemId ? [g.itemId] : [])]) : new Set<string>()),
+    [gestureOn, g.stack, g.itemId],
+  );
+  // #3: what the overlay draws survives an item leaving the inventory mid-drag (SYNC-G2 note).
+  const seen = useRef(new Map<string, InventoryItem>());
+  if (!gestureOn) seen.current = new Map(byId);
+  else for (const [id, it] of byId) seen.current.set(id, it);
   const tileGestures: TileGestures = {
     handlers: gestures.bind,
     shiftOf: gestures.shiftOf,
@@ -411,6 +473,8 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
     picked: pickedSet,
     gapId: g.phase === "DRAGGING" ? g.itemId : null,
     ghostIds,
+    pinned,
+    pressedId: g.phase === "PRESSING" ? g.itemId : null,
   };
   const pickedPlaces = livePicked.map((id) => byId.get(id)!.place);
   const lifted = g.itemId ? byId.get(g.itemId) : undefined;
@@ -423,9 +487,14 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
       data-place={place}
       data-gesture={g.phase === "IDLE" ? undefined : g.phase.toLowerCase()}
       data-select={selectMode || undefined}
+      data-settling={localOrder ? "" : undefined}
     >
       <AppHeader
-        back={{ href: "/", label: strings.place.back }}
+        back={{
+          href: "/",
+          label: selectMode ? strings.gestures.doneLabel : strings.place.back,
+          onClick: selectMode ? leaveSelect : undefined,
+        }}
         stepLabel={strings.place.step(house.name, counts?.all ?? 0)}
         title={strings.place.titles[place]}
         actions={
@@ -465,7 +534,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
             data-place={place}
             aria-label={strings.place.titles[place]}
           >
-            {areas.map((area) => {
+            {shownAreas.map((area) => {
               const dropHere = g.phase === "DRAGGING" && g.overSection === area.area;
               return (
                 <div
@@ -560,7 +629,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
       </ActionBar>
       <GestureOverlay
         state={g}
-        items={byId}
+        items={seen.current}
         bubbles={lifted && !selectMode ? bubblesFor(lifted) : null}
         liftedAt={gestures.liftedRect()}
         onChoose={gestures.choose}
@@ -592,6 +661,7 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
       />
       <Toast
         message={toast?.message ?? null}
+        spoken={toast?.spoken}
         variant={toast?.variant}
         duration={toast?.duration}
         onUndo={toast?.action?.run}
@@ -600,6 +670,14 @@ function Place({ place, house }: HouseContext & { place: KitchenPlace }) {
       />
     </div>
   );
+}
+
+/** Items in the order of `ids` (those not in it keep their order, at the end). */
+function inOrder(items: readonly InventoryItem[], ids: readonly string[]): InventoryItem[] {
+  const rank = new Map(ids.map((id, n) => [id, n]));
+  const listed = items.filter((i) => rank.has(i.id));
+  listed.sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+  return [...listed, ...items.filter((i) => !rank.has(i.id))];
 }
 
 /** Freezer above Refrigerated (Fridge.dc.html); the pantry is one area with no label. */

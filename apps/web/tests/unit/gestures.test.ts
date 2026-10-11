@@ -9,6 +9,8 @@ import {
   STACK_MAX,
 } from "@/features/kitchen/gestures/constants";
 import { bubbleAt, inCone, placeFan } from "@/features/kitchen/gestures/geometry";
+import { bubblesFor, destinations, inverseMoves } from "@/features/kitchen/gestures/actions";
+import type { InventoryItem } from "@/lib/api/kitchen-types";
 import {
   initialGesture,
   isHere,
@@ -308,6 +310,25 @@ describe("reorder and collect (FR-G02, FR-G06, FR-G07)", () => {
     expect(types(long.effects)).toEqual(["haptic:collect"]);
   });
 
+  it("GEST-04 tiles sliding under a still finger while the page auto-scrolls are not collected [FR-G06]", () => {
+    const d = dragging();
+    const scroll = (time: number, id: string): GestureEvent => ({
+      type: "move",
+      pointerId: 1,
+      point: { x: 300, y: 820 },
+      time,
+      hit: item(id),
+      scrolling: true,
+    });
+    const r = run(
+      [scroll(500, "kimchi"), scroll(600, "kimchi"), scroll(800, "kimchi"), timer(900)],
+      d.state,
+    );
+    expect(r.state.phase).toBe("DRAGGING");
+    expect(r.state.stack).toEqual(["eggs"]);
+    expect(nextDeadline(r.state)).toBeNull();
+  });
+
   it("GEST-04 leaving the item before the dwell ends restarts it [FR-G02] [FR-G06] [FR-G07]", () => {
     const d = dragging();
     const r = run(
@@ -473,5 +494,46 @@ describe("personal order with a filter on (FR-G02)", () => {
   it("GEST-04 hidden items keep their places when the visible ones are reordered [FR-G02] [FR-G06] [FR-G07]", () => {
     expect(mergeOrder(["a", "b", "c", "d", "e"], ["d", "b"])).toEqual(["a", "d", "c", "b", "e"]);
     expect(mergeOrder(["a", "b"], ["b", "a", "new"])).toEqual(["b", "a", "new"]);
+  });
+});
+
+describe("quick actions and select destinations (FR-G04, FR-G05, FR-G08)", () => {
+  const base = {
+    id: "y",
+    name: "Greek yogurt",
+    short_name: "Yogurt",
+    place: "fridge",
+    owners: [{ id: "m", display_name: "Meera", initial: "M", color: "#fff", open_to_share: false }],
+    mine: false,
+    open_for_me: false,
+    my_request: null,
+  } as unknown as InventoryItem;
+
+  it("GEST-09 the two other places, then Used up, Help yourself, Ask or Cancel ask [FR-G04]", () => {
+    expect(bubblesFor(base)).toEqual([
+      { kind: "move", to: "freezer" },
+      { kind: "move", to: "pantry" },
+      { kind: "ask", owner: "Meera" },
+    ]);
+    expect(bubblesFor({ ...base, mine: true })[2]).toEqual({ kind: "usedUp" });
+    expect(bubblesFor({ ...base, open_for_me: true })[2]).toEqual({ kind: "help" });
+    // Already asked: no second ask (it would be refused), the bubble takes it back.
+    expect(bubblesFor({ ...base, my_request: { id: "r1", amount: "a_bit" } })[2]).toEqual({
+      kind: "cancelAsk",
+      requestId: "r1",
+    });
+    expect(bubblesFor({ ...base, place: "pantry" }).slice(0, 2)).toEqual([
+      { kind: "move", to: "freezer" },
+      { kind: "move", to: "fridge" },
+    ]);
+  });
+
+  it("GEST-10 a destination hides only when every pick is already there; Undo inverts with expect_from [FR-G05] [FR-G08]", () => {
+    expect(destinations(["fridge", "fridge"])).toEqual(["freezer", "pantry"]);
+    expect(destinations(["fridge", "freezer"])).toEqual(["freezer", "fridge", "pantry"]);
+    expect(destinations([])).toEqual(["freezer", "fridge", "pantry"]);
+    expect(inverseMoves([{ item_id: "a", from: "fridge", to: "pantry" }])).toEqual([
+      { item_id: "a", to: "fridge", expect_from: "pantry" },
+    ]);
   });
 });

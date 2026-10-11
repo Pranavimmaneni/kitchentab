@@ -49,6 +49,20 @@ select-mode limit open.
   (browsers send it right after pointerup, or not at all); any key press cancels that, so keyboard
   Enter and Space always work.
 
+- **Slots, not DOM order.** Every tile carries its position in its section's full list
+  (`data-index`), and the cached grid is keyed by it, so hit tests and reorder shifts stay right in
+  virtualized areas (only rows near the viewport exist). The grid is measured again after each
+  auto-scroll step and after live changes; a virtualized area keeps the rows of items in hand
+  rendered, and while a gesture is on its section keeps the order it had at lift (new items join the
+  end, SYNC-G6).
+- **Auto-scroll stops at the bottom bar.** The bottom band is the 48 px just above the bar, the bar
+  itself never scrolls the page or hits the tiles under it, and resting doesn't collect while the
+  page is moving.
+- **Already asked.** The third bubble becomes Cancel ask when you already have a pending ask, rather
+  than offering an ask the API would refuse.
+- **Undo follows the server.** Each moved result says where the item came from; Undo uses that, not
+  the client's possibly stale copy.
+
 ## Consequences
 
 - The reducer stays pure: the hook does the measuring, and `reduce()` gets one hit per pointer
