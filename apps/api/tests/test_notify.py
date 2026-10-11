@@ -509,6 +509,28 @@ async def test_KITCH_15_use_soon_round_up_at_9_once_per_state(api: ApiFactory, f
     assert len([x for x in phone.payloads() if x["tag"].startswith("soon-")]) == 2
 
 
+@tid("KITCH-15")
+@fr("FR-78")
+async def test_KITCH_15_round_up_sent_now_judges_today_at_any_hour(api: ApiFactory, fake_push: str) -> None:
+    """The test-only `?now=true` round-up (browser journeys) uses today's state even after 9:00, so it
+    says what the Kitchen shows; the scheduled one after 9:00 looks at tomorrow 9:00 (above)."""
+    h, _, _ = await household(api, fake_push)
+    await drain(h.w.admin)
+    phone = h.phones["meera"]
+
+    def soon() -> list[dict[str, Any]]:
+        return [x for x in phone.payloads() if x["tag"].startswith("soon-")]
+
+    await at(h.w.admin, "2026-10-05T10:00:00-04:00")  # spinach at 60% today, 80% tomorrow
+    await h.w.admin.post("/__test/use-soon?now=true", idem=False)
+    await drain(h.w.admin)
+    assert soon() == [], "nothing is due today, even though tomorrow's 9:00 would list the spinach"
+    await at(h.w.admin, "2026-10-06T10:00:00-04:00")  # after 9:00 on the day it is due
+    await h.w.admin.post("/__test/use-soon?now=true", idem=False)
+    await drain(h.w.admin)
+    assert [x["title"] for x in soon()] == ["Baby spinach needs eating"], "sent at once, today's state"
+
+
 async def test_cron_requires_the_secret(api: ApiFactory) -> None:
     anon = api()
     assert (await anon.get("/api/v1/cron/daily")).status_code == 401

@@ -19,7 +19,7 @@ import pytest
 from deploy_harness import DEPLOY, ROOT, Harness
 
 SCRIPT = "set_email.py"
-ADDRESS = "pranav.kitchen@gmail.com"
+ADDRESS = "kitchentab.sender@example.com"
 APP_PASSWORD = "abcd efgh ijkl mnop"
 CODE = "246810"
 
