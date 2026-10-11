@@ -84,9 +84,14 @@ const EDITABLE =
  * A sheet, dialog or form field is open, a write is on its way, or the screen is mid-task
  * (`data-kt-busy`, e.g. E · Share right after sending): don't interrupt (PWA-08, PUSH-01).
  */
+/** 4 · Here's the damage and E · Share: the payer is mid-send. By URL, so it holds from the moment
+ * the send navigates, before the Share screen has rendered its `data-kt-busy` (PUSH-01, E2E-01). */
+export const MID_SEND = /^\/bills\/[^/]+\/(send|share)\/?$/;
+
 export function busyNow(): boolean {
   if (writesInFlight() > 0) return true;
   if (typeof document === "undefined") return false;
+  if (MID_SEND.test(window.location.pathname)) return true;
   if (document.querySelector('[aria-modal="true"], .kt-sheet, [data-kt-busy]')) return true;
   const active = document.activeElement;
   return Boolean(active && active !== document.body && active.matches(EDITABLE));
