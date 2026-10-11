@@ -50,9 +50,14 @@ B. Settings: LIVE 2026-10-11 (PR #2; no migration).
      home screen app), appearance, kitchen default, sign-in methods, payment handles, YOUR HOUSE
      (House settings link + Leave house), data and account (SET-02, SET-03).
 Both shipped. Still ask the user before every production change.
-C. Kitchen gestures (docs/features/kitchen-gestures/SPEC.md, FR-G01..G11): in progress on branch
-   `feat/kitchen-gestures` (not deployed). Needs migration 0008 (`member_item_order`, item move stamps):
-   the owner runs `make migrate-prod` from that branch before it merges. Its PR adds Milestone 11.
+C. Kitchen gestures (docs/features/kitchen-gestures/SPEC.md, FR-G01..G11): LIVE 2026-10-11 (PR #9;
+   production migrated to 0009 first). Same PR: quiet hours are off until a person turns them on
+   (migration 0009 cleared the untouched 22:00-08:00 default). Milestone 11 below.
+D. Notifications only go out once a day (found 2026-10-11): Vercel Queues isn't delivering in
+   production (the build never creates the `outbox-drain` consumer declared in apps/api/pyproject.toml;
+   no queue activity in the logs), so the outbox drains only at the daily cron (11:00 UTC). Owner to
+   choose: send right after the request that creates them (needs an exception to CLAUDE.md rule 6 and
+   an ADR), or make the queue consumer build under Vercel Services (check Vercel → Queues is enabled).
 
 Open, in order (overnight queue):
 1. GitHub CI (first runs 2026-10-10) was red on main. Fixed on branch fix/ci-baseline: ruff EXE001 (four
@@ -316,10 +321,9 @@ IDs: SEC-01..14, A11Y-01..08, VIS-01..04, COPY-01..02, PERF-01..06, CHAOS-01..08
 ## Milestone 11: Kitchen gestures
 IDs: FR-G01..FR-G11, GEST-01..15, SYNC-G1..G6, HAPT-01..03, ANIM-01..03, A11Y-G1, VIS-G1
 
-Spec: `docs/features/kitchen-gestures/SPEC.md` (PRD §19.10, TEST_PLAN 3.13, ADR-0033). Branch
-`feat/kitchen-gestures`, not deployed. **Needs migration 0008** (`member_item_order`,
-`inventory_items.moved_at` / `moved_by_member_id`): the owner runs `make migrate-prod` from this branch
-before it merges.
+Spec: `docs/features/kitchen-gestures/SPEC.md` (PRD §19.10, TEST_PLAN 3.13, ADR-0033). Live since
+2026-10-11 (PR #9, merge 8a2f066); production migrated to 0008 (`member_item_order`,
+`inventory_items.moved_at` / `moved_by_member_id`) and 0009 (quiet hours off by default) before the merge.
 
 - [x] Gesture engine: pure reducer + geometry + constants in `apps/web/features/kitchen/gestures/`
       (GEST-01..05, SYNC-G2, SYNC-G6 at reducer level); hit zones, select cap and corner fans (ADR-0033)
@@ -340,7 +344,9 @@ before it merges.
 - [x] Fresh-eyes review: 15 findings (virtualized hit tests, live changes mid-drag, auto-scroll
       into the bar, select picks, announcements, focus, drop glitch, charge ring/fold, Undo source,
       repeat asks, haptics on failure, location in labels, Back, mouse click) all fixed (ADR-0033)
-- [ ] `make lint test test-sync e2e e2e-multi` twice in a row (CI on the PR counts as one)
+- [x] `make lint test test-sync e2e e2e-multi` green in CI on the PR (several runs while fixing:
+      the bill link page's JS budget, Send's redirect cutting the stocking animation short, two
+      timing-sensitive tests); a second back-to-back full run is still to do
 - [ ] Real phones: long-press feel and haptics on an iPhone and an Android (DEVICE_QA.md)
 
 ## P11: Deploy-ready (BUILD_ALL §6)
