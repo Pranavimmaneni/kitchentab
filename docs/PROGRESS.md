@@ -2,12 +2,14 @@
 
 Checkpoint for every session. Read `CLAUDE.md`, this file and `docs/BUILD_ALL.md` first, then
 continue from the first unchecked item. A box is checked only when its tests pass, not when code
-is written. Branch: `build/all`. No git remote is configured (nothing is pushed).
+is written. Work on a branch and open a PR to https://github.com/Pranavimmaneni/kitchentab; `main` is
+production (Vercel deploys every push), so merge only with the owner's go-ahead.
 
 **Status (2026-10-11): LIVE at https://kitchentab.vercel.app, main = production, CI green.** Deployed
 2026-10-11 with the owner's go-ahead: PR #3 (CI baseline + bug fixes), #4 (serverless connection pool,
 ADR-0032), #5 (E2E-01..E2E-10 journeys, perf checks, CHECK? fix), #1 (custom split + item price; production
-migrated to 0007 first with `make migrate-prod`), #2 (Settings). After each deploy: /api/v1/health/ready ok
+migrated to 0007 first with `make migrate-prod`), #2 (Settings), #7 (sheet-race fix N1 + E2E-05 round-up
+sent "now" judged today, three CI races fixed). After each deploy: /api/v1/health/ready ok
 (~0.12-0.2 s), no errors in the production logs. Simulations seeds 1-3 (30 min each): PASS. Release
 traceability (`check_traceability.py --all`): OK (A11Y-08, EMAIL-04 waived to DEVICE_QA).
 
@@ -47,6 +49,9 @@ B. Settings: LIVE 2026-10-11 (PR #2; no migration).
      home screen app), appearance, kitchen default, sign-in methods, payment handles, YOUR HOUSE
      (House settings link + Leave house), data and account (SET-02, SET-03).
 Both shipped. Still ask the user before every production change.
+C. Kitchen gestures (docs/features/kitchen-gestures/SPEC.md, FR-G01..G11): in progress on branch
+   `feat/kitchen-gestures` (not deployed). Needs migration 0008 (`member_item_order`, item move stamps):
+   the owner runs `make migrate-prod` from that branch before it merges. Milestone 11 below.
 
 Open, in order (overnight queue):
 1. GitHub CI (first runs 2026-10-10) was red on main. Fixed on branch fix/ci-baseline: ruff EXE001 (four
