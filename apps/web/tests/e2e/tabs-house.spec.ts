@@ -181,10 +181,13 @@ test("HOUSE-06 HOUSE-08 FR-04 the admin renames the house, rotates the invite li
 
   // A placeholder can't be admin: only joined members get "Make admin".
   await page.getByRole("button", { name: "Options for Meera" }).click();
-  await expect(
-    page.getByRole("dialog", { name: "Meera" }).getByRole("button", { name: "Make admin" }),
-  ).toHaveCount(0);
+  // Wait for the sheet itself: an absence check passes before it has even opened, and an Escape
+  // sent then is lost, leaving the sheet over the next click.
+  const meera = page.getByRole("dialog", { name: "Meera" });
+  await expect(meera.getByRole("button", { name: "Remove from house" })).toBeVisible();
+  await expect(meera.getByRole("button", { name: "Make admin" })).toHaveCount(0);
   await page.keyboard.press("Escape");
+  await expect(meera).toBeHidden();
 
   await page.getByRole("button", { name: "Options for Arjun" }).click();
   await page
