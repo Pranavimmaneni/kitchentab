@@ -365,6 +365,43 @@ Additional sync tests:
 | DATA-05 | M | Invariant checker script (`scripts/check_invariants.py`) finds zero violations on seeded and load-test data | Clean |
 | DATA-06 | M | Every state change has exactly one `house_events` row and one activity entry | 1:1 |
 
+### 3.13 Kitchen gestures, haptics, stocking animation (GEST, HAPT, ANIM)
+
+Spec: `docs/features/kitchen-gestures/SPEC.md` (§9 is the source of these rows; FR-G01..G11).
+Decisions: ADR-0033 (hit zones, select-mode cap, corner fans).
+
+| ID | P | Test | Pass when |
+| --- | --- | --- | --- |
+| GEST-01 | M | Reducer: press → 350 ms → LIFTED; move 9 px before 350 ms → IDLE; release before 350 ms → tap | Unit |
+| GEST-02 | M | Reducer: after lift, 12 px into the cone → MENU_TRACKING; outside → DRAGGING; < 12 px release → MENU_STATIC | Unit |
+| GEST-03 | M | Reducer: fan flips below near the top edge and rotates near the sides; bubbles stay on screen at 320 px width | Unit |
+| GEST-04 | M | Reducer: dwell 250 ms collects; 200 ms doesn't; STACK_MAX enforced; collect freezes reorder | Unit |
+| GEST-05 | M | Reducer: cancel paths (2nd pointer, pointercancel, Escape, visibility hidden) return to IDLE with no action | Unit |
+| GEST-06 | M | E2E (touch via CDP, WebKit iPhone + Chromium Pixel): reorder eggs to slot 2; reload; order persists for that member only | Playwright |
+| GEST-07 | M | E2E: hold yogurt, slide to Pantry, release → item in Pantry, toast, Undo restores | Playwright |
+| GEST-08 | M | E2E: hold, slide to Ask Meera → ask created with amount a_bit; Meera sees it; Undo cancels it | Playwright |
+| GEST-09 | M | E2E: own item shows Used up; open item shows Help yourself (no request created) | Playwright |
+| GEST-10 | M | E2E: select 3, Move to Pantry → one request, three moves, one event; mixed picks skip correctly | Playwright |
+| GEST-11 | M | E2E: drag-to-collect 3 items onto Pantry; drop on HERE is refused; drop in the list cancels | Playwright |
+| GEST-12 | M | E2E: page doesn't scroll during a drag; it does scroll when the finger moves before 350 ms | Playwright |
+| GEST-13 | M | E2E: no text selection, callout or context menu appears on long-press (iPhone profile) | Playwright |
+| GEST-14 | M | API: move results `moved / skipped_already_there / skipped_gone / skipped_changed`; idempotent retry; 21 moves rejected; ex-member forbidden | pytest |
+| GEST-15 | M | API: item-order PUT is per member and per location; stale ids ignored on read | pytest |
+| SYNC-G1 | M | Two members move the same item to different places at once → both succeed in lock order; later wins; clients converge | Race harness, 200 iterations, both PROFILEs |
+| SYNC-G2 | M | A mid-drag with X in a stack; B uses X up → X leaves A's stack with a note; the drop moves the rest | Unit + race harness |
+| SYNC-G3 | M | A drops a stack; response lost; retry with the same Idempotency-Key → same result, one event | Race harness |
+| SYNC-G4 | M | A taps Undo after B moved the item again → `skipped_changed`, toast `1 item changed since — not undone` | Race harness |
+| SYNC-G5 | M | A reorders on phone and laptop at once → last PUT wins per location; both converge | Race harness |
+| SYNC-G6 | M | Items arrive from a new bill while A drags → list updates around the gap; new items at the end of A's order | Unit + race harness |
+| HAPT-01 | M | `haptic()` maps every event to the §6 pattern on a stubbed `navigator.vibrate`; 60 ms throttle; off when the setting is off | Unit |
+| HAPT-02 | M | iPhone path clicks the hidden switch label N times for a pattern; no-op when unsupported; setting hidden when unsupported | Unit |
+| HAPT-03 | M | No haptic fires for remote events or on cancel | Unit |
+| ANIM-01 | M | Stocking animation finishes ≤ 520 ms for 8 items and ≤ 560 ms for 30 (stagger compresses) | Unit + Playwright |
+| ANIM-02 | M | Navigation waits for the request and the animation; failure flies icons back and stocks nothing | Playwright |
+| ANIM-03 | M | Reduced motion: no transforms, counts fade, haptic once | Unit + Playwright |
+| A11Y-G1 | M | axe clean in select mode, MENU_STATIC and the drop bar, both themes; keyboard-only user can move, ask and reorder via the item sheet | axe + Playwright |
+| VIS-G1 | M | Visual diffs vs `docs/design/renders/gestures/*.png` for r2, m2, s2, c3 at 390 px (token-level colour differences allowed) | Playwright screenshots |
+
 ---
 
 ## 4. End-to-end journeys (run on WebKit iPhone, Chromium Pixel, Firefox desktop)
