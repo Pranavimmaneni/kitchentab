@@ -517,7 +517,10 @@ async def test_KITCH_15_round_up_sent_now_judges_today_at_any_hour(api: ApiFacto
     h, _, _ = await household(api, fake_push)
     await drain(h.w.admin)
     phone = h.phones["meera"]
-    soon = lambda: [x for x in phone.payloads() if x["tag"].startswith("soon-")]  # noqa: E731
+
+    def soon() -> list[dict[str, Any]]:
+        return [x for x in phone.payloads() if x["tag"].startswith("soon-")]
+
     await at(h.w.admin, "2026-10-05T10:00:00-04:00")  # spinach at 60% today, 80% tomorrow
     await h.w.admin.post("/__test/use-soon?now=true", idem=False)
     await drain(h.w.admin)
