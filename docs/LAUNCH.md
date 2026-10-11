@@ -173,5 +173,10 @@ a dedicated KitchenTab Gmail. What differed from the plan above, all fixed in th
   desktop app) don't see a globally installed `vercel` or its login. `scripts\set-email.cmd` is
   the double-click version of `make set-email`; `--provider other --smtp-host …` works with any
   STARTTLS relay if Gmail isn't an option.
+- 2026-10-11: under `uv run` (every deploy make target) the API venv's Scripts folder is first on
+  PATH, and the Python `vercel` package (Vercel Queues SDK dependency) installs its own `vercel.exe`
+  there, so `make migrate-prod` resolved that instead of the npm CLI. The scripts now skip any
+  `vercel` inside a virtualenv and run the CLI by its absolute path; `VERCEL_CLI=<path>` overrides.
+  Check the `vercel:` line each script prints first.
 - `make deploy`'s own lint+test gate was run separately (make lint, web unit 229/229, API suite
   538 passed, slow load/race/chaos groups excluded) before deploying.

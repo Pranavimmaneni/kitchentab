@@ -2,7 +2,8 @@
 
 Python 3.12 standard library only. Every script:
 
-* resolves the `vercel` CLI with `shutil.which` and prints the path it will use;
+* resolves the `vercel` CLI with `find_vercel_cli` (skipping the Python `vercel` package's console
+  script in a virtualenv; `VERCEL_CLI` overrides) and prints the path it will use;
 * echoes every command before running it, and with `--dry-run` only echoes;
 * never prints a secret: values go to `vercel env add` on stdin (never argv), are wrapped in
   `Secret`, and every line of output is passed through `Console.redact`;
@@ -265,6 +266,55 @@ _NETWORK = re.compile(
 )
 
 
+VERCEL_CLI_ENV = "VERCEL_CLI"
+
+
+def _is_venv_scripts_dir(directory: Path) -> bool:
+    """A virtualenv's Scripts (Windows) or bin folder: the running interpreter's, or any folder whose
+    parent holds a `pyvenv.cfg`."""
+    try:
+        resolved = directory.resolve()
+    except OSError:
+        return False
+    prefixes = {sys.prefix, sys.exec_prefix, os.environ.get("VIRTUAL_ENV") or ""}
+    for prefix in filter(None, prefixes):
+        try:
+            if resolved.parent == Path(prefix).resolve():
+                return True
+        except OSError:
+            continue
+    return (resolved.parent / "pyvenv.cfg").is_file()
+
+
+def find_vercel_cli(path: str | None = None) -> str | None:
+    """The Vercel CLI (npm `vercel`), never the Python `vercel` package's console script.
+
+    `uv run` puts the API venv's Scripts folder first on PATH, and the Vercel Queues SDK dependency
+    installs a `vercel` executable there, so plain `shutil.which` finds the wrong program. Folders
+    that belong to a virtualenv are skipped; `VERCEL_CLI=<path>` picks the CLI explicitly.
+    """
+    override = os.environ.get(VERCEL_CLI_ENV)
+    if override:
+        found = shutil.which(override) or (
+            override if Path(override).is_file() else None
+        )
+        if found is None:
+            raise DeployError(
+                f"{VERCEL_CLI_ENV} is set to {override}, but there is no program there.",
+                hint=f"Point {VERCEL_CLI_ENV} at the Vercel CLI (`where vercel` / `which vercel` in "
+                "a normal terminal), or unset it to search PATH.",
+            )
+        return os.path.abspath(found)
+    search = os.environ.get("PATH", os.defpath) if path is None else path
+    for entry in search.split(os.pathsep):
+        if not entry or _is_venv_scripts_dir(Path(entry)):
+            continue
+        found = shutil.which("vercel", path=entry)
+        if found:
+            return found
+    return None
+
+
 class Runner:
     """Runs (or, in dry-run, only prints) external commands from the repo root."""
 
@@ -275,16 +325,16 @@ class Runner:
         self.dry_run = console.dry_run
 
     def which(self, tool: str) -> str | None:
-        return shutil.which(tool)
+        return find_vercel_cli() if tool == "vercel" else shutil.which(tool)
 
     def announce_vercel(self) -> str | None:
         path = self.which("vercel")
         self.console.say(f"vercel: {path or 'not found on PATH'}")
         if path is None and not self.dry_run:
             raise DeployError(
-                "The Vercel CLI isn't installed (no `vercel` on PATH).",
+                "The Vercel CLI isn't installed (no `vercel` on PATH outside a virtualenv).",
                 hint="Install it with `npm i -g vercel`, run `vercel login`, then re-run "
-                f"`make {self.target}`.",
+                f"`make {self.target}` (or set {VERCEL_CLI_ENV} to the CLI's path).",
             )
         return path
 
