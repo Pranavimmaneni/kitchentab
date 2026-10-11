@@ -9,6 +9,11 @@ Verify without rewriting (CI):  python3 docs/reference/compute_shares_reference.
 Rules encoded here:
 - All money is integer cents. No floats touch money.
 - Item line totals are split by weight using largest-remainder rounding.
+- An allocation may instead carry a fixed share of its line (`share_num`/`share_den`,
+  0 < num <= den; PRD 19.4 custom split, ADR-0030): fixed shares take that exact
+  fraction, the weighted allocations split what is left by weight. If the fixed
+  shares reach the whole line (or nobody is weighted), the fixed shares split the
+  whole line in proportion to their fractions and weighted allocations get 0.
 - Ties on remainder break by participant sort_order, then participant id.
 - Bill-level amounts (tax, each fee/tip, each order discount) are allocated one
   at a time by each participant's item subtotal clipped at 0. If every clipped
@@ -45,6 +50,32 @@ def largest_remainder(amount: int, weights: dict[str, Fraction], order: dict[str
     return {k: sign * v for k, v in floors.items()}
 
 
+def item_weights(alloc: list[dict]) -> dict[str, Fraction]:
+    """Each allocation's exact fraction of its line (custom split, ADR-0030)."""
+    fixed: dict[str, Fraction] = {}
+    weighted: dict[str, Fraction] = {}
+    for a in alloc:
+        if a.get("share_num") is not None:
+            num, den = a["share_num"], a["share_den"]
+            if not 0 < num <= den:
+                raise ValueError(f"share must be in (0, 1]: {num}/{den}")
+            fixed[a["participant"]] = Fraction(num, den)
+        else:
+            weighted[a["participant"]] = Fraction(str(a.get("weight", 1)))
+    if not fixed:
+        return weighted
+    rest = 1 - sum(fixed.values())
+    out: dict[str, Fraction] = {}
+    wsum = sum(weighted.values())
+    for a in alloc:
+        pid = a["participant"]
+        if pid in fixed:
+            out[pid] = fixed[pid]
+        else:
+            out[pid] = rest * weighted[pid] / wsum if rest > 0 else Fraction(0)
+    return out
+
+
 def compute_shares(bill: dict) -> dict:
     participants = bill["participants"]  # [{id, sort_order}]
     order = {p["id"]: (p["sort_order"], p["id"]) for p in participants}
@@ -55,7 +86,7 @@ def compute_shares(bill: dict) -> dict:
         alloc = item["allocations"]  # [{participant, weight}]
         if not alloc:
             raise ValueError(f"item {item['id']} has no allocations")
-        weights = {a["participant"]: Fraction(str(a.get("weight", 1))) for a in alloc}
+        weights = item_weights(alloc)
         for pid, cents in largest_remainder(item["line_total_cents"], weights, order).items():
             item_sub[pid] += cents
         allocated_any.update(weights)
@@ -86,9 +117,12 @@ P = [{"id": "pranav", "sort_order": 0}, {"id": "arjun", "sort_order": 1},
      {"id": "meera", "sort_order": 2}, {"id": "kabir", "sort_order": 3}]
 
 
-def item(iid, cents, who, weights=None):
-    return {"id": iid, "line_total_cents": cents,
-            "allocations": [{"participant": w, "weight": (weights or {}).get(w, 1)} for w in who]}
+def item(iid, cents, who, weights=None, shares=None):
+    def alloc(w):
+        if w in (shares or {}):
+            return {"participant": w, "share_num": shares[w][0], "share_den": shares[w][1]}
+        return {"participant": w, "weight": (weights or {}).get(w, 1)}
+    return {"id": iid, "line_total_cents": cents, "allocations": [alloc(w) for w in who]}
 
 
 ALL = ["pranav", "arjun", "meera", "kabir"]
@@ -117,6 +151,25 @@ CASES = [
      "bill": {"participants": P, "items": [i if i["id"] != "chicken" else item("chicken", 1137, ["pranav", "arjun", "kabir"]) for i in
                                            [i if i["id"] != "coffee" else item("coffee", 999, ["pranav", "meera", "kabir"]) for i in SHOPRITE_ITEMS]],
               "tax_cents": 89, "fees": [], "total_cents": 9518}},
+    *[{"name": name, "note": note,
+       "bill": {"participants": P, "items": [i if i["id"] != "chicken" else item("chicken", 1137, ["pranav", "arjun", "kabir"], shares={"kabir": share}) for i in
+                                             [i if i["id"] != "coffee" else item("coffee", 999, ["pranav", "meera", "kabir"]) for i in SHOPRITE_ITEMS]],
+                "tax_cents": 89, "fees": [], "total_cents": 9518}}
+      for name, note, share in [
+          ("request_custom_split_quarter", "Custom split (PRD 19.4, ADR-0030): Pranav approves Kabir's ask for chicken thighs at 25%: Kabir pays a quarter of the $11.37 line, Pranav and Arjun split the rest", (1, 4)),
+          ("request_custom_split_amount", "Custom split by value: Pranav types $5.00 of the $11.37 line, stored as the exact fraction 500/1137 so Kabir's line share is exactly 500", (500, 1137)),
+          ("request_custom_split_all", "Custom split at 100%: Kabir pays the whole chicken line; Pranav and Arjun stay ticked at $0.00", (1, 1)),
+      ]],
+    {"name": "custom_share_over_the_whole_line", "note": "Two fixed shares adding up past 100% (3/4 + 1/2): they split the line 3:2 and the weighted owner gets 0",
+     "bill": {"participants": P[:3], "items": [item("cheese", 1001, ["pranav", "arjun", "meera"], shares={"arjun": (3, 4), "meera": (1, 2)})],
+              "tax_cents": 50, "fees": [], "total_cents": 1051}},
+    {"name": "custom_share_nobody_weighted", "note": "Only a 1/4 fixed share left on the line (the owners were unticked later): it takes the whole line",
+     "bill": {"participants": P[:2], "items": [item("milk", 429, ["arjun"], shares={"arjun": (1, 4)}), item("eggs", 549, ["pranav"])],
+              "tax_cents": 0, "fees": [], "total_cents": 978}},
+    {"name": "custom_share_negative_line_and_weights", "note": "A 1/3 fixed share on a deposit return next to weighted 2:1 owners; rounded on the absolute value, then negated",
+     "bill": {"participants": P[:3], "items": [item("deposit_return", -100, ["pranav", "arjun", "meera"], weights={"pranav": 2}, shares={"meera": (1, 3)}),
+                                                item("water", 700, ["pranav", "arjun", "meera"])],
+              "tax_cents": 0, "fees": [], "total_cents": 600}},
     {"name": "three_way_remainder", "note": "$10.00 over 3: extra cent goes to lowest sort_order on tie",
      "bill": {"participants": P[:3], "items": [item("pizza", 1000, ["pranav", "arjun", "meera"])], "tax_cents": 0, "fees": [], "total_cents": 1000}},
     {"name": "weighted", "note": "v1.1 weights stored from day one: rice 2:1:1",

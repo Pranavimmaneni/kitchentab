@@ -9,6 +9,7 @@ import { strings } from "./strings";
 import type {
   InventoryItem,
   KitchenFilter,
+  PartBody,
   RequestStatus,
   Resolution,
   ShareRequest,
@@ -184,6 +185,51 @@ export function splitDeltaChips(
         id === meMemberId ? strings.people.youTag : (names[id] ?? strings.requests.someone);
       return deltaChip(name, cents);
     });
+}
+
+/** FR-81 quick choices: "base" is Equal share (split) or the suggested amount (chip in). */
+export type PartChoice = "base" | 25 | 50 | 100 | "custom";
+export type PartUnit = "percent" | "dollars";
+export const PART_PRESETS = [25, 50, 100] as const;
+
+/** A whole percent from 1 to 100, else null. */
+export function parsePercent(raw: string): number | null {
+  const text = raw.trim().replace(/%$/, "").trim();
+  if (!/^\d{1,3}$/.test(text)) return null;
+  const value = Number(text);
+  return value >= 1 && value <= 100 ? value : null;
+}
+
+/**
+ * The answer body for the chosen part (FR-81), or null while a custom entry is invalid. The server
+ * turns a percent or value into the exact share; nothing here computes money (CLAUDE.md rule 5).
+ */
+export function partBody(
+  decision: "split" | "chip_in",
+  choice: PartChoice,
+  unit: PartUnit,
+  raw: string,
+  lineTotalCents: number,
+  suggestionCents: number | null,
+): PartBody | null {
+  if (choice === "base") {
+    if (decision === "split") return {};
+    return suggestionCents ? { chip_in_cents: suggestionCents } : {};
+  }
+  if (choice !== "custom") return { percent: choice };
+  if (unit === "percent") {
+    const percent = parsePercent(raw);
+    return percent === null ? null : { percent };
+  }
+  const cents = chipInCents(raw, lineTotalCents);
+  if (cents === null) return null;
+  return decision === "chip_in" ? { chip_in_cents: cents } : { amount_cents: cents };
+}
+
+/** The price under the item icon on a request card (FR-82): its bill line total, or "No price". */
+export function requestPrice(req: Pick<ShareRequest, "line_total_cents">): string {
+  const cents = req.line_total_cents;
+  return cents === null || cents === undefined ? strings.requests.noPrice : formatMoney(cents);
 }
 
 /** Chip-in amount in cents when it is within $0.01..line total, else null (FR-72, ASK-05). */

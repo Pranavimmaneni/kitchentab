@@ -71,7 +71,13 @@ export type ClaimOut = { house_id: string; member: Member };
 export type Storage = "fridge" | "freezer" | "pantry" | "none";
 export type BillState = "draft" | "open" | "settled" | "voided";
 
-export type BillAllocation = { participant: string; weight: string };
+export type BillAllocation = {
+  participant: string;
+  weight: string;
+  /** Fixed fraction of the line from a custom split (ADR-0030); null for weighted ticks. */
+  share_num?: number | null;
+  share_den?: number | null;
+};
 
 export type BillItem = {
   id: string;

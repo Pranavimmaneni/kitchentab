@@ -410,6 +410,7 @@ TABLE: list[Row] = [
     r("POST", "/inventory/{item_id}/requests", HOUSE, body=const({"amount": "half"}), item_id=INV),
     r("GET", "/houses/{house_id}/requests", HOUSE, house_id=H),
     r("GET", "/requests/{request_id}/split-preview", HOUSE, request_id=ASK),
+    r("GET", "/requests/{request_id}/answer-preview", HOUSE, request_id=ASK),
     r("POST", "/requests/{request_id}/answer", frozenset({MEMBER}), body=const({"decision": "free"}), request_id=ASK),
     r("POST", "/requests/{request_id}/undo", frozenset({MEMBER}), request_id=ASK),
     r("POST", "/requests/{request_id}/cancel", frozenset({ADMIN}), request_id=ASK),

@@ -154,3 +154,56 @@ describe("compute_shares in TypeScript", () => {
     }
   });
 });
+
+describe("custom split shares (ADR-0030)", () => {
+  it("MONEY-11 a value split lands on the exact cent in TypeScript too [FR-81]", () => {
+    for (const [total, value] of [
+      [1137, 500],
+      [1137, 1],
+      [1137, 1136],
+      [99_999, 33_333],
+      [10_000_000, 1],
+    ] as const) {
+      const result = computeShares({
+        participants: [
+          { id: "pranav", sortOrder: 0 },
+          { id: "arjun", sortOrder: 1 },
+          { id: "kabir", sortOrder: 3 },
+        ],
+        items: [
+          {
+            id: "x",
+            lineTotalCents: total,
+            allocations: [
+              { participant: "pranav", weightMilli: 1000 },
+              { participant: "arjun", weightMilli: 1000 },
+              { participant: "kabir", weightMilli: 1000, share: [value, total] },
+            ],
+          },
+        ],
+        taxCents: 0,
+        fees: [],
+        totalCents: total,
+      });
+      expect(result.itemSubtotals.kabir).toBe(value);
+    }
+  });
+
+  it("MONEY-11 shares outside (0, 1] are refused [FR-81]", () => {
+    expect(() =>
+      computeShares({
+        participants: [{ id: "a", sortOrder: 0 }],
+        items: [
+          {
+            id: "x",
+            lineTotalCents: 10,
+            allocations: [{ participant: "a", weightMilli: 1000, share: [2, 1] }],
+          },
+        ],
+        taxCents: 0,
+        fees: [],
+        totalCents: 10,
+      }),
+    ).toThrow(/share/);
+  });
+});

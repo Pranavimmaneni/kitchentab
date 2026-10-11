@@ -8,6 +8,7 @@ import type {
   InventoryItem,
   InventoryView,
   KitchenView,
+  PartBody,
   Place,
   ShareRequest,
 } from "./api/kitchen-types";
@@ -159,13 +160,13 @@ export function kitchenWrites(client: QueryClient, houseId: string, meMemberId: 
     async answer(
       req: ShareRequest,
       decision: "decline" | "free" | "split" | "chip_in",
-      chipInCents: number | null,
+      part: PartBody,
       idempotencyKey: string,
     ): Promise<void> {
       try {
         await api.post(
           `/requests/${req.id}/answer`,
-          decision === "chip_in" ? { decision, chip_in_cents: chipInCents } : { decision },
+          decision === "split" || decision === "chip_in" ? { decision, ...part } : { decision },
           { idempotencyKey },
         );
       } finally {

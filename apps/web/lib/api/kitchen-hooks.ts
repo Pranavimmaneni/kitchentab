@@ -2,7 +2,14 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "./client";
-import type { InventoryView, KitchenPlace, KitchenView, RequestsView } from "./kitchen-types";
+import type {
+  AnswerPreview,
+  InventoryView,
+  KitchenPlace,
+  KitchenView,
+  PartBody,
+  RequestsView,
+} from "./kitchen-types";
 
 /** Kitchen reads, keyed under `["house", id]` like the other house screens (PRD §21.6). */
 export const kitchenKeys = {
@@ -40,6 +47,30 @@ export function useRequests(houseId: string | null | undefined, box: "in" | "out
     queryKey: kitchenKeys.requests(houseId ?? "", box),
     queryFn: () => api.get<RequestsView>(`/houses/${houseId}/requests?box=${box}`),
     enabled: Boolean(houseId),
+  });
+}
+
+/**
+ * FR-81: what saying yes with this part would cost (asker's part, share deltas), from the server's
+ * `compute_shares` without saving. `body` null = nothing valid to preview yet.
+ */
+export function useAnswerPreview(
+  houseId: string,
+  requestId: string,
+  decision: "split" | "chip_in",
+  body: PartBody | null,
+  enabled: boolean,
+) {
+  const params = new URLSearchParams({ decision });
+  if (body?.percent !== undefined) params.set("percent", String(body.percent));
+  const cents = body?.amount_cents ?? body?.chip_in_cents;
+  if (cents !== undefined) params.set("amount_cents", String(cents));
+  return useQuery({
+    queryKey: ["house", houseId, "answer-preview", requestId, params.toString()] as const,
+    queryFn: () =>
+      api.get<AnswerPreview>(`/requests/${requestId}/answer-preview?${params.toString()}`),
+    enabled: enabled && body !== null,
+    staleTime: 5_000,
   });
 }
 

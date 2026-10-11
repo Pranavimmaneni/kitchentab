@@ -5,7 +5,9 @@ Must produce exactly what `docs/reference/compute_shares_reference.py` produces 
 TypeScript mirror in `apps/web/lib/money/` follows the same steps line for line.
 
 Weights are stored as numeric(6,3); here they are integer thousandths (`weight_milli`), so every
-step is exact integer arithmetic: no floats, no Fractions.
+step is exact integer arithmetic: no floats, no Fractions. An allocation can instead hold a fixed
+share of its line (`share = (num, den)`, the custom split of PRD §19.4, ADR-0030); `item_weights`
+turns a line's allocations into integer weights over a common denominator.
 """
 
 from __future__ import annotations
@@ -13,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from decimal import Decimal
+from math import lcm
 from typing import Any, Literal
 
 FeeKind = Literal["fee", "tip", "order_discount", "adjustment"]
@@ -41,6 +44,7 @@ class Participant:
 class Allocation:
     participant: str
     weight_milli: int = WEIGHT_SCALE
+    share: tuple[int, int] | None = None  # fixed fraction of the line (num, den), 0 < num <= den
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,6 +110,40 @@ def largest_remainder(amount: int, weights: Mapping[str, int], order: Mapping[st
     return {k: sign * v for k, v in floors.items()}
 
 
+def item_weights(item: Item, known: Mapping[str, object]) -> dict[str, int]:
+    """Integer weight per allocation of one line (0 = gets nothing from it).
+
+    Weighted allocations only: their weights. With fixed shares (ADR-0030): each fixed share takes
+    its exact fraction f and the weighted allocations split 1 - Σf by weight; if Σf >= 1 or nobody
+    is weighted, the fixed shares split the whole line in proportion to f and the weighted get 0.
+    Everything is scaled to one common denominator, so this is the reference's Fractions, exactly.
+    """
+    if not item.allocations:
+        raise MoneyError(f"item {item.id} has no allocations")
+    seen: set[str] = set()
+    for a in item.allocations:
+        if a.participant not in known:
+            raise MoneyError(f"item {item.id} allocated to unknown participant {a.participant}")
+        if a.participant in seen:
+            raise MoneyError(f"item {item.id} allocates {a.participant} twice")
+        seen.add(a.participant)
+        if a.share is not None and not 0 < a.share[0] <= a.share[1]:
+            raise MoneyError(f"share must be in (0, 1]: {a.share[0]}/{a.share[1]}")
+    fixed = [a for a in item.allocations if a.share is not None]
+    if not fixed:
+        return {a.participant: a.weight_milli for a in item.allocations}
+    den = lcm(*(a.share[1] for a in fixed if a.share))
+    units = {a.participant: a.share[0] * (den // a.share[1]) for a in fixed if a.share}
+    rest = den - sum(units.values())
+    weighted_total = sum(a.weight_milli for a in item.allocations if a.share is None)
+    if rest <= 0 or weighted_total == 0:
+        return {a.participant: units.get(a.participant, 0) for a in item.allocations}
+    return {
+        a.participant: units[a.participant] * weighted_total if a.share is not None else rest * a.weight_milli
+        for a in item.allocations
+    }
+
+
 def bill_level_amounts(bill: BillInput) -> list[tuple[str, int]]:
     """Tax first, then each fee in order; order discounts negated, adjustments as stored."""
     out = [("tax", bill.tax_cents)]
@@ -123,16 +161,11 @@ def compute_shares(bill: BillInput) -> ShareResult:
     seen: set[str] = set()
 
     for item in bill.items:
-        if not item.allocations:
-            raise MoneyError(f"item {item.id} has no allocations")
-        weights: dict[str, int] = {}
-        for a in item.allocations:
-            if a.participant not in order:
-                raise MoneyError(f"item {item.id} allocated to unknown participant {a.participant}")
-            if a.participant in weights:
-                raise MoneyError(f"item {item.id} allocates {a.participant} twice")
-            weights[a.participant] = a.weight_milli
-        split = largest_remainder(item.line_total_cents, weights, order)
+        weights = item_weights(item, order)
+        # A weighted owner pushed to 0 by fixed shares stays on the line with 0 cents.
+        split = dict.fromkeys(weights, 0) | largest_remainder(
+            item.line_total_cents, {k: w for k, w in weights.items() if w > 0}, order
+        )
         by_item[item.id] = split
         for pid, cents in split.items():
             item_sub[pid] += cents
@@ -181,6 +214,12 @@ def _kind(value: Any) -> FeeKind:
     return kind
 
 
+def _allocation(raw: Mapping[str, Any]) -> Allocation:
+    if raw.get("share_num") is not None:
+        return Allocation(str(raw["participant"]), share=(_cents(raw["share_num"]), _cents(raw["share_den"])))
+    return Allocation(str(raw["participant"]), weight_to_milli(raw.get("weight", 1)))
+
+
 def bill_from_dict(raw: Mapping[str, Any]) -> BillInput:
     """The fixture / reference JSON shape (`packages/fixtures/money_cases.json`)."""
     return BillInput(
@@ -189,7 +228,7 @@ def bill_from_dict(raw: Mapping[str, Any]) -> BillInput:
             Item(
                 str(i["id"]),
                 _cents(i["line_total_cents"]),
-                tuple(Allocation(str(a["participant"]), weight_to_milli(a.get("weight", 1))) for a in i["allocations"]),
+                tuple(_allocation(a) for a in i["allocations"]),
             )
             for i in raw["items"]
         ),

@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     Date,
@@ -207,6 +208,10 @@ class Allocation(Base):
         exactly_one_participant(),
         CheckConstraint("weight > 0", name="weight_positive"),
         CheckConstraint("quantity IS NULL OR quantity > 0", name="quantity_positive"),
+        CheckConstraint(
+            "(share_num IS NULL AND share_den IS NULL) OR (share_num > 0 AND share_den > 0 AND share_num <= share_den)",
+            name="share_valid",
+        ),
         Index("ix_allocations_item_id", "item_id"),
         Index(
             "uq_allocations_item_id_member_id",
@@ -230,6 +235,9 @@ class Allocation(Base):
     guest_id: Mapped[uuid.UUID | None] = fk("guests.id", nullable=True)
     weight: Mapped[Decimal] = mapped_column(Numeric(6, 3), nullable=False, server_default=text("1"))
     quantity: Mapped[Decimal | None] = mapped_column(Numeric(10, 3))  # reserved for v1.1
+    # Custom split (FR-81, ADR-0030): a fixed fraction of the line instead of the weight.
+    share_num: Mapped[int | None] = mapped_column(BigInteger)
+    share_den: Mapped[int | None] = mapped_column(BigInteger)
     created_by: Mapped[uuid.UUID | None] = fk("users.id", nullable=True)
     created_at: Mapped[datetime] = ts()
     # Last-writer stamps for set-state cells (§21.8)
