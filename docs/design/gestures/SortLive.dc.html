@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stocking animation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}
+@keyframes ktbump{0%{transform:scale(1,1)}40%{transform:scale(1.08,0.92)}100%{transform:scale(1,1)}}
+@keyframes ktcount{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.kt-bump{animation:ktbump 100ms cubic-bezier(.2,1.4,.4,1) both}
+.kt-count{animation:ktcount 90ms ease-out both}
+@media (prefers-reduced-motion: reduce){.kt-fly,.kt-fly *{transition:opacity 120ms linear!important}.kt-bump,.kt-count{animation:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; overflow: hidden; position: relative">
+  <header style="position: absolute; left: 0; right: 0; top: 52px; padding: 0 16px 0 8px; display: flex; align-items: center; gap: 6px">
+    <a href="Summary.dc.html" aria-label="Back" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{step}}</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">{{title}}</h1>
+    </div>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div style="position: absolute; left: 20px; top: 120px; width: 350px; height: 400px; box-sizing: border-box; padding: 6px 12px; background: {{c.paper}}; border: 2px solid {{c.line}}; border-radius: 8px; box-shadow: 5px 5px 0 {{c.shadow}}; display: flex; flex-direction: column">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+      <div style="height: 48px; flex: none; display: flex; align-items: center; gap: 10px; border-bottom: {{r.rule}}; opacity: {{rowOp}}; transition: opacity 120ms linear">
+        <span aria-hidden="true" style="width: 32px; height: 32px; flex: none; border-radius: 50%; border: 2px dashed {{c.faint}}; box-sizing: border-box"></span>
+        <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; padding: 2px 6px; border: 1.5px solid {{c.line}}; background: {{r.tagBg}}; color: #121210">{{r.tag}}</span>
+        <span style="width: 54px; text-align: right; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700">{{r.price}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-for list="{{bins}}" as="b" hint-placeholder-count="3">
+    <div class="{{b.cls}}" style="position: absolute; left: {{b.x}}px; top: 560px; width: 104px; height: 112px; box-sizing: border-box; border: 2px solid {{c.line}}; border-radius: 10px; background: {{b.bg}}; box-shadow: 4px 4px 0 {{c.shadow}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: {{c.ink}}; transform-origin: 50% 100%; animation-delay: {{b.delay}}ms">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.icon}}"></path></svg>
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">{{b.label}}</span>
+      <sc-if value="{{landed}}" hint-placeholder-val="{{ false }}">
+        <span class="kt-count" style="position: absolute; top: -12px; right: -10px; min-width: 30px; height: 26px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; border: 2px solid #121210; background: #C6F432; color: #121210; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; animation-delay: {{b.delay}}ms">{{b.count}}</span>
+      </sc-if>
+    </div>
+  </sc-for>
+
+  <sc-for list="{{icons}}" as="i" hint-placeholder-count="8">
+    <span class="kt-fly" aria-hidden="true" style="position: absolute; left: 36px; top: {{i.top}}px; width: 32px; height: 32px; transform: translateX({{i.dx}}px); transition: {{i.tx}}; opacity: {{i.op}}">
+      <span style="display: block; width: 32px; height: 32px; transform: translateY({{i.dy}}px); transition: {{i.ty}}">
+        <span style="width: 32px; height: 32px; border-radius: 50%; background: {{i.bg}}; border: 2px solid {{c.line}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 {{c.shadow}}; transform: scale({{i.scale}}) rotate({{i.rot}}deg); transition: {{i.ts}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="{{i.d1}}" fill="{{i.f1}}"></path><path d="{{i.d2}}" fill="{{i.f2}}"></path><path d="{{i.d3}}" fill="{{i.f3}}"></path></svg>
+        </span>
+      </span>
+    </span>
+  </sc-for>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}">
+    <button type="button" onClick="{{go}}" style="width: 100%; min-height: 56px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{btnBg}}; color: {{btnFg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; box-shadow: 4px 4px 0 {{c.shadow}}; cursor: pointer">{{btnLabel}}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null, phase: 'idle' }; this.timers = []; }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  run() {
+    this.timers.forEach(clearTimeout); this.timers = [];
+    this.setState({ phase: 'idle' });
+    this.timers.push(setTimeout(() => this.setState({ phase: 'lift' }), 40));
+    this.timers.push(setTimeout(() => this.setState({ phase: 'fly' }), 100));
+    this.timers.push(setTimeout(() => this.setState({ phase: 'done' }), 480));
+  }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const phase = this.state.phase;
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', frost: '#18262A', cold: '#14201F', wall: '#24221D' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', frost: '#F4FBFC', cold: '#E3F1F3', wall: '#F1EADB' };
+    const ICONS = {
+      dumplings: { bg: '#E3DDFF', p: [['M6 5 H18 L19 20.5 H5 Z', '#7FD3F7'], ['M8 15.5 C8 11 16 11 16 15.5 Z', '#FFFFFF'], ['M10 13 L10.6 14.6 M12 12.4 V14.4 M14 13 L13.4 14.6', 'none']] },
+      icecream: { bg: '#FFE0D4', p: [['M6 9.5 L7.5 20.5 H16.5 L18 9.5 Z', '#FFB3C7'], ['M5 7 H19 V9.5 H5 Z', '#FFFFFF'], ['M8 13 H16', 'none']] },
+      milk: { bg: '#D6F0FB', p: [['M7.5 9.5 L7.5 20.5 L16.5 20.5 L16.5 9.5 L14 6 L10 6 Z', '#FFFFFF'], ['M10 6 L10 3.5 L14 3.5 L14 6', 'none'], ['M7.5 13 H16.5 V17 H7.5 Z', '#7FD3F7']] },
+      yogurt: { bg: '#E3DDFF', p: [['M6.5 8.5 L8.2 20 H15.8 L17.5 8.5 Z', '#FFFFFF'], ['M5.5 6 H18.5 V8.5 H5.5 Z', '#C6F432'], ['M7.3 12 H16.7 L16.2 15.5 H7.8 Z', '#FF8A65']] },
+      eggs: { bg: '#FFF0C2', p: [['M3.5 13.5 H20.5 V17.5 Q20.5 19.5 18.5 19.5 H5.5 Q3.5 19.5 3.5 17.5 Z', '#E8D2A6'], ['M6 13.5 C6 8.5 11 8.5 11 13.5', '#FFFFFF'], ['M13 13.5 C13 8.5 18 8.5 18 13.5', '#FFFFFF']] },
+      chicken: { bg: '#FFE0D4', p: [['M13 4 C18 3 21.5 7.5 19.5 11.5 C18 14.5 14.5 15.5 12 14.5 L9.5 12 C8.5 9 9.5 4.8 13 4 Z', '#E9A15A'], ['M10.5 13.5 L6.8 17.2', 'none'], ['M4.2 17.6 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0', '#FFFFFF']] },
+      rice: { bg: '#FFE0D4', p: [['M6 7.5 C6 5 8.5 4 12 4 C15.5 4 18 5 18 7.5 L19 20.5 H5 Z', '#FFFFFF'], ['M8 7.5 H16', 'none'], ['M8.2 11.5 H15.8 V16 H8.2 Z', '#FF6FB5']] },
+      coffee: { bg: '#FFF0C2', p: [['M7 6.5 L6 20.5 H18 L17 6.5 Z', '#A8743F'], ['M7 6.5 L9 3.5 H15 L17 6.5', '#C99560'], ['M10.4 13.5 a1.6 2.2 0 1 0 3.2 0 a1.6 2.2 0 1 0 -3.2 0 M12 11.3 V15.7', '#3B2A1A']] }
+    };
+    const LIST = [
+      ['dumplings', 'Frozen dumplings', 'FREEZER', '$8.99'], ['icecream', 'Ice cream', 'FREEZER', '$6.49'],
+      ['milk', 'Whole milk', 'FRIDGE', '$4.29'], ['yogurt', 'Greek yogurt', 'FRIDGE', '$6.79'],
+      ['eggs', 'Eggs, 18 ct', 'FRIDGE', '$5.49'], ['chicken', 'Chicken thighs', 'FRIDGE', '$11.37'],
+      ['rice', 'Jasmine rice', 'PANTRY', '$9.99'], ['coffee', 'Ground coffee', 'PANTRY', '$8.49']
+    ];
+    const BIN = { FREEZER: { x: 20, cx: 72, bg: c.frost, icon: 'M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5' },
+      FRIDGE: { x: 143, cx: 195, bg: c.cold, icon: 'M6 2.5h12a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-15a2 2 0 0 1 2-2zM4 9.5h16M8 5.5v2M8 12.5v4' },
+      PANTRY: { x: 266, cx: 318, bg: c.wall, icon: 'M4 3.5h16v17H4zM4 9.5h16M4 15h16M7 6.5h3M13 12h4M7 18h5' } };
+    const TAG = { FREEZER: '#D6F0FB', FRIDGE: '#C6F432', PANTRY: '#F7A44A' };
+    const LIFT = 60, FLY = 220, STAGGER = 20;
+    const flying = phase === 'fly' || phase === 'done';
+    const seen = {};
+    const icons = LIST.map(([k, name, tag], i) => {
+      const ic = ICONS[k];
+      const cy = 150 + 48 * i;
+      const n = seen[tag] = (seen[tag] || 0) + 1;
+      const delay = i * STAGGER;
+      const dx = BIN[tag].cx - 52 + (n % 2 ? -1 : 1) * Math.min(n, 3) * 6;
+      const dy = 612 - cy - (n - 1) * 4;
+      return {
+        top: cy - 16, bg: ic.bg, d1: ic.p[0][0], f1: ic.p[0][1], d2: ic.p[1][0], f2: ic.p[1][1], d3: ic.p[2][0], f3: ic.p[2][1],
+        dx: flying ? dx : 0,
+        dy: flying ? dy : (phase === 'lift' ? -6 : 0),
+        scale: flying ? 0.62 : (phase === 'lift' ? 1.15 : 1),
+        rot: flying ? (n % 2 ? -14 : 12) : 0,
+        op: phase === 'done' ? 0 : 1,
+        tx: phase === 'idle' ? 'none' : 'transform ' + FLY + 'ms cubic-bezier(.25,.1,.35,1) ' + delay + 'ms, opacity 90ms linear 60ms',
+        ty: phase === 'idle' ? 'none' : (phase === 'lift' ? 'transform ' + LIFT + 'ms cubic-bezier(.2,1.4,.4,1)' : 'transform ' + FLY + 'ms cubic-bezier(.55,0,.85,.4) ' + delay + 'ms'),
+        ts: phase === 'idle' ? 'none' : (phase === 'lift' ? 'transform ' + LIFT + 'ms cubic-bezier(.2,1.4,.4,1)' : 'transform ' + FLY + 'ms ease-in ' + delay + 'ms')
+      };
+    });
+    const firstIdx = { FREEZER: 0, FRIDGE: 2, PANTRY: 6 };
+    const counts = { FREEZER: 2, FRIDGE: 4, PANTRY: 2 };
+    const bins = ['FREEZER', 'FRIDGE', 'PANTRY'].map((k) => ({
+      label: k, x: BIN[k].x, bg: BIN[k].bg, icon: BIN[k].icon, count: '+' + counts[k],
+      cls: flying ? 'kt-bump' : '', delay: flying ? (phase === 'done' ? 0 : firstIdx[k] * STAGGER + FLY - 20) : 0
+    }));
+    const rows = LIST.map(([k, name, tag, price], i) => ({ name, tag, price, tagBg: TAG[tag], rule: i < LIST.length - 1 ? '1.5px dashed ' + c.faint : 'none' }));
+    const done = phase === 'done';
+    return {
+      c, icons, bins, rows,
+      rowOp: phase === 'idle' ? 1 : 0.4,
+      landed: done,
+      step: done ? 'SENT · 3 ROOMMATES PINGED' : 'SHOPRITE · OCT 9 · $61.90',
+      title: done ? 'Stocked' : 'Review & send',
+      btnLabel: done ? 'Replay animation ↺' : 'Send to 3 roommates →',
+      btnBg: done ? c.paper : c.accent2, btnFg: done ? c.ink : c.onAccent2,
+      go: () => this.run(),
+      isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>

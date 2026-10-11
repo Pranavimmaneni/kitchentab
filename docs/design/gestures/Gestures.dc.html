@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fridge gestures</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}*{scrollbar-width:none}*::-webkit-scrollbar{display:none}
+.kt-noselect{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+</style>
+</helmet>
+<div class="kt-noselect" style="width: 390px; height: 844px; box-sizing: border-box; background: {{c.bg}}; font-family: 'Work Sans', sans-serif; color: {{c.ink}}; overflow: hidden; position: relative">
+
+  <header style="position: absolute; left: 0; right: 0; top: 52px; padding: 0 16px 0 8px; display: flex; align-items: center; gap: 6px">
+    <a href="Kitchen.dc.html" aria-label="Back to the kitchen" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{c.ink}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{c.muted}}">{{step}}</span>
+      <h1 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700">The fridge</h1>
+    </div>
+    <button type="button" aria-pressed="{{selPressed}}" style="min-height: 44px; padding: 0 14px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{selBtnBg}}; color: {{selBtnFg}}; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; cursor: pointer">{{selBtnLabel}}</button>
+    <button type="button" aria-label="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border: 2px solid {{c.line}}; border-radius: 12px; background: {{c.paper}}; color: {{c.ink}}; display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+    </button>
+  </header>
+
+  <div role="toolbar" aria-label="Filter items" style="position: absolute; left: 20px; right: 20px; top: 108px; display: flex; gap: 6px">
+    <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+      <button type="button" aria-pressed="{{f.pressed}}" style="min-height: 44px; padding: 0 11px; flex: none; border: 2px solid {{c.line}}; border-radius: 999px; background: {{f.bg}}; color: {{f.fg}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; white-space: nowrap">{{f.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 20px; top: 166px; width: 350px; height: 330px; box-sizing: border-box; background: {{c.cold}}; border: 2px solid {{c.line}}; border-radius: 14px; box-shadow: 5px 5px 0 {{c.shadow}}"></div>
+  <div style="position: absolute; left: 30px; top: 176px; width: 330px; height: 112px; box-sizing: border-box; background: {{freezerBg}}; border: {{freezerBorder}}; border-radius: 8px"></div>
+  <span style="position: absolute; left: 40px; top: 184px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: {{c.muted}}">{{freezerLabel}}</span>
+  <span style="position: absolute; left: 40px; top: 298px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: {{c.muted}}">REFRIGERATED</span>
+  <div style="position: absolute; left: 22px; width: 346px; top: 394px; height: 2px; background: {{c.line}}"></div>
+  <div style="position: absolute; left: 22px; width: 346px; top: 396px; height: 6px; background: {{c.glass}}"></div>
+  <div style="position: absolute; left: 22px; width: 346px; top: 478px; height: 2px; background: {{c.line}}"></div>
+  <div style="position: absolute; left: 22px; width: 346px; top: 480px; height: 6px; background: {{c.glass}}"></div>
+
+  <sc-for list="{{ghosts}}" as="g" hint-placeholder-count="0">
+    <span aria-hidden="true" style="position: absolute; left: {{g.left}}px; top: {{g.top}}px; width: 40px; height: 40px; border-radius: 50%; border: 2px dashed {{g.color}}; box-sizing: border-box; background: {{g.fill}}"></span>
+  </sc-for>
+
+  <sc-for list="{{items}}" as="it" hint-placeholder-count="10">
+    <div style="position: absolute; left: {{it.x}}px; top: {{it.y}}px; width: 56px; height: 74px">
+      <sc-if value="{{it.shift}}" hint-placeholder-val="{{ false }}">
+        <svg aria-hidden="true" width="16" height="14" viewBox="0 0 16 14" style="position: absolute; left: -10px; top: 13px" fill="none" stroke="{{c.muted}}" stroke-width="2" stroke-linecap="round"><path d="M2 3h9M5 7h10M2 11h9"></path></svg>
+      </sc-if>
+      <button type="button" aria-label="{{it.aria}}" style="width: 56px; height: 74px; border: none; background: transparent; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; color: {{c.ink}}; opacity: {{it.op}}">
+        <span style="position: relative; width: 40px; height: 40px; flex: none; border-radius: 50%; background: {{it.bg}}; border: {{it.ringW}} {{it.ringStyle}} {{it.ring}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 {{c.shadow}}">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{it.d1}}" fill="{{it.f1}}"></path><path d="{{it.d2}}" fill="{{it.f2}}"></path><path d="{{it.d3}}" fill="{{it.f3}}"></path></svg>
+          <span style="position: absolute; top: -4px; right: -6px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{it.badgeBg}}; display: flex; align-items: center; justify-content: center">
+            <sc-if value="{{it.isOpen}}" hint-placeholder-val="{{ true }}"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg></sc-if>
+            <sc-if value="{{it.isAsk}}" hint-placeholder-val="{{ false }}"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3"></path><rect x="5" y="11" width="14" height="10" rx="2"></rect></svg></sc-if>
+          </span>
+          <sc-if value="{{it.soon}}" hint-placeholder-val="{{ false }}">
+            <span style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); font-family: 'Space Mono', monospace; font-size: 7px; font-weight: 700; padding: 0 4px; background: #FF8A65; color: #121210; border: 1.5px solid #121210; white-space: nowrap">SOON</span>
+          </sc-if>
+          <sc-if value="{{it.selMode}}" hint-placeholder-val="{{ false }}">
+            <span style="position: absolute; top: -6px; left: -8px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{it.checkBg}}; display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{it.selected}}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg></sc-if>
+            </span>
+          </sc-if>
+        </span>
+        <span style="width: 56px; font-family: 'Space Mono', monospace; font-size: 9px; text-transform: uppercase; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px">{{it.short}}</span>
+        <span style="display: flex">
+          <sc-for list="{{it.owners}}" as="o" hint-placeholder-count="2">
+            <span style="width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid {{c.line}}; box-sizing: border-box; background: {{o.bg}}; color: {{o.fg}}; font-family: 'Space Mono', monospace; font-size: 7px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-left: {{o.ml}}">{{o.initial}}</span>
+          </sc-for>
+        </span>
+      </button>
+    </div>
+  </sc-for>
+
+  <sc-for list="{{settles}}" as="s" hint-placeholder-count="0">
+    <span aria-hidden="true" style="position: absolute; left: {{s.left}}px; top: {{s.top}}px; width: 56px; height: 56px; border-radius: 50%; border: 3px solid {{c.accent}}; box-sizing: border-box; box-shadow: 0 0 0 3px {{c.line}}"></span>
+  </sc-for>
+
+  <sc-for list="{{rings}}" as="r" hint-placeholder-count="0">
+    <svg aria-hidden="true" width="56" height="56" viewBox="0 0 56 56" style="position: absolute; left: {{r.left}}px; top: {{r.top}}px">
+      <circle cx="28" cy="28" r="25" fill="none" stroke="{{c.faint}}" stroke-width="4"></circle>
+      <circle cx="28" cy="28" r="25" fill="none" stroke="{{c.accent2}}" stroke-width="4" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="{{r.off}}" transform="rotate(-90 28 28)"></circle>
+    </svg>
+  </sc-for>
+
+  <div style="position: absolute; left: 20px; right: 20px; top: 514px; display: flex; gap: 14px; flex-wrap: wrap; font-family: 'Space Mono', monospace; font-size: 10px; color: {{c.muted}}">
+    <sc-if value="{{selMode}}" hint-placeholder-val="{{ false }}">
+      <span style="font-family: 'Work Sans', sans-serif; font-size: 13px; line-height: 1.45; color: {{c.ink}}">Tap items to pick them. Hold a picked item to drag them all at once.</span>
+    </sc-if>
+    <sc-if value="{{notSelMode}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{c.accent}}; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"></path></svg></span>OPEN TO SHARE</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid {{c.line}}; box-sizing: border-box; background: {{c.paper}}; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V8a5 5 0 0 1 10 0v3"></path><rect x="5" y="11" width="14" height="10" rx="2"></rect></svg></span>ASK FIRST</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 18px; border-radius: 50%; border: 2px dashed #FF8A65; box-sizing: border-box"></span>USE SOON</span>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{showNormalBar}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; gap: 10px">
+      <button type="button" style="flex: 1; min-height: 52px; border: 2px dashed {{c.line}}; border-radius: 999px; background: transparent; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">+ Add leftovers</button>
+      <a href="Requests.dc.html" style="text-decoration: none; min-height: 52px; padding: 0 18px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{c.accent2}}; color: {{c.onAccent2}}; display: flex; align-items: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; box-shadow: 3px 3px 0 {{c.shadow}}">Asks · 2</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{selMode}}" hint-placeholder-val="{{ false }}">
+    <div role="toolbar" aria-label="Move selected items" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 32px; background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; align-items: center; gap: 8px">
+      <div style="width: 86px; flex: none; display: flex; flex-direction: column; font-family: 'Space Mono', monospace">
+        <span style="font-size: 20px; font-weight: 700; line-height: 1">{{selCount}}</span>
+        <span style="font-size: 10px; color: {{c.muted}}">SELECTED</span>
+      </div>
+      <sc-for list="{{selButtons}}" as="b" hint-placeholder-count="2">
+        <button type="button" style="flex: 1; min-height: 52px; border: 2px solid {{c.line}}; border-radius: 999px; background: {{b.bg}}; color: {{b.fg}}; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; box-shadow: {{b.shadow}}; transform: {{b.press}}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.icon}}"></path></svg>{{b.label}}
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showDock}}" hint-placeholder-val="{{ false }}">
+    <div aria-label="Drop to move" style="position: absolute; left: 0; right: 0; bottom: 0; height: 104px; box-sizing: border-box; padding: 12px 20px 28px; background: {{c.paper}}; border-top: 2px solid {{c.line}}; display: flex; gap: 10px">
+      <sc-for list="{{bins}}" as="b" hint-placeholder-count="3">
+        <div style="flex: 1; height: 64px; box-sizing: border-box; border: 2px {{b.borderStyle}} {{b.border}}; border-radius: 12px; background: {{b.bg}}; color: {{b.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; transform: {{b.scale}}; box-shadow: {{b.shadow}}; opacity: {{b.op}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.icon}}"></path></svg>
+          <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700">{{b.label}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{scrim}}" hint-placeholder-val="{{ false }}">
+    <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(13,13,11,0.45)"></div>
+  </sc-if>
+
+  <sc-for list="{{bubbles}}" as="b" hint-placeholder-count="0">
+    <div style="position: absolute; left: {{b.left}}px; top: {{b.top}}px; width: 84px; display: flex; flex-direction: column; align-items: center; gap: 5px">
+      <button type="button" aria-label="{{b.aria}}" style="width: {{b.size}}px; height: {{b.size}}px; border-radius: 50%; border: 2px solid #121210; background: {{b.bg}}; color: #121210; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 #121210; padding: 0">
+        <svg width="{{b.icon}}" height="{{b.icon}}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{b.path}}"></path></svg>
+      </button>
+      <span style="font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; padding: 1px 5px; background: #FBFAF6; color: #121210; border: 1.5px solid #121210; white-space: nowrap">{{b.label}}</span>
+    </div>
+  </sc-for>
+
+  <sc-if value="{{hasTip}}" hint-placeholder-val="{{ false }}">
+    <span style="position: absolute; left: {{tip.x}}px; top: {{tip.y}}px; transform: translateX(-50%) rotate(-2deg); font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; padding: 5px 10px; background: {{c.accent}}; color: #121210; border: 2px solid #121210; box-shadow: 3px 3px 0 #121210; white-space: nowrap">{{tip.text}}</span>
+  </sc-if>
+
+  <sc-for list="{{lifted}}" as="l" hint-placeholder-count="0">
+    <div style="position: absolute; left: {{l.left}}px; top: {{l.top}}px; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; transform: rotate(-4deg)">
+      <span style="width: 48px; height: 48px; border-radius: 50%; background: {{l.bg}}; border: 2px solid {{c.line}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; box-shadow: 5px 7px 0 {{c.shadow}}">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{l.d1}}" fill="{{l.f1}}"></path><path d="{{l.d2}}" fill="{{l.f2}}"></path><path d="{{l.d3}}" fill="{{l.f3}}"></path></svg>
+      </span>
+      <span style="font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; padding: 1px 5px; background: {{c.paper}}; color: {{c.ink}}; border: 1.5px solid {{c.line}}; text-transform: uppercase; white-space: nowrap">{{l.short}}</span>
+    </div>
+  </sc-for>
+
+  <sc-if value="{{hasStack}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: {{stack.left}}px; top: {{stack.top}}px; width: 64px; height: 64px">
+      <sc-for list="{{stack.cards}}" as="s" hint-placeholder-count="3">
+        <span style="position: absolute; left: {{s.x}}px; top: {{s.y}}px; width: 46px; height: 46px; border-radius: 50%; background: {{s.bg}}; border: 2px solid {{c.line}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; box-shadow: 4px 5px 0 {{c.shadow}}; transform: rotate({{s.rot}}deg)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#121210" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{s.d1}}" fill="{{s.f1}}"></path><path d="{{s.d2}}" fill="{{s.f2}}"></path><path d="{{s.d3}}" fill="{{s.f3}}"></path></svg>
+        </span>
+      </sc-for>
+      <span style="position: absolute; right: -8px; top: -6px; min-width: 26px; height: 26px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; border: 2px solid {{c.line}}; background: #6A4CFF; color: #FFFFFF; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{stack.count}}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasFinger}}" hint-placeholder-val="{{ false }}">
+    <span aria-hidden="true" style="position: absolute; left: {{finger.left}}px; top: {{finger.top}}px; width: 46px; height: 46px; border-radius: 50%; background: {{c.touch}}; border: 2px solid {{c.touchRing}}; box-sizing: border-box"></span>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 20px; right: 20px; bottom: 108px; min-height: 48px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 8px 0 18px; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700">
+      <span>{{toast}}</span>
+      <button type="button" style="min-height: 40px; padding: 0 14px; border: none; border-radius: 999px; background: {{c.accent}}; color: #121210; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px">UNDO</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scene":{"editor":"enum","options":["idle","r1","r2","r3","m1","m2","m3","m4","s1","s2","s3","c1","c2","c3","c4"],"default":"idle"},"mode":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null }; }
+  renderVals() {
+    const dark = this.state.dark !== null ? this.state.dark : (this.props.mode ?? 'light') === 'dark';
+    const scene = this.props.scene ?? 'idle';
+    const c = dark
+      ? { bg: '#0D0D0B', paper: '#1A1A17', ink: '#F1EFE7', muted: '#A9A699', line: '#F1EFE7', faint: '#3A3933', shadow: '#7B61FF', accent: '#C6F432', accent2: '#C6F432', onAccent2: '#121210', cold: '#14201F', frost: '#18262A', glass: '#2C4246', touch: 'rgba(241,239,231,0.22)', touchRing: 'rgba(241,239,231,0.55)' }
+      : { bg: '#ECEAE2', paper: '#FBFAF6', ink: '#121210', muted: '#5A5850', line: '#121210', faint: '#C9C6BB', shadow: '#121210', accent: '#C6F432', accent2: '#6A4CFF', onAccent2: '#FFFFFF', cold: '#E3F1F3', frost: '#F4FBFC', glass: '#C4E3E8', touch: 'rgba(18,18,16,0.16)', touchRing: 'rgba(18,18,16,0.45)' };
+    const ICONS = {
+      milk: { bg: '#D6F0FB', p: [['M7.5 9.5 L7.5 20.5 L16.5 20.5 L16.5 9.5 L14 6 L10 6 Z', '#FFFFFF'], ['M10 6 L10 3.5 L14 3.5 L14 6', 'none'], ['M7.5 13 H16.5 V17 H7.5 Z', '#7FD3F7']] },
+      oatmilk: { bg: '#FFF0C2', p: [['M7.5 9.5 L7.5 20.5 L16.5 20.5 L16.5 9.5 L14 6 L10 6 Z', '#FFFFFF'], ['M10 6 L10 3.5 L14 3.5 L14 6', 'none'], ['M7.5 13 H16.5 V17 H7.5 Z', '#E8D2A6']] },
+      eggs: { bg: '#FFF0C2', p: [['M3.5 13.5 H20.5 V17.5 Q20.5 19.5 18.5 19.5 H5.5 Q3.5 19.5 3.5 17.5 Z', '#E8D2A6'], ['M6 13.5 C6 8.5 11 8.5 11 13.5', '#FFFFFF'], ['M13 13.5 C13 8.5 18 8.5 18 13.5', '#FFFFFF']] },
+      yogurt: { bg: '#E3DDFF', p: [['M6.5 8.5 L8.2 20 H15.8 L17.5 8.5 Z', '#FFFFFF'], ['M5.5 6 H18.5 V8.5 H5.5 Z', '#C6F432'], ['M7.3 12 H16.7 L16.2 15.5 H7.8 Z', '#FF8A65']] },
+      chicken: { bg: '#FFE0D4', p: [['M13 4 C18 3 21.5 7.5 19.5 11.5 C18 14.5 14.5 15.5 12 14.5 L9.5 12 C8.5 9 9.5 4.8 13 4 Z', '#E9A15A'], ['M10.5 13.5 L6.8 17.2', 'none'], ['M4.2 17.6 a1.8 1.8 0 1 0 3.6 0 a1.8 1.8 0 1 0 -3.6 0', '#FFFFFF']] },
+      spinach: { bg: '#E7F3B5', p: [['M5 19.5 C5 10.5 11 4.5 19.5 4.5 C20 13 14 19.5 5 19.5 Z', '#7BC86C'], ['M5 19.5 L15 9.5', 'none'], ['M0 0', 'none']] },
+      kimchi: { bg: '#FFE0D4', p: [['M7 7.5 H17 V19.5 Q17 20.5 16 20.5 H8 Q7 20.5 7 19.5 Z', '#FF6B4A'], ['M6.5 4.5 H17.5 V7.5 H6.5 Z', '#7B61FF'], ['M9 11.5 H15 V16 H9 Z', '#FFFFFF']] },
+      tofu: { bg: '#D6F0FB', p: [['M4 9.5 L12 5.5 L20 9.5 L12 13.5 Z', '#FFFFFF'], ['M4 9.5 V15.5 L12 19.5 V13.5 Z', '#EDEAE0'], ['M20 9.5 V15.5 L12 19.5 V13.5 Z', '#D9D5C8']] },
+      dumplings: { bg: '#E3DDFF', p: [['M6 5 H18 L19 20.5 H5 Z', '#7FD3F7'], ['M8 15.5 C8 11 16 11 16 15.5 Z', '#FFFFFF'], ['M10 13 L10.6 14.6 M12 12.4 V14.4 M14 13 L13.4 14.6', 'none']] },
+      icecream: { bg: '#FFE0D4', p: [['M6 9.5 L7.5 20.5 H16.5 L18 9.5 Z', '#FFB3C7'], ['M5 7 H19 V9.5 H5 Z', '#FFFFFF'], ['M8 13 H16', 'none']] }
+    };
+    const ITEMS = {
+      dumplings: { name: 'Frozen dumplings', short: 'Dumplings', owners: ['A', 'K'], consent: {}, soon: false },
+      icecream: { name: 'Ice cream', short: 'Ice cream', owners: ['M'], consent: {}, soon: false },
+      milk: { name: 'Whole milk', short: 'Milk', owners: ['P', 'A', 'M'], consent: { P: true, A: true, M: true }, soon: false },
+      yogurt: { name: 'Greek yogurt', short: 'Yogurt', owners: ['M'], consent: {}, soon: false },
+      kimchi: { name: 'Kimchi', short: 'Kimchi', owners: ['M', 'K'], consent: { M: true, K: true }, soon: false },
+      tofu: { name: 'Firm tofu', short: 'Tofu', owners: ['M'], consent: {}, soon: true },
+      eggs: { name: 'Eggs, 18 ct', short: 'Eggs', owners: ['P', 'A', 'M', 'K'], consent: { P: true, A: true, M: true, K: true }, soon: false },
+      chicken: { name: 'Chicken thighs', short: 'Chicken', owners: ['P', 'A'], consent: { P: true }, soon: false },
+      oatmilk: { name: 'Oat milk', short: 'Oat milk', owners: ['K'], consent: { K: true }, soon: false },
+      spinach: { name: 'Baby spinach', short: 'Spinach', owners: ['P', 'M'], consent: { P: true }, soon: true }
+    };
+    const PEOPLE = { P: { bg: '#C6F432', fg: '#121210' }, A: { bg: '#7B61FF', fg: '#FFFFFF' }, M: { bg: '#FF8A65', fg: '#121210' }, K: { bg: '#7FD3F7', fg: '#121210' } };
+    const PATH = {
+      freezer: 'M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5',
+      fridge: 'M6 2.5h12a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-15a2 2 0 0 1 2-2zM4 9.5h16M8 5.5v2M8 12.5v4',
+      pantry: 'M4 3.5h16v17H4zM4 9.5h16M4 15h16M7 6.5h3M13 12h4M7 18h5',
+      ask: 'M8 13V6.5a1.5 1.5 0 0 1 3 0V12M11 11.5V5a1.5 1.5 0 0 1 3 0v6.5M14 11.5V6.8a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-.6a5 5 0 0 1-4.2-2.3L4 14a1.5 1.5 0 0 1 2.5-1.7L8 14.5'
+    };
+    const me = 'P';
+    const slot = (sec, i) => sec === 'F' ? { x: 42 + 62 * i, y: 204 } : { x: 42 + 62 * (i % 5), y: 318 + 84 * Math.floor(i / 5) };
+    const center = (s) => ({ cx: s.x + 28, cy: s.y + 20 });
+    const paths = (k) => { const ic = ICONS[k]; return { bg: ic.bg, d1: ic.p[0][0], f1: ic.p[0][1], d2: ic.p[1][0], f2: ic.p[1][1], d3: ic.p[2][0], f3: ic.p[2][1] }; };
+    const isOpen = (k) => ITEMS[k].owners.every((o) => !!ITEMS[k].consent[o]);
+
+    let F = ['dumplings', 'icecream'];
+    let R = ['milk', 'yogurt', 'kimchi', 'tofu', 'eggs', 'chicken', 'oatmilk', 'spinach'];
+    let selMode = false, selected = {}, shifted = {}, dimmed = {};
+    let ghosts = [], rings = [], settles = [], lifted = [], bubbles = [];
+    let inHand = [], finger = null, stack = null, tip = null, toast = '', showDock = false, binHover = '', binHere = 'FRIDGE', selPress = '', scrim = false;
+    const GAP = '_gap';
+    const ghostAt = (s, kind) => ghosts.push({ left: s.x + 8, top: s.y, color: kind === 'gap' ? c.accent2 : c.muted, fill: kind === 'gap' ? 'rgba(106,76,255,0.10)' : 'transparent' });
+    const fingerAt = (x, y) => { finger = { left: x - 23, top: y - 23 }; };
+    const liftAt = (k, cx, cy) => lifted.push(Object.assign(paths(k), { short: ITEMS[k].short, left: cx - 32, top: cy - 24 }));
+    const ringOn = (s, p) => { const ce = center(s); rings.push({ left: ce.cx - 28, top: ce.cy - 28, off: Math.round(157 * (1 - p)) }); };
+    const stackAt = (keys, cx, cy) => {
+      const pos = [[2, 10, -8], [16, 4, 6], [9, 0, -2]];
+      stack = { left: cx - 32, top: cy - 32, count: String(keys.length), cards: keys.slice(-3).map((k, i, arr) => { const p = pos[3 - arr.length + i]; return Object.assign(paths(k), { x: p[0], y: p[1], rot: p[2] }); }) };
+    };
+    const yS = slot('R', 1), yC = center(yS);
+    const menu = (hover) => {
+      scrim = true;
+      liftAt('yogurt', yC.cx, yC.cy);
+      const opts = [
+        { key: 'freezer', label: 'FREEZER', aria: 'Move to freezer', ang: -150 },
+        { key: 'pantry', label: 'PANTRY', aria: 'Move to pantry', ang: -90 },
+        { key: 'ask', label: 'ASK MEERA', aria: 'Ask Meera for some', ang: -30 }
+      ];
+      opts.forEach((o) => {
+        const r = 84, a = o.ang * Math.PI / 180;
+        const bx = yC.cx + r * Math.cos(a), by = yC.cy + r * Math.sin(a);
+        const on = hover === o.key;
+        const size = on ? 64 : 52;
+        bubbles.push({ left: Math.round(bx - 42), top: Math.round(by - size / 2), size, icon: on ? 30 : 24, path: PATH[o.key], bg: on ? '#C6F432' : '#FBFAF6', label: o.label, aria: o.aria });
+        if (on) {
+          tip = { x: Math.round(bx), y: Math.round(by - size / 2 - 44), text: o.key === 'ask' ? 'ASK MEERA FOR SOME' : 'MOVE TO ' + o.label };
+          fingerAt(Math.round(bx), Math.round(by + 4));
+        }
+      });
+      if (!hover) fingerAt(yC.cx, yC.cy + 6);
+    };
+
+    switch (scene) {
+      case 'r1': { const s = slot('R', 4); ringOn(s, 0.65); const ce = center(s); fingerAt(ce.cx, ce.cy + 6); break; }
+      case 'r2': {
+        R = ['milk', GAP, 'yogurt', 'kimchi', 'tofu', 'chicken', 'oatmilk', 'spinach'];
+        shifted = { yogurt: true, kimchi: true, tofu: true };
+        ghostAt(slot('R', 1), 'gap');
+        fingerAt(140, 366); liftAt('eggs', 140, 334); inHand = ['eggs'];
+        showDock = true; break;
+      }
+      case 'r3': {
+        R = ['milk', 'eggs', 'yogurt', 'kimchi', 'tofu', 'chicken', 'oatmilk', 'spinach'];
+        const ce = center(slot('R', 1)); settles.push({ left: ce.cx - 28, top: ce.cy - 28 }); break;
+      }
+      case 'm1': menu(''); break;
+      case 'm2': menu('pantry'); break;
+      case 'm4': menu('ask'); break;
+      case 'm3': R = R.filter((k) => k !== 'yogurt'); toast = 'Yogurt → Pantry'; break;
+      case 's1': {
+        selMode = true; selected = { milk: true, yogurt: true };
+        const ce = center(slot('R', 1)); fingerAt(ce.cx, ce.cy + 4); break;
+      }
+      case 's2': selMode = true; selected = { milk: true, yogurt: true, kimchi: true }; selPress = 'pantry'; fingerAt(306, 778); break;
+      case 's3': R = R.filter((k) => ['milk', 'yogurt', 'kimchi'].indexOf(k) < 0); toast = '3 items → Pantry'; break;
+      case 'c1': {
+        ghostAt(slot('R', 0), 'gap'); R = [GAP].concat(R.slice(1));
+        fingerAt(96, 382); stackAt(['milk'], 96, 346); showDock = true; inHand = ['milk']; break;
+      }
+      case 'c2': {
+        R = [GAP, GAP].concat(R.slice(2)); ghostAt(slot('R', 0)); ghostAt(slot('R', 1));
+        const s = slot('R', 2); ringOn(s, 0.7); const ce = center(s);
+        fingerAt(ce.cx, ce.cy + 4); stackAt(['milk', 'yogurt'], ce.cx + 4, ce.cy - 40); showDock = true; inHand = ['milk', 'yogurt']; break;
+      }
+      case 'c3': {
+        R = [GAP, GAP, GAP].concat(R.slice(3)); ghostAt(slot('R', 0)); ghostAt(slot('R', 1)); ghostAt(slot('R', 2));
+        fingerAt(315, 788); stackAt(['milk', 'yogurt', 'kimchi'], 315, 712); showDock = true; binHover = 'PANTRY'; inHand = ['milk', 'yogurt', 'kimchi']; break;
+      }
+      case 'c4': R = R.filter((k) => ['milk', 'yogurt', 'kimchi'].indexOf(k) < 0); toast = '3 items → Pantry'; break;
+      default: break;
+    }
+
+    const items = [];
+    const push = (sec, list) => list.forEach((k, i) => {
+      if (k === GAP) return;
+      const it = ITEMS[k], s = slot(sec, i), open = isOpen(k), sel = !!selected[k];
+      const ringSel = selMode && sel;
+      items.push(Object.assign(paths(k), {
+        x: s.x, y: s.y, short: it.short, soon: it.soon, isOpen: open, isAsk: !open, badgeBg: open ? c.accent : c.paper,
+        ring: ringSel ? c.accent2 : (it.soon ? '#FF8A65' : c.line), ringStyle: (it.soon && !ringSel) ? 'dashed' : 'solid', ringW: ringSel ? '3px' : '2px',
+        op: dimmed[k] ? 0.3 : 1, shift: !!shifted[k], selMode, selected: sel, checkBg: sel ? c.accent : c.paper,
+        aria: it.name + (selMode ? (sel ? ', selected' : ', not selected') : ''),
+        owners: it.owners.map((o, j) => ({ initial: o, bg: PEOPLE[o].bg, fg: PEOPLE[o].fg, ml: j ? '-4px' : '0px' }))
+      }));
+    });
+    push('F', F); push('R', R);
+    const live = F.concat(R).filter((k) => k !== GAP).concat(inHand);
+    const count = live.length;
+    const counts = { all: count, mine: live.filter((k) => ITEMS[k].owners.indexOf(me) >= 0).length, open: live.filter(isOpen).length, soon: live.filter((k) => ITEMS[k].soon).length };
+    const filters = [['ALL', counts.all, true], ['MINE', counts.mine, false], ['OPEN', counts.open, false], ['USE SOON', counts.soon, false]].map(([l, n, on]) => ({ label: l + ' ' + n, pressed: on ? 'true' : 'false', bg: on ? c.ink : c.paper, fg: on ? c.bg : c.ink }));
+    const nSel = Object.keys(selected).length;
+    const selButtons = [['freezer', 'Freezer'], ['pantry', 'Pantry']].map(([k, l]) => {
+      const p = selPress === k;
+      return { label: l, icon: PATH[k], bg: p ? c.accent : (k === 'pantry' ? c.accent2 : c.paper), fg: p ? '#121210' : (k === 'pantry' ? c.onAccent2 : c.ink), shadow: p ? 'none' : '3px 3px 0 ' + c.shadow, press: p ? 'translate(3px, 3px)' : 'none' };
+    });
+    const bins = [['FREEZER', 'freezer'], ['FRIDGE', 'fridge'], ['PANTRY', 'pantry']].map(([l, k]) => {
+      const here = l === binHere, on = l === binHover;
+      return { label: on ? 'DROP 3' : (here ? 'HERE' : l), icon: PATH[k], borderStyle: on ? 'solid' : 'dashed', border: here ? c.faint : c.line, bg: on ? c.accent : 'transparent', fg: on ? '#121210' : (here ? c.muted : c.ink), scale: on ? 'scale(1.06)' : 'none', shadow: on ? '3px 3px 0 ' + c.shadow : 'none', op: here ? 0.7 : 1 };
+    });
+    const freezerHot = false;
+    return {
+      c, items, filters, ghosts, rings, settles, lifted, bubbles, bins, selButtons,
+      step: 'APT 4B · ' + count + ' ITEMS',
+      freezerBg: c.frost, freezerBorder: '2px dashed ' + c.faint, freezerLabel: freezerHot ? 'DROP TO MOVE TO FREEZER' : 'FREEZER',
+      selMode, notSelMode: !selMode, selCount: String(nSel),
+      selBtnLabel: selMode ? 'DONE' : 'SELECT', selPressed: selMode ? 'true' : 'false', selBtnBg: selMode ? c.ink : c.paper, selBtnFg: selMode ? c.bg : c.ink,
+      showDock, showNormalBar: !showDock && !selMode,
+      scrim, hasTip: !!tip, tip: tip || { x: 0, y: 0, text: '' },
+      hasStack: !!stack, stack: stack || { left: 0, top: 0, count: '', cards: [] },
+      hasFinger: !!finger, finger: finger || { left: 0, top: 0 },
+      hasToast: !!toast, toast,
+      isDark: dark, isLight: !dark,
+      themeLabel: dark ? 'Switch to light mode' : 'Switch to dark mode',
+      toggleTheme: () => this.setState({ dark: !dark })
+    };
+  }
+}
+</script>
+</body>
+</html>
