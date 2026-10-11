@@ -308,6 +308,9 @@ async def test_PUSH_10_quiet_hours_hold_and_group_until_8(api: ApiFactory, fake_
     h, _, _ = await household(api, fake_push)
     await drain(h.w.admin)
     kabir = h.people["kabir"]
+    # Quiet hours are off until someone turns them on (PRD §20.2); Meera and Pranav do.
+    for name in ("meera", "pranav"):
+        await h.everyone[name].call("PUT", "/api/v1/me/notification-prefs", {"quiet_hours": True})
     await at(h.w.admin, "2026-10-09T23:30:00-04:00")
     inv = (await kabir.get(f"/api/v1/houses/{h.w.hid}/inventory")).json()
     for prefix in ("Greek yogurt", "Baby spinach"):  # Meera owns both; Pranav co-owns the spinach
@@ -663,6 +666,7 @@ async def test_VERCEL_04_held_notifications_schedule_a_delayed_wake_up(
     await drain(h.w.admin)
     kicker = RecordingKicker()
     app.state.notify.schedule = lambda when: _record(kicker, when, app)
+    await h.people["arjun"].call("PUT", "/api/v1/me/notification-prefs", {"quiet_hours": True})
     await at(h.w.admin, "2026-10-09T23:30:00-04:00")
     await h.w.admin.post(f"/api/v1/bills/{bill_id}/remind", {"member_id": h.w.member["arjun"]})
     await drain(h.w.admin)
@@ -822,3 +826,21 @@ async def test_KITCH_15_round_up_waits_for_9_in_the_house_time_zone(api: ApiFact
     await at(admin, "2026-10-10T07:00:30+00:00")
     await drain(admin)
     assert len(phone.payloads()) == 1
+
+
+@tid("PUSH-10")
+@fr("FR-84")
+async def test_PUSH_10_quiet_hours_are_off_until_turned_on(api: ApiFactory, fake_push: str) -> None:
+    """Owner's call 2026-10-11: no default quiet hours; a 23:30 ask reaches the owner at once."""
+    h, _, _ = await household(api, fake_push)
+    await drain(h.w.admin)
+    prefs = (await h.people["meera"].get("/api/v1/me/notification-prefs")).json()
+    assert prefs["quiet_hours"] is False
+    await at(h.w.admin, "2026-10-09T23:30:00-04:00")
+    inv = (await h.people["kabir"].get(f"/api/v1/houses/{h.w.hid}/inventory")).json()
+    yogurt = next(i for a in inv["areas"] for i in a["items"] if i["name"].startswith("Greek yogurt"))
+    await h.people["kabir"].post(f"/api/v1/inventory/{yogurt['id']}/requests", {"amount": "a_bit"})
+    await drain(h.w.admin)
+    assert [x["title"] for x in h.phones["meera"].payloads() if "ask" in x["title"]] == [
+        "Kabir asked for your greek yogurt"
+    ]

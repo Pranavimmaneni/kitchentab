@@ -389,9 +389,10 @@ test.describe("N2 · Settings › Notifications", () => {
     await expect(push("tabs settled or reopened")).toHaveAttribute("aria-pressed", "false");
     await expect(email("tabs settled or reopened")).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText("Quiet hours · 10 PM – 8 AM")).toBeVisible();
+    // Off until turned on (PRD §20.2, owner's call 2026-10-11); the times shown are the suggestion.
     await expect(page.getByRole("switch", { name: "Quiet hours" })).toHaveAttribute(
       "aria-checked",
-      "true",
+      "false",
     );
 
     // Set-state writes, saved on the server.
@@ -407,7 +408,7 @@ test.describe("N2 · Settings › Notifications", () => {
           "/me/notification-prefs",
         ),
       )
-      .toMatchObject({ email: { asks: true }, private_lock_screen: true, quiet_hours: false });
+      .toMatchObject({ email: { asks: true }, private_lock_screen: true, quiet_hours: true });
     await page.reload();
     await expect(email("someone asks for your stuff")).toHaveAttribute("aria-pressed", "true");
 

@@ -1269,7 +1269,7 @@ KitchenTab must install to the home screen from any modern browser and deliver p
 **Rules:**
 
 - **Preferences:** a type × channel matrix (push, email) per user, defaults as in N2. Turning off a type never hides it in the app.
-- **Quiet hours:** default on, 22:00–08:00 in the user's time zone; anything due inside quiet hours is held and sent at 08:00 as one grouped notification per type. Sign-in codes ignore quiet hours.
+- **Quiet hours:** off until the person turns them on (owner's call 2026-10-11; the switch suggests 22:00–08:00 in the user's time zone). While on, anything due inside quiet hours is held and sent at the end as one grouped notification per type. Sign-in codes ignore quiet hours.
 - **Rate limits:** share-changed pushes coalesce per bill per member over 10 minutes (send the latest net change); reminders at most once per member per bill per 48 h (FR-41, PAY-07); at most 20 pushes per user per day (the rest go to the inbox only).
 - **Never notify the actor** about their own action, on any device.
 - **Click handling:** `notificationclick` focuses an open KitchenTab window and navigates it, else opens a new one at the event's URL.
