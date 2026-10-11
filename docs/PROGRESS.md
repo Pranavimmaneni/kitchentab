@@ -51,7 +51,7 @@ B. Settings: LIVE 2026-10-11 (PR #2; no migration).
 Both shipped. Still ask the user before every production change.
 C. Kitchen gestures (docs/features/kitchen-gestures/SPEC.md, FR-G01..G11): in progress on branch
    `feat/kitchen-gestures` (not deployed). Needs migration 0008 (`member_item_order`, item move stamps):
-   the owner runs `make migrate-prod` from that branch before it merges. Milestone 11 below.
+   the owner runs `make migrate-prod` from that branch before it merges. Its PR adds Milestone 11.
 
 Open, in order (overnight queue):
 1. GitHub CI (first runs 2026-10-10) was red on main. Fixed on branch fix/ci-baseline: ruff EXE001 (four
